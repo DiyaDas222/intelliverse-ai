@@ -239,7 +239,39 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         <div className="truncate text-sm font-medium text-muted-foreground">
           {conversationId ? "Chat" : "New chat"}
         </div>
-        <div className="shrink-0 text-xs text-muted-foreground">Gemini 3 Flash</div>
+        <div className="relative shrink-0">
+          <button
+            onClick={() => setShowModelMenu((s) => !s)}
+            className="flex items-center gap-1 rounded-md border border-border/60 bg-card/40 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            {currentModel.label}
+            <ChevronDown className="h-3 w-3" />
+          </button>
+          {showModelMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowModelMenu(false)} />
+              <div className="absolute right-0 top-full z-20 mt-1 w-64 overflow-hidden rounded-lg border border-border bg-popover shadow-xl">
+                <div className="border-b border-border px-3 py-2 text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Choose model
+                </div>
+                <div className="max-h-72 overflow-y-auto py-1">
+                  {CHAT_MODELS.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => updateModel(m.id)}
+                      className={`flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-xs hover:bg-accent/10 ${
+                        m.id === model ? "bg-accent/10" : ""
+                      }`}
+                    >
+                      <span className="font-medium text-foreground">{m.label}</span>
+                      <span className="text-muted-foreground">{m.hint}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Messages */}
