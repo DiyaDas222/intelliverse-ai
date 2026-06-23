@@ -33,6 +33,16 @@ function ImagePage() {
   const qc = useQueryClient();
   const saveFn = useServerFn(saveImageAsset);
 
+  // Prefill from chat wizard if a brief was queued
+  useEffect(() => {
+    const brief = sessionStorage.getItem("iv:wizard-brief:image");
+    if (brief) {
+      setPrompt(brief);
+      sessionStorage.removeItem("iv:wizard-brief:image");
+      toast.success("Brief loaded from chat — review and click Generate");
+    }
+  }, []);
+
   const saveMut = useMutation({
     mutationFn: (data: { prompt: string; b64: string }) => saveFn({ data }),
     onSuccess: () => {
