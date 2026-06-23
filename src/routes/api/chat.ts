@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { streamText, convertToModelMessages, type UIMessage } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { isValidModel, DEFAULT_MODEL } from "@/lib/models";
 
 type ChatBody = {
   messages: { role: "user" | "assistant" | "system"; content: string }[];
   documentIds?: string[];
+  model?: string;
 };
 
 const SYSTEM = `You are IntelliVerse AI, a warm, sharp, and helpful assistant.
@@ -57,7 +59,8 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         const gateway = createLovableAiGatewayProvider(apiKey);
-        const model = gateway("google/gemini-3-flash-preview");
+        const modelId = isValidModel(body.model) ? body.model : DEFAULT_MODEL;
+        const model = gateway(modelId);
 
         // Build UIMessage shape for the AI SDK
         const uiMessages: UIMessage[] = body.messages.map((m, i) => ({

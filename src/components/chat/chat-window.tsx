@@ -10,6 +10,7 @@ import {
   FileText as FileIcon,
   X,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
 
 type Msg = { id: string; role: "user" | "assistant"; content: string; created_at?: string };
 
@@ -38,9 +40,25 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const [streaming, setStreaming] = useState(false);
   const [attachedDocIds, setAttachedDocIds] = useState<string[]>([]);
   const [showDocPicker, setShowDocPicker] = useState(false);
+  const [model, setModel] = useState<string>(DEFAULT_MODEL);
+  const [showModelMenu, setShowModelMenu] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const m = localStorage.getItem("iv:model");
+    if (isValidModel(m)) setModel(m);
+  }, []);
+
+  const updateModel = (id: string) => {
+    setModel(id);
+    localStorage.setItem("iv:model", id);
+    setShowModelMenu(false);
+  };
+
+  const currentModel = CHAT_MODELS.find((m) => m.id === model) ?? CHAT_MODELS[0];
 
   // Load messages when conversationId changes
   useEffect(() => {
@@ -141,6 +159,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         body: JSON.stringify({
           messages: [...messages, userMsg].map((m) => ({ role: m.role, content: m.content })),
           documentIds: attachedDocIds,
+          model,
         }),
       });
       if (!res.ok || !res.body) {
@@ -220,7 +239,39 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         <div className="truncate text-sm font-medium text-muted-foreground">
           {conversationId ? "Chat" : "New chat"}
         </div>
-        <div className="shrink-0 text-xs text-muted-foreground">Gemini 3 Flash</div>
+        <div className="relative shrink-0">
+          <button
+            onClick={() => setShowModelMenu((s) => !s)}
+            className="flex items-center gap-1 rounded-md border border-border/60 bg-card/40 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            {currentModel.label}
+            <ChevronDown className="h-3 w-3" />
+          </button>
+          {showModelMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowModelMenu(false)} />
+              <div className="absolute right-0 top-full z-20 mt-1 w-64 overflow-hidden rounded-lg border border-border bg-popover shadow-xl">
+                <div className="border-b border-border px-3 py-2 text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Choose model
+                </div>
+                <div className="max-h-72 overflow-y-auto py-1">
+                  {CHAT_MODELS.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => updateModel(m.id)}
+                      className={`flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-xs hover:bg-accent/10 ${
+                        m.id === model ? "bg-accent/10" : ""
+                      }`}
+                    >
+                      <span className="font-medium text-foreground">{m.label}</span>
+                      <span className="text-muted-foreground">{m.hint}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Messages */}

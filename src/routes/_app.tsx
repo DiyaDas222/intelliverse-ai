@@ -15,6 +15,8 @@ import {
   Shield,
   Menu,
   X,
+  LayoutGrid,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -244,6 +246,15 @@ function AppLayout() {
             Dashboard
           </Link>
           <Link
+            to="/tools"
+            className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
+              location.pathname.startsWith("/tools") ? "bg-sidebar-accent" : ""
+            }`}
+          >
+            <LayoutGrid className="h-4 w-4" />
+            AI Tools
+          </Link>
+          <Link
             to="/documents"
             className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
               location.pathname === "/documents" ? "bg-sidebar-accent" : ""
@@ -251,6 +262,15 @@ function AppLayout() {
           >
             <FileText className="h-4 w-4" />
             Documents
+          </Link>
+          <Link
+            to="/settings"
+            className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
+              location.pathname === "/settings" ? "bg-sidebar-accent" : ""
+            }`}
+          >
+            <SettingsIcon className="h-4 w-4" />
+            Settings
           </Link>
           {isAdmin && (
             <Link
