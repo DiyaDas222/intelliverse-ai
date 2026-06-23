@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppDocumentsRouteImport } from './routes/_app/documents'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppChatRouteImport } from './routes/_app/chat'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
@@ -42,6 +43,11 @@ const AppDocumentsRoute = AppDocumentsRouteImport.update({
   path: '/documents',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppChatRoute = AppChatRouteImport.update({
   id: '/chat',
   path: '/chat',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/admin': typeof AppAdminRoute
   '/chat': typeof AppChatRouteWithChildren
+  '/dashboard': typeof AppDashboardRoute
   '/documents': typeof AppDocumentsRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$id': typeof AppChatIdRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/admin': typeof AppAdminRoute
   '/chat': typeof AppChatRouteWithChildren
+  '/dashboard': typeof AppDashboardRoute
   '/documents': typeof AppDocumentsRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$id': typeof AppChatIdRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_app/admin': typeof AppAdminRoute
   '/_app/chat': typeof AppChatRouteWithChildren
+  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/documents': typeof AppDocumentsRoute
   '/api/chat': typeof ApiChatRoute
   '/_app/chat/$id': typeof AppChatIdRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/chat'
+    | '/dashboard'
     | '/documents'
     | '/api/chat'
     | '/chat/$id'
@@ -103,6 +113,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/chat'
+    | '/dashboard'
     | '/documents'
     | '/api/chat'
     | '/chat/$id'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_app/admin'
     | '/_app/chat'
+    | '/_app/dashboard'
     | '/_app/documents'
     | '/api/chat'
     | '/_app/chat/$id'
@@ -162,6 +174,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDocumentsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/chat': {
       id: '/_app/chat'
       path: '/chat'
@@ -200,12 +219,14 @@ const AppChatRouteWithChildren =
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppChatRoute: typeof AppChatRouteWithChildren
+  AppDashboardRoute: typeof AppDashboardRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRoute,
   AppChatRoute: AppChatRouteWithChildren,
+  AppDashboardRoute: AppDashboardRoute,
   AppDocumentsRoute: AppDocumentsRoute,
 }
 
