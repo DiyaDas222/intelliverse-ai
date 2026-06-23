@@ -56,19 +56,33 @@ export const Route = createFileRoute("/api/generate-doc")({
         }
 
         const gateway = createGatewayProvider(key);
-        try {
+        const askJson = async (extra = "") => {
           const { text } = await generateText({
             model: gateway(model || "google/gemini-2.5-flash"),
-            system: SYSTEMS[kind],
+            system: SYSTEMS[kind] + "\n\nCRITICAL: Reply with ONLY the JSON object. No prose, no greeting, no markdown fences." + extra,
             prompt,
           });
-          const parsed = JSON.parse(stripJson(text));
+          return text;
+        };
+        try {
+          let text = await askJson();
+          let cleaned = stripJson(text);
+          let parsed: unknown;
+          try {
+            parsed = JSON.parse(cleaned);
+          } catch {
+            // Retry once with even stricter instruction
+            text = await askJson(" The previous attempt was rejected because it was not valid JSON.");
+            cleaned = stripJson(text);
+            parsed = JSON.parse(cleaned);
+          }
           return Response.json({ content: parsed });
         } catch (err) {
           const msg = err instanceof Error ? err.message : "AI request failed";
-          if (msg.includes("429")) return new Response("Rate limit", { status: 429 });
-          if (msg.includes("402")) return new Response("Credits exhausted", { status: 402 });
-          return new Response(msg, { status: 500 });
+          if (msg.includes("429")) return Response.json({ error: "Rate limit reached. Please try again in a moment." }, { status: 429 });
+          if (msg.includes("402")) return Response.json({ error: "AI credits exhausted." }, { status: 402 });
+          console.error("generate-doc failed:", msg);
+          return Response.json({ error: `The model didn't return valid JSON. Try a more specific prompt or switch the model. (${msg.slice(0, 120)})` }, { status: 422 });
         }
       },
     },
