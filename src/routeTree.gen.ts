@@ -19,12 +19,16 @@ import { Route as ApiGenerateAudioRouteImport } from './routes/api/generate-audi
 import { Route as ApiDocActionRouteImport } from './routes/api/doc-action'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppToolsRouteImport } from './routes/_app/tools'
+import { Route as AppStudioRouteImport } from './routes/_app/studio'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppDocumentsRouteImport } from './routes/_app/documents'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppChatRouteImport } from './routes/_app/chat'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppStudioIndexRouteImport } from './routes/_app/studio.index'
 import { Route as AppToolsSlugRouteImport } from './routes/_app/tools.$slug'
+import { Route as AppStudioImageRouteImport } from './routes/_app/studio.image'
+import { Route as AppStudioAudioRouteImport } from './routes/_app/studio.audio'
 import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
 
@@ -77,6 +81,11 @@ const AppToolsRoute = AppToolsRouteImport.update({
   path: '/tools',
   getParentRoute: () => AppRoute,
 } as any)
+const AppStudioRoute = AppStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -102,10 +111,25 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
+const AppStudioIndexRoute = AppStudioIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppStudioRoute,
+} as any)
 const AppToolsSlugRoute = AppToolsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => AppToolsRoute,
+} as any)
+const AppStudioImageRoute = AppStudioImageRouteImport.update({
+  id: '/image',
+  path: '/image',
+  getParentRoute: () => AppStudioRoute,
+} as any)
+const AppStudioAudioRoute = AppStudioAudioRouteImport.update({
+  id: '/audio',
+  path: '/audio',
+  getParentRoute: () => AppStudioRoute,
 } as any)
 const AppDocumentsIdRoute = AppDocumentsIdRouteImport.update({
   id: '/$id',
@@ -126,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/documents': typeof AppDocumentsRouteWithChildren
   '/settings': typeof AppSettingsRoute
+  '/studio': typeof AppStudioRouteWithChildren
   '/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -135,7 +160,10 @@ export interface FileRoutesByFullPath {
   '/api/tool': typeof ApiToolRoute
   '/chat/$id': typeof AppChatIdRoute
   '/documents/$id': typeof AppDocumentsIdRoute
+  '/studio/audio': typeof AppStudioAudioRoute
+  '/studio/image': typeof AppStudioImageRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/studio/': typeof AppStudioIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -154,7 +182,10 @@ export interface FileRoutesByTo {
   '/api/tool': typeof ApiToolRoute
   '/chat/$id': typeof AppChatIdRoute
   '/documents/$id': typeof AppDocumentsIdRoute
+  '/studio/audio': typeof AppStudioAudioRoute
+  '/studio/image': typeof AppStudioImageRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/studio': typeof AppStudioIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -166,6 +197,7 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/documents': typeof AppDocumentsRouteWithChildren
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/studio': typeof AppStudioRouteWithChildren
   '/_app/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -175,7 +207,10 @@ export interface FileRoutesById {
   '/api/tool': typeof ApiToolRoute
   '/_app/chat/$id': typeof AppChatIdRoute
   '/_app/documents/$id': typeof AppDocumentsIdRoute
+  '/_app/studio/audio': typeof AppStudioAudioRoute
+  '/_app/studio/image': typeof AppStudioImageRoute
   '/_app/tools/$slug': typeof AppToolsSlugRoute
+  '/_app/studio/': typeof AppStudioIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -187,6 +222,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/settings'
+    | '/studio'
     | '/tools'
     | '/api/chat'
     | '/api/doc-action'
@@ -196,7 +232,10 @@ export interface FileRouteTypes {
     | '/api/tool'
     | '/chat/$id'
     | '/documents/$id'
+    | '/studio/audio'
+    | '/studio/image'
     | '/tools/$slug'
+    | '/studio/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -215,7 +254,10 @@ export interface FileRouteTypes {
     | '/api/tool'
     | '/chat/$id'
     | '/documents/$id'
+    | '/studio/audio'
+    | '/studio/image'
     | '/tools/$slug'
+    | '/studio'
   id:
     | '__root__'
     | '/'
@@ -226,6 +268,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/documents'
     | '/_app/settings'
+    | '/_app/studio'
     | '/_app/tools'
     | '/api/chat'
     | '/api/doc-action'
@@ -235,7 +278,10 @@ export interface FileRouteTypes {
     | '/api/tool'
     | '/_app/chat/$id'
     | '/_app/documents/$id'
+    | '/_app/studio/audio'
+    | '/_app/studio/image'
     | '/_app/tools/$slug'
+    | '/_app/studio/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -322,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppToolsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/studio': {
+      id: '/_app/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof AppStudioRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
@@ -357,12 +410,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/studio/': {
+      id: '/_app/studio/'
+      path: '/'
+      fullPath: '/studio/'
+      preLoaderRoute: typeof AppStudioIndexRouteImport
+      parentRoute: typeof AppStudioRoute
+    }
     '/_app/tools/$slug': {
       id: '/_app/tools/$slug'
       path: '/$slug'
       fullPath: '/tools/$slug'
       preLoaderRoute: typeof AppToolsSlugRouteImport
       parentRoute: typeof AppToolsRoute
+    }
+    '/_app/studio/image': {
+      id: '/_app/studio/image'
+      path: '/image'
+      fullPath: '/studio/image'
+      preLoaderRoute: typeof AppStudioImageRouteImport
+      parentRoute: typeof AppStudioRoute
+    }
+    '/_app/studio/audio': {
+      id: '/_app/studio/audio'
+      path: '/audio'
+      fullPath: '/studio/audio'
+      preLoaderRoute: typeof AppStudioAudioRouteImport
+      parentRoute: typeof AppStudioRoute
     }
     '/_app/documents/$id': {
       id: '/_app/documents/$id'
@@ -404,6 +478,22 @@ const AppDocumentsRouteWithChildren = AppDocumentsRoute._addFileChildren(
   AppDocumentsRouteChildren,
 )
 
+interface AppStudioRouteChildren {
+  AppStudioAudioRoute: typeof AppStudioAudioRoute
+  AppStudioImageRoute: typeof AppStudioImageRoute
+  AppStudioIndexRoute: typeof AppStudioIndexRoute
+}
+
+const AppStudioRouteChildren: AppStudioRouteChildren = {
+  AppStudioAudioRoute: AppStudioAudioRoute,
+  AppStudioImageRoute: AppStudioImageRoute,
+  AppStudioIndexRoute: AppStudioIndexRoute,
+}
+
+const AppStudioRouteWithChildren = AppStudioRoute._addFileChildren(
+  AppStudioRouteChildren,
+)
+
 interface AppToolsRouteChildren {
   AppToolsSlugRoute: typeof AppToolsSlugRoute
 }
@@ -422,6 +512,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppDocumentsRoute: typeof AppDocumentsRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRoute
+  AppStudioRoute: typeof AppStudioRouteWithChildren
   AppToolsRoute: typeof AppToolsRouteWithChildren
 }
 
@@ -431,6 +522,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppDocumentsRoute: AppDocumentsRouteWithChildren,
   AppSettingsRoute: AppSettingsRoute,
+  AppStudioRoute: AppStudioRouteWithChildren,
   AppToolsRoute: AppToolsRouteWithChildren,
 }
 
