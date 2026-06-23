@@ -13,6 +13,8 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as STokenRouteImport } from './routes/s.$token'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 import { Route as ApiToolRouteImport } from './routes/api/tool'
 import { Route as ApiGenerateVideoRouteImport } from './routes/api/generate-video'
 import { Route as ApiGenerateMusicRouteImport } from './routes/api/generate-music'
@@ -60,6 +62,16 @@ const IndexRoute = IndexRouteImport.update({
 const STokenRoute = STokenRouteImport.update({
   id: '/s/$token',
   path: '/s/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTranscribeRoute = ApiTranscribeRouteImport.update({
+  id: '/api/transcribe',
+  path: '/api/transcribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiToolRoute = ApiToolRouteImport.update({
@@ -229,6 +241,8 @@ export interface FileRoutesByFullPath {
   '/api/generate-music': typeof ApiGenerateMusicRoute
   '/api/generate-video': typeof ApiGenerateVideoRoute
   '/api/tool': typeof ApiToolRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/tts': typeof ApiTtsRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
   '/documents/$id': typeof AppDocumentsIdRoute
@@ -261,6 +275,8 @@ export interface FileRoutesByTo {
   '/api/generate-music': typeof ApiGenerateMusicRoute
   '/api/generate-video': typeof ApiGenerateVideoRoute
   '/api/tool': typeof ApiToolRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/tts': typeof ApiTtsRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
   '/documents/$id': typeof AppDocumentsIdRoute
@@ -297,6 +313,8 @@ export interface FileRoutesById {
   '/api/generate-music': typeof ApiGenerateMusicRoute
   '/api/generate-video': typeof ApiGenerateVideoRoute
   '/api/tool': typeof ApiToolRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/tts': typeof ApiTtsRoute
   '/s/$token': typeof STokenRoute
   '/_app/chat/$id': typeof AppChatIdRoute
   '/_app/documents/$id': typeof AppDocumentsIdRoute
@@ -333,6 +351,8 @@ export interface FileRouteTypes {
     | '/api/generate-music'
     | '/api/generate-video'
     | '/api/tool'
+    | '/api/transcribe'
+    | '/api/tts'
     | '/s/$token'
     | '/chat/$id'
     | '/documents/$id'
@@ -365,6 +385,8 @@ export interface FileRouteTypes {
     | '/api/generate-music'
     | '/api/generate-video'
     | '/api/tool'
+    | '/api/transcribe'
+    | '/api/tts'
     | '/s/$token'
     | '/chat/$id'
     | '/documents/$id'
@@ -400,6 +422,8 @@ export interface FileRouteTypes {
     | '/api/generate-music'
     | '/api/generate-video'
     | '/api/tool'
+    | '/api/transcribe'
+    | '/api/tts'
     | '/s/$token'
     | '/_app/chat/$id'
     | '/_app/documents/$id'
@@ -427,6 +451,8 @@ export interface RootRouteChildren {
   ApiGenerateMusicRoute: typeof ApiGenerateMusicRoute
   ApiGenerateVideoRoute: typeof ApiGenerateVideoRoute
   ApiToolRoute: typeof ApiToolRoute
+  ApiTranscribeRoute: typeof ApiTranscribeRoute
+  ApiTtsRoute: typeof ApiTtsRoute
   STokenRoute: typeof STokenRoute
   ApiPublicShareTokenRoute: typeof ApiPublicShareTokenRoute
 }
@@ -459,6 +485,20 @@ declare module '@tanstack/react-router' {
       path: '/s/$token'
       fullPath: '/s/$token'
       preLoaderRoute: typeof STokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/transcribe': {
+      id: '/api/transcribe'
+      path: '/api/transcribe'
+      fullPath: '/api/transcribe'
+      preLoaderRoute: typeof ApiTranscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tool': {
@@ -765,6 +805,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGenerateMusicRoute: ApiGenerateMusicRoute,
   ApiGenerateVideoRoute: ApiGenerateVideoRoute,
   ApiToolRoute: ApiToolRoute,
+  ApiTranscribeRoute: ApiTranscribeRoute,
+  ApiTtsRoute: ApiTtsRoute,
   STokenRoute: STokenRoute,
   ApiPublicShareTokenRoute: ApiPublicShareTokenRoute,
 }

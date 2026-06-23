@@ -5,10 +5,11 @@ import { getGatewayApiKey } from "@/lib/gateway-config.server";
 import { isValidModel, DEFAULT_MODEL } from "@/lib/models";
 
 type ChatBody = {
-  messages: { role: "user" | "assistant" | "system"; content: string }[];
+  messages: { role: "user" | "assistant" | "system"; content: string; images?: string[] }[];
   documentIds?: string[];
   model?: string;
 };
+
 
 const SYSTEM = `You are IntelliVerse AI — a warm, sharp assistant that doubles as a professional project consultant and requirements analyst.
 - Respond in clean Markdown. Use bullets, short paragraphs, and code blocks with language hints.
@@ -150,12 +151,25 @@ export const Route = createFileRoute("/api/chat")({
         const modelId = isValidModel(body.model) ? body.model : DEFAULT_MODEL;
         const model = gateway(modelId);
 
-        // Build UIMessage shape for the AI SDK
-        const uiMessages: UIMessage[] = body.messages.map((m, i) => ({
-          id: String(i),
-          role: m.role,
-          parts: [{ type: "text", text: m.content }],
-        })) as UIMessage[];
+        // Build UIMessage shape for the AI SDK (with optional inline images)
+        const uiMessages: UIMessage[] = body.messages.map((m, i) => {
+          const parts: Array<
+            | { type: "text"; text: string }
+            | { type: "file"; mediaType: string; url: string }
+          > = [];
+          if (m.content) parts.push({ type: "text", text: m.content });
+          if (Array.isArray(m.images)) {
+            for (const url of m.images) {
+              if (typeof url !== "string" || !url) continue;
+              const match = url.match(/^data:([^;]+);/);
+              const mediaType = match?.[1] || "image/png";
+              parts.push({ type: "file", mediaType, url });
+            }
+          }
+          if (parts.length === 0) parts.push({ type: "text", text: "" });
+          return { id: String(i), role: m.role, parts } as unknown as UIMessage;
+        });
+
 
         try {
           const result = streamText({
