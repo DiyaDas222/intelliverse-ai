@@ -10,6 +10,7 @@ import {
   FileText as FileIcon,
   X,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
 
 type Msg = { id: string; role: "user" | "assistant"; content: string; created_at?: string };
 
@@ -38,9 +40,25 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const [streaming, setStreaming] = useState(false);
   const [attachedDocIds, setAttachedDocIds] = useState<string[]>([]);
   const [showDocPicker, setShowDocPicker] = useState(false);
+  const [model, setModel] = useState<string>(DEFAULT_MODEL);
+  const [showModelMenu, setShowModelMenu] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const m = localStorage.getItem("iv:model");
+    if (isValidModel(m)) setModel(m);
+  }, []);
+
+  const updateModel = (id: string) => {
+    setModel(id);
+    localStorage.setItem("iv:model", id);
+    setShowModelMenu(false);
+  };
+
+  const currentModel = CHAT_MODELS.find((m) => m.id === model) ?? CHAT_MODELS[0];
 
   // Load messages when conversationId changes
   useEffect(() => {
@@ -141,6 +159,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         body: JSON.stringify({
           messages: [...messages, userMsg].map((m) => ({ role: m.role, content: m.content })),
           documentIds: attachedDocIds,
+          model,
         }),
       });
       if (!res.ok || !res.body) {
