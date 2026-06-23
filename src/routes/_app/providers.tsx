@@ -130,7 +130,7 @@ function ProvidersPage() {
         <div className="rounded-xl border border-border/60 bg-card/40 p-4 text-xs text-muted-foreground">
           <p className="font-medium text-foreground">How to add an API key</p>
           <p className="mt-1">
-            Open <strong>Project Settings → Secrets</strong> in Lovable, click <em>Add secret</em>, paste the env-var
+            Add the secret in <strong>Admin → Settings → Secrets</strong>, paste the env-var
             name shown above (e.g. <code className="rounded bg-muted px-1">OPENAI_API_KEY</code>) and the key value.
             Features gate on the live presence of these env vars at runtime.
           </p>

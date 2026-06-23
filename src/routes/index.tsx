@@ -98,7 +98,7 @@ function Hero() {
           </a>
         </div>
         <p className="mt-4 text-xs text-muted-foreground">
-          No credit card required · Powered by Lovable AI
+          No credit card required · One platform, every modality
         </p>
       </div>
 

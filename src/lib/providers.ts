@@ -22,7 +22,7 @@ export type ProviderStatus = ProviderRow & {
 };
 
 export const CATEGORY_LABEL: Record<ProviderCategory, string> = {
-  native: "Native (Lovable AI)",
+  native: "Native (IntelliVerse AI)",
   chat: "Chat / Text",
   image: "Image",
   video: "Video",

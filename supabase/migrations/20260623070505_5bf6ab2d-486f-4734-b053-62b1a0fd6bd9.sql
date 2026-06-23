@@ -1,0 +1,1 @@
+UPDATE public.provider_configs SET name = 'IntelliVerse AI Gateway' WHERE id = 'lovable-ai';
