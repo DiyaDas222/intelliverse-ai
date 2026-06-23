@@ -13,15 +13,25 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiToolRouteImport } from './routes/api/tool'
+import { Route as ApiGenerateImageRouteImport } from './routes/api/generate-image'
+import { Route as ApiGenerateDocRouteImport } from './routes/api/generate-doc'
+import { Route as ApiGenerateAudioRouteImport } from './routes/api/generate-audio'
 import { Route as ApiDocActionRouteImport } from './routes/api/doc-action'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppToolsRouteImport } from './routes/_app/tools'
+import { Route as AppStudioRouteImport } from './routes/_app/studio'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppProvidersRouteImport } from './routes/_app/providers'
+import { Route as AppLibraryRouteImport } from './routes/_app/library'
 import { Route as AppDocumentsRouteImport } from './routes/_app/documents'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppChatRouteImport } from './routes/_app/chat'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppStudioIndexRouteImport } from './routes/_app/studio.index'
 import { Route as AppToolsSlugRouteImport } from './routes/_app/tools.$slug'
+import { Route as AppStudioImageRouteImport } from './routes/_app/studio.image'
+import { Route as AppStudioDocsRouteImport } from './routes/_app/studio.docs'
+import { Route as AppStudioAudioRouteImport } from './routes/_app/studio.audio'
 import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
 
@@ -44,6 +54,21 @@ const ApiToolRoute = ApiToolRouteImport.update({
   path: '/api/tool',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGenerateImageRoute = ApiGenerateImageRouteImport.update({
+  id: '/api/generate-image',
+  path: '/api/generate-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateDocRoute = ApiGenerateDocRouteImport.update({
+  id: '/api/generate-doc',
+  path: '/api/generate-doc',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateAudioRoute = ApiGenerateAudioRouteImport.update({
+  id: '/api/generate-audio',
+  path: '/api/generate-audio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDocActionRoute = ApiDocActionRouteImport.update({
   id: '/api/doc-action',
   path: '/api/doc-action',
@@ -59,9 +84,24 @@ const AppToolsRoute = AppToolsRouteImport.update({
   path: '/tools',
   getParentRoute: () => AppRoute,
 } as any)
+const AppStudioRoute = AppStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProvidersRoute = AppProvidersRouteImport.update({
+  id: '/providers',
+  path: '/providers',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLibraryRoute = AppLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDocumentsRoute = AppDocumentsRouteImport.update({
@@ -84,10 +124,30 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
+const AppStudioIndexRoute = AppStudioIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppStudioRoute,
+} as any)
 const AppToolsSlugRoute = AppToolsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => AppToolsRoute,
+} as any)
+const AppStudioImageRoute = AppStudioImageRouteImport.update({
+  id: '/image',
+  path: '/image',
+  getParentRoute: () => AppStudioRoute,
+} as any)
+const AppStudioDocsRoute = AppStudioDocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => AppStudioRoute,
+} as any)
+const AppStudioAudioRoute = AppStudioAudioRouteImport.update({
+  id: '/audio',
+  path: '/audio',
+  getParentRoute: () => AppStudioRoute,
 } as any)
 const AppDocumentsIdRoute = AppDocumentsIdRouteImport.update({
   id: '/$id',
@@ -107,14 +167,24 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AppChatRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/documents': typeof AppDocumentsRouteWithChildren
+  '/library': typeof AppLibraryRoute
+  '/providers': typeof AppProvidersRoute
   '/settings': typeof AppSettingsRoute
+  '/studio': typeof AppStudioRouteWithChildren
   '/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/doc-action': typeof ApiDocActionRoute
+  '/api/generate-audio': typeof ApiGenerateAudioRoute
+  '/api/generate-doc': typeof ApiGenerateDocRoute
+  '/api/generate-image': typeof ApiGenerateImageRoute
   '/api/tool': typeof ApiToolRoute
   '/chat/$id': typeof AppChatIdRoute
   '/documents/$id': typeof AppDocumentsIdRoute
+  '/studio/audio': typeof AppStudioAudioRoute
+  '/studio/docs': typeof AppStudioDocsRoute
+  '/studio/image': typeof AppStudioImageRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/studio/': typeof AppStudioIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,14 +193,23 @@ export interface FileRoutesByTo {
   '/chat': typeof AppChatRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/documents': typeof AppDocumentsRouteWithChildren
+  '/library': typeof AppLibraryRoute
+  '/providers': typeof AppProvidersRoute
   '/settings': typeof AppSettingsRoute
   '/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/doc-action': typeof ApiDocActionRoute
+  '/api/generate-audio': typeof ApiGenerateAudioRoute
+  '/api/generate-doc': typeof ApiGenerateDocRoute
+  '/api/generate-image': typeof ApiGenerateImageRoute
   '/api/tool': typeof ApiToolRoute
   '/chat/$id': typeof AppChatIdRoute
   '/documents/$id': typeof AppDocumentsIdRoute
+  '/studio/audio': typeof AppStudioAudioRoute
+  '/studio/docs': typeof AppStudioDocsRoute
+  '/studio/image': typeof AppStudioImageRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/studio': typeof AppStudioIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -141,14 +220,24 @@ export interface FileRoutesById {
   '/_app/chat': typeof AppChatRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/documents': typeof AppDocumentsRouteWithChildren
+  '/_app/library': typeof AppLibraryRoute
+  '/_app/providers': typeof AppProvidersRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/studio': typeof AppStudioRouteWithChildren
   '/_app/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/doc-action': typeof ApiDocActionRoute
+  '/api/generate-audio': typeof ApiGenerateAudioRoute
+  '/api/generate-doc': typeof ApiGenerateDocRoute
+  '/api/generate-image': typeof ApiGenerateImageRoute
   '/api/tool': typeof ApiToolRoute
   '/_app/chat/$id': typeof AppChatIdRoute
   '/_app/documents/$id': typeof AppDocumentsIdRoute
+  '/_app/studio/audio': typeof AppStudioAudioRoute
+  '/_app/studio/docs': typeof AppStudioDocsRoute
+  '/_app/studio/image': typeof AppStudioImageRoute
   '/_app/tools/$slug': typeof AppToolsSlugRoute
+  '/_app/studio/': typeof AppStudioIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,14 +248,24 @@ export interface FileRouteTypes {
     | '/chat'
     | '/dashboard'
     | '/documents'
+    | '/library'
+    | '/providers'
     | '/settings'
+    | '/studio'
     | '/tools'
     | '/api/chat'
     | '/api/doc-action'
+    | '/api/generate-audio'
+    | '/api/generate-doc'
+    | '/api/generate-image'
     | '/api/tool'
     | '/chat/$id'
     | '/documents/$id'
+    | '/studio/audio'
+    | '/studio/docs'
+    | '/studio/image'
     | '/tools/$slug'
+    | '/studio/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -175,14 +274,23 @@ export interface FileRouteTypes {
     | '/chat'
     | '/dashboard'
     | '/documents'
+    | '/library'
+    | '/providers'
     | '/settings'
     | '/tools'
     | '/api/chat'
     | '/api/doc-action'
+    | '/api/generate-audio'
+    | '/api/generate-doc'
+    | '/api/generate-image'
     | '/api/tool'
     | '/chat/$id'
     | '/documents/$id'
+    | '/studio/audio'
+    | '/studio/docs'
+    | '/studio/image'
     | '/tools/$slug'
+    | '/studio'
   id:
     | '__root__'
     | '/'
@@ -192,14 +300,24 @@ export interface FileRouteTypes {
     | '/_app/chat'
     | '/_app/dashboard'
     | '/_app/documents'
+    | '/_app/library'
+    | '/_app/providers'
     | '/_app/settings'
+    | '/_app/studio'
     | '/_app/tools'
     | '/api/chat'
     | '/api/doc-action'
+    | '/api/generate-audio'
+    | '/api/generate-doc'
+    | '/api/generate-image'
     | '/api/tool'
     | '/_app/chat/$id'
     | '/_app/documents/$id'
+    | '/_app/studio/audio'
+    | '/_app/studio/docs'
+    | '/_app/studio/image'
     | '/_app/tools/$slug'
+    | '/_app/studio/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -208,6 +326,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiDocActionRoute: typeof ApiDocActionRoute
+  ApiGenerateAudioRoute: typeof ApiGenerateAudioRoute
+  ApiGenerateDocRoute: typeof ApiGenerateDocRoute
+  ApiGenerateImageRoute: typeof ApiGenerateImageRoute
   ApiToolRoute: typeof ApiToolRoute
 }
 
@@ -241,6 +362,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/generate-image': {
+      id: '/api/generate-image'
+      path: '/api/generate-image'
+      fullPath: '/api/generate-image'
+      preLoaderRoute: typeof ApiGenerateImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate-doc': {
+      id: '/api/generate-doc'
+      path: '/api/generate-doc'
+      fullPath: '/api/generate-doc'
+      preLoaderRoute: typeof ApiGenerateDocRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate-audio': {
+      id: '/api/generate-audio'
+      path: '/api/generate-audio'
+      fullPath: '/api/generate-audio'
+      preLoaderRoute: typeof ApiGenerateAudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/doc-action': {
       id: '/api/doc-action'
       path: '/api/doc-action'
@@ -262,11 +404,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppToolsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/studio': {
+      id: '/_app/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof AppStudioRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/providers': {
+      id: '/_app/providers'
+      path: '/providers'
+      fullPath: '/providers'
+      preLoaderRoute: typeof AppProvidersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/library': {
+      id: '/_app/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof AppLibraryRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/documents': {
@@ -297,12 +460,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/studio/': {
+      id: '/_app/studio/'
+      path: '/'
+      fullPath: '/studio/'
+      preLoaderRoute: typeof AppStudioIndexRouteImport
+      parentRoute: typeof AppStudioRoute
+    }
     '/_app/tools/$slug': {
       id: '/_app/tools/$slug'
       path: '/$slug'
       fullPath: '/tools/$slug'
       preLoaderRoute: typeof AppToolsSlugRouteImport
       parentRoute: typeof AppToolsRoute
+    }
+    '/_app/studio/image': {
+      id: '/_app/studio/image'
+      path: '/image'
+      fullPath: '/studio/image'
+      preLoaderRoute: typeof AppStudioImageRouteImport
+      parentRoute: typeof AppStudioRoute
+    }
+    '/_app/studio/docs': {
+      id: '/_app/studio/docs'
+      path: '/docs'
+      fullPath: '/studio/docs'
+      preLoaderRoute: typeof AppStudioDocsRouteImport
+      parentRoute: typeof AppStudioRoute
+    }
+    '/_app/studio/audio': {
+      id: '/_app/studio/audio'
+      path: '/audio'
+      fullPath: '/studio/audio'
+      preLoaderRoute: typeof AppStudioAudioRouteImport
+      parentRoute: typeof AppStudioRoute
     }
     '/_app/documents/$id': {
       id: '/_app/documents/$id'
@@ -344,6 +535,24 @@ const AppDocumentsRouteWithChildren = AppDocumentsRoute._addFileChildren(
   AppDocumentsRouteChildren,
 )
 
+interface AppStudioRouteChildren {
+  AppStudioAudioRoute: typeof AppStudioAudioRoute
+  AppStudioDocsRoute: typeof AppStudioDocsRoute
+  AppStudioImageRoute: typeof AppStudioImageRoute
+  AppStudioIndexRoute: typeof AppStudioIndexRoute
+}
+
+const AppStudioRouteChildren: AppStudioRouteChildren = {
+  AppStudioAudioRoute: AppStudioAudioRoute,
+  AppStudioDocsRoute: AppStudioDocsRoute,
+  AppStudioImageRoute: AppStudioImageRoute,
+  AppStudioIndexRoute: AppStudioIndexRoute,
+}
+
+const AppStudioRouteWithChildren = AppStudioRoute._addFileChildren(
+  AppStudioRouteChildren,
+)
+
 interface AppToolsRouteChildren {
   AppToolsSlugRoute: typeof AppToolsSlugRoute
 }
@@ -361,7 +570,10 @@ interface AppRouteChildren {
   AppChatRoute: typeof AppChatRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
   AppDocumentsRoute: typeof AppDocumentsRouteWithChildren
+  AppLibraryRoute: typeof AppLibraryRoute
+  AppProvidersRoute: typeof AppProvidersRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppStudioRoute: typeof AppStudioRouteWithChildren
   AppToolsRoute: typeof AppToolsRouteWithChildren
 }
 
@@ -370,7 +582,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppChatRoute: AppChatRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
   AppDocumentsRoute: AppDocumentsRouteWithChildren,
+  AppLibraryRoute: AppLibraryRoute,
+  AppProvidersRoute: AppProvidersRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppStudioRoute: AppStudioRouteWithChildren,
   AppToolsRoute: AppToolsRouteWithChildren,
 }
 
@@ -382,6 +597,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
   ApiDocActionRoute: ApiDocActionRoute,
+  ApiGenerateAudioRoute: ApiGenerateAudioRoute,
+  ApiGenerateDocRoute: ApiGenerateDocRoute,
+  ApiGenerateImageRoute: ApiGenerateImageRoute,
   ApiToolRoute: ApiToolRoute,
 }
 export const routeTree = rootRouteImport

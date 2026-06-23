@@ -142,6 +142,48 @@ export type Database = {
         }
         Relationships: []
       }
+      generated_assets: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          metadata: Json
+          mime_type: string | null
+          prompt: string | null
+          public_url: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          metadata?: Json
+          mime_type?: string | null
+          prompt?: string | null
+          public_url?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          metadata?: Json
+          mime_type?: string | null
+          prompt?: string | null
+          public_url?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -201,6 +243,39 @@ export type Database = {
           email?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      provider_configs: {
+        Row: {
+          category: string
+          enabled: boolean
+          env_vars: string[]
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          enabled?: boolean
+          env_vars?: string[]
+          id: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          enabled?: boolean
+          env_vars?: string[]
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
