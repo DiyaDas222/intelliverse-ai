@@ -5,7 +5,7 @@ import { Upload, FileText, Trash2, Loader2, ArrowLeft, Image as ImageIcon } from
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { ACCEPT_ATTR, extractText, isImage, SUPPORTED_EXTS } from "@/lib/doc-extract.client";
+import { ACCEPT_ATTR, extractText, isImage, SUPPORTED_EXTS } from "@/lib/doc-extract";
 
 export const Route = createFileRoute("/_app/documents")({
   head: () => ({ meta: [{ title: "Documents — IntelliVerse" }] }),
