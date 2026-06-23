@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as STokenRouteImport } from './routes/s.$token'
 import { Route as ApiToolRouteImport } from './routes/api/tool'
 import { Route as ApiGenerateImageRouteImport } from './routes/api/generate-image'
 import { Route as ApiGenerateDocRouteImport } from './routes/api/generate-doc'
@@ -34,6 +35,7 @@ import { Route as AppStudioDocsRouteImport } from './routes/_app/studio.docs'
 import { Route as AppStudioAudioRouteImport } from './routes/_app/studio.audio'
 import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
+import { Route as ApiPublicShareTokenRouteImport } from './routes/api/public/share.$token'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -47,6 +49,11 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const STokenRoute = STokenRouteImport.update({
+  id: '/s/$token',
+  path: '/s/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiToolRoute = ApiToolRouteImport.update({
@@ -159,6 +166,11 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppChatRoute,
 } as any)
+const ApiPublicShareTokenRoute = ApiPublicShareTokenRouteImport.update({
+  id: '/api/public/share/$token',
+  path: '/api/public/share/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -178,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/api/generate-doc': typeof ApiGenerateDocRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
   '/api/tool': typeof ApiToolRoute
+  '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
   '/documents/$id': typeof AppDocumentsIdRoute
   '/studio/audio': typeof AppStudioAudioRoute
@@ -185,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/studio/image': typeof AppStudioImageRoute
   '/tools/$slug': typeof AppToolsSlugRoute
   '/studio/': typeof AppStudioIndexRoute
+  '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -203,6 +217,7 @@ export interface FileRoutesByTo {
   '/api/generate-doc': typeof ApiGenerateDocRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
   '/api/tool': typeof ApiToolRoute
+  '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
   '/documents/$id': typeof AppDocumentsIdRoute
   '/studio/audio': typeof AppStudioAudioRoute
@@ -210,6 +225,7 @@ export interface FileRoutesByTo {
   '/studio/image': typeof AppStudioImageRoute
   '/tools/$slug': typeof AppToolsSlugRoute
   '/studio': typeof AppStudioIndexRoute
+  '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -231,6 +247,7 @@ export interface FileRoutesById {
   '/api/generate-doc': typeof ApiGenerateDocRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
   '/api/tool': typeof ApiToolRoute
+  '/s/$token': typeof STokenRoute
   '/_app/chat/$id': typeof AppChatIdRoute
   '/_app/documents/$id': typeof AppDocumentsIdRoute
   '/_app/studio/audio': typeof AppStudioAudioRoute
@@ -238,6 +255,7 @@ export interface FileRoutesById {
   '/_app/studio/image': typeof AppStudioImageRoute
   '/_app/tools/$slug': typeof AppToolsSlugRoute
   '/_app/studio/': typeof AppStudioIndexRoute
+  '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -259,6 +277,7 @@ export interface FileRouteTypes {
     | '/api/generate-doc'
     | '/api/generate-image'
     | '/api/tool'
+    | '/s/$token'
     | '/chat/$id'
     | '/documents/$id'
     | '/studio/audio'
@@ -266,6 +285,7 @@ export interface FileRouteTypes {
     | '/studio/image'
     | '/tools/$slug'
     | '/studio/'
+    | '/api/public/share/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -284,6 +304,7 @@ export interface FileRouteTypes {
     | '/api/generate-doc'
     | '/api/generate-image'
     | '/api/tool'
+    | '/s/$token'
     | '/chat/$id'
     | '/documents/$id'
     | '/studio/audio'
@@ -291,6 +312,7 @@ export interface FileRouteTypes {
     | '/studio/image'
     | '/tools/$slug'
     | '/studio'
+    | '/api/public/share/$token'
   id:
     | '__root__'
     | '/'
@@ -311,6 +333,7 @@ export interface FileRouteTypes {
     | '/api/generate-doc'
     | '/api/generate-image'
     | '/api/tool'
+    | '/s/$token'
     | '/_app/chat/$id'
     | '/_app/documents/$id'
     | '/_app/studio/audio'
@@ -318,6 +341,7 @@ export interface FileRouteTypes {
     | '/_app/studio/image'
     | '/_app/tools/$slug'
     | '/_app/studio/'
+    | '/api/public/share/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -330,6 +354,8 @@ export interface RootRouteChildren {
   ApiGenerateDocRoute: typeof ApiGenerateDocRoute
   ApiGenerateImageRoute: typeof ApiGenerateImageRoute
   ApiToolRoute: typeof ApiToolRoute
+  STokenRoute: typeof STokenRoute
+  ApiPublicShareTokenRoute: typeof ApiPublicShareTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -353,6 +379,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/s/$token': {
+      id: '/s/$token'
+      path: '/s/$token'
+      fullPath: '/s/$token'
+      preLoaderRoute: typeof STokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tool': {
@@ -509,6 +542,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppChatRoute
     }
+    '/api/public/share/$token': {
+      id: '/api/public/share/$token'
+      path: '/api/public/share/$token'
+      fullPath: '/api/public/share/$token'
+      preLoaderRoute: typeof ApiPublicShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -601,6 +641,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGenerateDocRoute: ApiGenerateDocRoute,
   ApiGenerateImageRoute: ApiGenerateImageRoute,
   ApiToolRoute: ApiToolRoute,
+  STokenRoute: STokenRoute,
+  ApiPublicShareTokenRoute: ApiPublicShareTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
