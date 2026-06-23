@@ -1,5 +1,4 @@
 // Browser-only text extraction for various file types.
-// Returns plain text suitable for storage and AI context.
 
 const MAX_CHARS = 200_000;
 
@@ -27,9 +26,7 @@ export async function extractText(file: File): Promise<ExtractResult> {
 
   if (ext === ".pdf") {
     const pdfjs = await import("pdfjs-dist");
-    // Use fake worker to avoid bundling a separate worker file
-    // @ts-expect-error - GlobalWorkerOptions exists at runtime
-    pdfjs.GlobalWorkerOptions.workerSrc = "";
+    (pdfjs as unknown as { GlobalWorkerOptions: { workerSrc: string } }).GlobalWorkerOptions.workerSrc = "";
     const buf = await file.arrayBuffer();
     const doc = await pdfjs.getDocument({
       data: buf,
@@ -48,18 +45,17 @@ export async function extractText(file: File): Promise<ExtractResult> {
   }
 
   if (ext === ".docx") {
+    // @ts-expect-error - mammoth browser build has no bundled types
     const mammoth = await import("mammoth/mammoth.browser");
     const buf = await file.arrayBuffer();
     const { value } = await mammoth.extractRawText({ arrayBuffer: buf });
-    return { text: value.slice(0, MAX_CHARS), needsOcr: false };
+    return { text: (value as string).slice(0, MAX_CHARS), needsOcr: false };
   }
 
   if (isImage(file.name)) {
-    // OCR will be performed server-side from the storage path
     return { text: "", needsOcr: true };
   }
 
-  // Plain text fallback
   const text = await file.text();
   return { text: text.slice(0, MAX_CHARS), needsOcr: false };
 }
