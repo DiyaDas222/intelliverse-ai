@@ -91,6 +91,21 @@ function DocsPage() {
   const [prompt, setPrompt] = useState("");
   const [content, setContent] = useState<AnyContent | null>(null);
   const [genBusy, setGenBusy] = useState(false);
+
+  // Prefill from chat wizard & honor ?kind=... query param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const qKind = params.get("kind") as DocKind | null;
+    if (qKind && ["presentation", "assignment", "project", "website", "app"].includes(qKind)) {
+      setKind(qKind);
+      const brief = sessionStorage.getItem(`iv:wizard-brief:${qKind}`);
+      if (brief) {
+        setPrompt(brief);
+        sessionStorage.removeItem(`iv:wizard-brief:${qKind}`);
+        toast.success("Brief loaded from chat — review and click Generate");
+      }
+    }
+  }, []);
   const qc = useQueryClient();
   const saveFn = useServerFn(saveDocAsset);
 
