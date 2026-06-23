@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
 import { GenerationProgress } from "@/components/generation-progress";
+import { ThinkingIndicator, detectIntent } from "@/components/thinking-indicator";
 
 
 
@@ -433,10 +434,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
                       ) : genKind && genMsgId === m.id ? (
                         <GenerationProgress kind={genKind} active />
                       ) : (
-                        <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
-                          <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-                          Thinking…
-                        </div>
+                        <ThinkingIndicator intent={detectIntent([...messages].reverse().find((x) => x.role === "user")?.content ?? "")} />
                       )}
                       {!streaming && m.content && (
                         <div className="mt-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
