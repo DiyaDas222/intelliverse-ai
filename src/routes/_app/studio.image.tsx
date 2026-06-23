@@ -109,7 +109,7 @@ function ImagePage() {
           </div>
           <div>
             <h1 className="text-xl font-semibold sm:text-2xl">AI Image Generator</h1>
-            <p className="text-xs text-muted-foreground">Powered by Lovable AI · GPT-Image-2</p>
+            <p className="text-xs text-muted-foreground">IntelliVerse AI · GPT-Image-2</p>
           </div>
         </div>
 
