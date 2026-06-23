@@ -242,6 +242,22 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       }
     }
 
+    // Intercept creation requests with an interactive wizard instead of a chat reply.
+    const wizardKind = detectWizardKind(text);
+    if (wizardKind) {
+      const assistantId = crypto.randomUUID();
+      const intro = `Let's build your ${wizardKind} together. I've prepared a quick wizard — pick options below.`;
+      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: intro, wizardKind }]);
+      await supabase.from("messages").insert({
+        conversation_id: convId,
+        user_id: user.id,
+        role: "assistant",
+        content: intro,
+      });
+      return;
+    }
+
+
     // call streaming endpoint
     const assistantId = crypto.randomUUID();
     setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
