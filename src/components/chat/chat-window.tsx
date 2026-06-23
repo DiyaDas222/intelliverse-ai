@@ -465,6 +465,14 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
                       ) : (
                         <ThinkingIndicator intent={detectIntent([...messages].reverse().find((x) => x.role === "user")?.content ?? "")} />
                       )}
+                      {m.wizardKind && !m.wizardDone && (
+                        <div className="mt-3">
+                          <CreationWizard
+                            kind={m.wizardKind}
+                            onComplete={(result) => handleWizardComplete(m.id, result)}
+                          />
+                        </div>
+                      )}
                       {!streaming && m.content && (
                         <div className="mt-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                           <button
