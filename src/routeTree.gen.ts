@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiToolRouteImport } from './routes/api/tool'
+import { Route as ApiDocActionRouteImport } from './routes/api/doc-action'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppToolsRouteImport } from './routes/_app/tools'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
@@ -40,6 +41,11 @@ const IndexRoute = IndexRouteImport.update({
 const ApiToolRoute = ApiToolRouteImport.update({
   id: '/api/tool',
   path: '/api/tool',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDocActionRoute = ApiDocActionRouteImport.update({
+  id: '/api/doc-action',
+  path: '/api/doc-action',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/doc-action': typeof ApiDocActionRoute
   '/api/tool': typeof ApiToolRoute
   '/chat/$id': typeof AppChatIdRoute
   '/tools/$slug': typeof AppToolsSlugRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/doc-action': typeof ApiDocActionRoute
   '/api/tool': typeof ApiToolRoute
   '/chat/$id': typeof AppChatIdRoute
   '/tools/$slug': typeof AppToolsSlugRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/doc-action': typeof ApiDocActionRoute
   '/api/tool': typeof ApiToolRoute
   '/_app/chat/$id': typeof AppChatIdRoute
   '/_app/tools/$slug': typeof AppToolsSlugRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tools'
     | '/api/chat'
+    | '/api/doc-action'
     | '/api/tool'
     | '/chat/$id'
     | '/tools/$slug'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tools'
     | '/api/chat'
+    | '/api/doc-action'
     | '/api/tool'
     | '/chat/$id'
     | '/tools/$slug'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/tools'
     | '/api/chat'
+    | '/api/doc-action'
     | '/api/tool'
     | '/_app/chat/$id'
     | '/_app/tools/$slug'
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiDocActionRoute: typeof ApiDocActionRoute
   ApiToolRoute: typeof ApiToolRoute
 }
 
@@ -214,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/api/tool'
       fullPath: '/api/tool'
       preLoaderRoute: typeof ApiToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/doc-action': {
+      id: '/api/doc-action'
+      path: '/api/doc-action'
+      fullPath: '/api/doc-action'
+      preLoaderRoute: typeof ApiDocActionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -330,6 +350,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiDocActionRoute: ApiDocActionRoute,
   ApiToolRoute: ApiToolRoute,
 }
 export const routeTree = rootRouteImport
