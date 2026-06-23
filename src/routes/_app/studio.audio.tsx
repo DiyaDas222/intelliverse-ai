@@ -20,6 +20,15 @@ function AudioPage() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const qc = useQueryClient();
 
+  useEffect(() => {
+    const brief = sessionStorage.getItem("iv:wizard-brief:audio");
+    if (brief) {
+      setText(brief);
+      sessionStorage.removeItem("iv:wizard-brief:audio");
+      toast.success("Brief loaded from chat — review and click Generate");
+    }
+  }, []);
+
   const gen = useMutation({
     mutationFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
