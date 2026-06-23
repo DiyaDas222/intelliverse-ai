@@ -16,6 +16,7 @@ import { Route as STokenRouteImport } from './routes/s.$token'
 import { Route as ApiToolRouteImport } from './routes/api/tool'
 import { Route as ApiGenerateVideoRouteImport } from './routes/api/generate-video'
 import { Route as ApiGenerateMusicRouteImport } from './routes/api/generate-music'
+import { Route as ApiGenerateImageFileRouteImport } from './routes/api/generate-image-file'
 import { Route as ApiGenerateImageRouteImport } from './routes/api/generate-image'
 import { Route as ApiGenerateDocRouteImport } from './routes/api/generate-doc'
 import { Route as ApiGenerateAudioRouteImport } from './routes/api/generate-audio'
@@ -73,6 +74,11 @@ const ApiGenerateVideoRoute = ApiGenerateVideoRouteImport.update({
 const ApiGenerateMusicRoute = ApiGenerateMusicRouteImport.update({
   id: '/api/generate-music',
   path: '/api/generate-music',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateImageFileRoute = ApiGenerateImageFileRouteImport.update({
+  id: '/api/generate-image-file',
+  path: '/api/generate-image-file',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiGenerateImageRoute = ApiGenerateImageRouteImport.update({
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/api/generate-audio': typeof ApiGenerateAudioRoute
   '/api/generate-doc': typeof ApiGenerateDocRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
+  '/api/generate-image-file': typeof ApiGenerateImageFileRoute
   '/api/generate-music': typeof ApiGenerateMusicRoute
   '/api/generate-video': typeof ApiGenerateVideoRoute
   '/api/tool': typeof ApiToolRoute
@@ -244,6 +251,7 @@ export interface FileRoutesByTo {
   '/api/generate-audio': typeof ApiGenerateAudioRoute
   '/api/generate-doc': typeof ApiGenerateDocRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
+  '/api/generate-image-file': typeof ApiGenerateImageFileRoute
   '/api/generate-music': typeof ApiGenerateMusicRoute
   '/api/generate-video': typeof ApiGenerateVideoRoute
   '/api/tool': typeof ApiToolRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/api/generate-audio': typeof ApiGenerateAudioRoute
   '/api/generate-doc': typeof ApiGenerateDocRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
+  '/api/generate-image-file': typeof ApiGenerateImageFileRoute
   '/api/generate-music': typeof ApiGenerateMusicRoute
   '/api/generate-video': typeof ApiGenerateVideoRoute
   '/api/tool': typeof ApiToolRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/api/generate-audio'
     | '/api/generate-doc'
     | '/api/generate-image'
+    | '/api/generate-image-file'
     | '/api/generate-music'
     | '/api/generate-video'
     | '/api/tool'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/api/generate-audio'
     | '/api/generate-doc'
     | '/api/generate-image'
+    | '/api/generate-image-file'
     | '/api/generate-music'
     | '/api/generate-video'
     | '/api/tool'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/api/generate-audio'
     | '/api/generate-doc'
     | '/api/generate-image'
+    | '/api/generate-image-file'
     | '/api/generate-music'
     | '/api/generate-video'
     | '/api/tool'
@@ -401,6 +413,7 @@ export interface RootRouteChildren {
   ApiGenerateAudioRoute: typeof ApiGenerateAudioRoute
   ApiGenerateDocRoute: typeof ApiGenerateDocRoute
   ApiGenerateImageRoute: typeof ApiGenerateImageRoute
+  ApiGenerateImageFileRoute: typeof ApiGenerateImageFileRoute
   ApiGenerateMusicRoute: typeof ApiGenerateMusicRoute
   ApiGenerateVideoRoute: typeof ApiGenerateVideoRoute
   ApiToolRoute: typeof ApiToolRoute
@@ -457,6 +470,13 @@ declare module '@tanstack/react-router' {
       path: '/api/generate-music'
       fullPath: '/api/generate-music'
       preLoaderRoute: typeof ApiGenerateMusicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate-image-file': {
+      id: '/api/generate-image-file'
+      path: '/api/generate-image-file'
+      fullPath: '/api/generate-image-file'
+      preLoaderRoute: typeof ApiGenerateImageFileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/generate-image': {
@@ -722,6 +742,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGenerateAudioRoute: ApiGenerateAudioRoute,
   ApiGenerateDocRoute: ApiGenerateDocRoute,
   ApiGenerateImageRoute: ApiGenerateImageRoute,
+  ApiGenerateImageFileRoute: ApiGenerateImageFileRoute,
   ApiGenerateMusicRoute: ApiGenerateMusicRoute,
   ApiGenerateVideoRoute: ApiGenerateVideoRoute,
   ApiToolRoute: ApiToolRoute,
