@@ -8,7 +8,7 @@ import { listProviderStatuses, toggleProvider } from "@/lib/providers.functions"
 import { CATEGORY_LABEL, type ProviderCategory, type ProviderStatus } from "@/lib/providers";
 import { checkIsAdmin } from "@/lib/admin.functions";
 
-export const Route = createFileRoute("/_app/admin/providers")({
+export const Route = createFileRoute("/_app/providers")({
   head: () => ({ meta: [{ title: "Providers — IntelliVerse Admin" }] }),
   component: ProvidersPage,
 });
