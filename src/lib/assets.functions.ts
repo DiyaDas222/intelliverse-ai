@@ -112,7 +112,7 @@ export const saveDocAsset = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
     (d: {
-      kind: "presentation" | "assignment" | "project";
+      kind: "presentation" | "assignment" | "project" | "website" | "app" | "document";
       title: string;
       prompt: string;
       content: any;
