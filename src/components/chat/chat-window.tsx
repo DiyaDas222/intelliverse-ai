@@ -64,8 +64,19 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   useEffect(() => {
     if (!conversationId) {
       setMessages([]);
+      setAttachedDocIds([]);
       return;
     }
+    // Pick up any docs queued by the documents page
+    try {
+      const key = `iv:attach:${conversationId}`;
+      const raw = sessionStorage.getItem(key);
+      if (raw) {
+        const ids = JSON.parse(raw) as string[];
+        if (Array.isArray(ids)) setAttachedDocIds(ids);
+        sessionStorage.removeItem(key);
+      }
+    } catch { /* ignore */ }
     (async () => {
       const { data, error } = await supabase
         .from("messages")
