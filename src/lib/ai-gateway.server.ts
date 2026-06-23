@@ -1,8 +1,11 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import {
+  GATEWAY_BASE_URL,
+  GATEWAY_RUN_ID_HEADER,
+  gatewayHeaders,
+} from "@/lib/gateway-config.server";
 
-// The header/URL strings below are part of the upstream AI Gateway HTTP
-// protocol and must match the server side verbatim.
-const RUN_ID_HEADER = "X-Lovable-AIG-Run-ID";
+const RUN_ID_HEADER = GATEWAY_RUN_ID_HEADER;
 
 export function createGatewayProvider(apiKey: string, initialRunId?: string) {
   let runId = initialRunId?.trim() || undefined;
@@ -24,11 +27,8 @@ export function createGatewayProvider(apiKey: string, initialRunId?: string) {
 
   const provider = createOpenAICompatible({
     name: "intelliverse-gateway",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    headers: {
-      "Lovable-API-Key": apiKey,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-    },
+    baseURL: GATEWAY_BASE_URL,
+    headers: gatewayHeaders(apiKey),
     fetch: async (input, init) => {
       const headers = new Headers(init?.headers);
       if (runId && !headers.has(RUN_ID_HEADER)) {

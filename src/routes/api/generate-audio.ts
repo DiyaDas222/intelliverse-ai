@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { GATEWAY_BASE_URL, getGatewayApiKey, gatewayHeaders } from "@/lib/gateway-config.server";
 
 export const Route = createFileRoute("/api/generate-audio")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = process.env.LOVABLE_API_KEY;
+        const key = getGatewayApiKey();
         if (!key) return new Response("AI gateway is not configured", { status: 500 });
 
         const auth = request.headers.get("authorization") ?? "";
@@ -30,11 +31,10 @@ export const Route = createFileRoute("/api/generate-audio")({
         const { data: u, error: ue } = await supabase.auth.getUser();
         if (ue || !u.user) return new Response("Unauthorized", { status: 401 });
 
-        const r = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
+        const r = await fetch(`${GATEWAY_BASE_URL}/audio/speech`, {
           method: "POST",
           headers: {
-            "Lovable-API-Key": key,
-            "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+            ...gatewayHeaders(key),
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
