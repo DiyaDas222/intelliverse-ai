@@ -31,6 +31,40 @@ const SUGGESTIONS = [
   "Plan a 7-day Tokyo trip in October",
 ];
 
+type DirectGenerationKind = "image" | "voice" | "music" | "video";
+
+function getDirectGenerationKind(text: string): DirectGenerationKind | null {
+  const value = text.toLowerCase();
+  const asksToGenerate = /\b(generate|create|make|produce|compose|build)\b/.test(value);
+  if (!asksToGenerate) return null;
+  if (/\b(video|mp4|clip|movie|animation|text-to-video)\b/.test(value)) return "video";
+  if (/\b(music|song|track|beat|instrumental|soundtrack|mp3|wav)\b/.test(value)) return "music";
+  if (/\b(voice|speech|narration|voiceover|tts|text-to-speech)\b/.test(value)) return "voice";
+  if (/\b(image|photo|picture|poster|logo|jpg|jpeg|png|artwork|illustration)\b/.test(value)) return "image";
+  return null;
+}
+
+function directGenerationLabel(kind: DirectGenerationKind) {
+  if (kind === "video") return "video";
+  if (kind === "music") return "music track";
+  if (kind === "voice") return "speech audio";
+  return "image";
+}
+
+function generationEndpoint(kind: DirectGenerationKind) {
+  if (kind === "video") return "/api/generate-video";
+  if (kind === "music") return "/api/generate-music";
+  if (kind === "voice") return "/api/generate-audio";
+  return "/api/generate-image-file";
+}
+
+function downloadLabel(kind: DirectGenerationKind) {
+  if (kind === "video") return "Download MP4";
+  if (kind === "image") return "Download PNG";
+  if (kind === "voice") return "Download MP3";
+  return "Download WAV";
+}
+
 export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -148,6 +182,58 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
 
     // bump conversation updated_at
     await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", convId);
+
+    const directKind = getDirectGenerationKind(text);
+    if (directKind) {
+      const assistantId = crypto.randomUUID();
+      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
+      setStreaming(true);
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess.session?.access_token;
+        const res = await fetch(generationEndpoint(directKind), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(directKind === "voice" ? { text, title: text.slice(0, 60) } : { prompt: text, title: text.slice(0, 60) }),
+        });
+        const raw = await res.text();
+        let payload: { url?: string; asset?: { title?: string }; message?: string; error?: string } = {};
+        try {
+          payload = raw ? JSON.parse(raw) : {};
+        } catch {
+          payload = { message: raw };
+        }
+        if (!res.ok) throw new Error(payload.message || payload.error || `Generation failed (${res.status})`);
+        const title = payload.asset?.title || text.slice(0, 60) || `IntelliVerse ${directGenerationLabel(directKind)}`;
+        const content = payload.url
+          ? `Done — I generated the ${directGenerationLabel(directKind)} and saved it to your Library.\n\n[${downloadLabel(directKind)}](${payload.url})`
+          : `Done — I generated “${title}” and saved it to your Library.`;
+        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content } : m)));
+        await supabase.from("messages").insert({
+          conversation_id: convId,
+          user_id: user.id,
+          role: "assistant",
+          content,
+        });
+        qc.invalidateQueries({ queryKey: ["assets"] });
+        return;
+      } catch (err) {
+        const content = err instanceof Error ? err.message : "Generation failed";
+        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content } : m)));
+        await supabase.from("messages").insert({
+          conversation_id: convId,
+          user_id: user.id,
+          role: "assistant",
+          content,
+        });
+        return;
+      } finally {
+        setStreaming(false);
+      }
+    }
 
     // call streaming endpoint
     const assistantId = crypto.randomUUID();
