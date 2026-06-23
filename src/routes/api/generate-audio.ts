@@ -32,7 +32,11 @@ export const Route = createFileRoute("/api/generate-audio")({
 
         const r = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
           method: "POST",
-          headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+          headers: {
+            "Lovable-API-Key": key,
+            "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             model: "openai/gpt-4o-mini-tts",
             input: body.text.slice(0, 8000),
