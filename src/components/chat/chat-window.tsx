@@ -311,7 +311,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       </div>
 
       {/* Composer */}
-      <div className="border-t border-border/60 bg-background/80 px-4 py-4 backdrop-blur">
+      <div className="border-t border-border/60 bg-background/80 px-3 py-3 pb-[max(env(safe-area-inset-bottom),12px)] backdrop-blur sm:px-4 sm:py-4">
         <div className="mx-auto max-w-3xl">
           {attachedDocIds.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-1.5">
