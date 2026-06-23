@@ -130,6 +130,10 @@ function VideoPage() {
               {busy ? "Generating MP4…" : "Generate video file"}
             </button>
 
+            <GenerationProgress kind="video" active={busy} />
+
+
+
             {videoUrl && (
               <div className="rounded-lg border border-border/60 bg-background/40 p-3">
                 <video controls src={videoUrl} className="aspect-video w-full rounded-md bg-background" />
