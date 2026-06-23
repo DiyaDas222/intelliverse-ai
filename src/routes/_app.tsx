@@ -13,6 +13,8 @@ import {
   Search,
   Loader2,
   Shield,
+  Menu,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -35,10 +37,16 @@ function AppLayout() {
   const location = useLocation();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
   }, [loading, user, navigate]);
+
+  // close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   const { data: conversations = [] } = useQuery({
     queryKey: ["conversations", user?.id],
@@ -104,8 +112,44 @@ function AppLayout() {
   );
 
   return (
-    <div className="grid min-h-screen grid-cols-[280px_1fr] bg-background">
-      <aside className="flex h-screen flex-col border-r border-border/60 bg-sidebar">
+    <div className="flex min-h-screen bg-background md:grid md:grid-cols-[280px_1fr]">
+      {/* Mobile top bar */}
+      <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-border/60 bg-background/90 px-3 backdrop-blur md:hidden">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="grid h-9 w-9 place-items-center rounded-md hover:bg-sidebar-accent"
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
+          <span className="grid h-7 w-7 place-items-center rounded-md bg-gradient-to-br from-primary to-accent">
+            <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
+          </span>
+          IntelliVerse
+        </Link>
+        <Link
+          to="/chat"
+          className="grid h-9 w-9 place-items-center rounded-md bg-gradient-to-br from-primary to-accent text-primary-foreground"
+          aria-label="New chat"
+        >
+          <MessageSquarePlus className="h-4 w-4" />
+        </Link>
+      </div>
+
+      {/* Sidebar backdrop (mobile) */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-[85vw] max-w-[320px] flex-col border-r border-border/60 bg-sidebar transition-transform md:static md:h-screen md:w-auto md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="flex items-center justify-between px-4 pt-4">
           <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
             <span className="grid h-7 w-7 place-items-center rounded-md bg-gradient-to-br from-primary to-accent">
@@ -113,6 +157,13 @@ function AppLayout() {
             </span>
             IntelliVerse
           </Link>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="rounded-md p-1 text-muted-foreground hover:bg-sidebar-accent md:hidden"
+            aria-label="Close menu"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
         <div className="px-3 pt-4">
@@ -155,15 +206,15 @@ function AppLayout() {
                 <Link
                   to="/chat/$id"
                   params={{ id: c.id }}
-                  className="flex flex-1 items-center gap-2 truncate px-2 py-2 text-sm"
+                  className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-sm"
                 >
                   <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <span className="truncate">{c.title}</span>
-                  {c.pinned && <Pin className="ml-auto h-3 w-3 text-accent" />}
+                  {c.pinned && <Pin className="ml-auto h-3 w-3 shrink-0 text-accent" />}
                 </Link>
                 <button
                   onClick={() => togglePin.mutate({ id: c.id, pinned: c.pinned })}
-                  className="opacity-0 group-hover:opacity-100 rounded p-1 text-muted-foreground hover:text-foreground"
+                  className="shrink-0 rounded p-1 text-muted-foreground hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
                   title={c.pinned ? "Unpin" : "Pin"}
                 >
                   <Pin className="h-3.5 w-3.5" />
@@ -172,7 +223,7 @@ function AppLayout() {
                   onClick={() => {
                     if (confirm("Delete this chat?")) deleteConv.mutate(c.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 rounded p-1 text-muted-foreground hover:text-destructive"
+                  className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive md:opacity-0 md:group-hover:opacity-100"
                   title="Delete"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -204,7 +255,7 @@ function AppLayout() {
             </Link>
           )}
           <div className="mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-sm">
-            <div className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-xs font-semibold text-primary-foreground">
+            <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-xs font-semibold text-primary-foreground">
               {(user.email ?? "?").slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1 truncate text-xs">
@@ -216,7 +267,7 @@ function AppLayout() {
                 await signOut();
                 navigate({ to: "/" });
               }}
-              className="rounded p-1 text-muted-foreground hover:text-foreground"
+              className="shrink-0 rounded p-1 text-muted-foreground hover:text-foreground"
               title="Sign out"
             >
               <LogOut className="h-4 w-4" />
@@ -225,7 +276,7 @@ function AppLayout() {
         </div>
       </aside>
 
-      <main className="h-screen overflow-hidden">
+      <main className="h-[100dvh] min-w-0 flex-1 overflow-hidden pt-14 md:h-screen md:pt-0">
         <Outlet />
       </main>
     </div>

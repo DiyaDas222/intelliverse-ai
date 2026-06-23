@@ -216,11 +216,11 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   return (
     <div className="relative flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/60 px-6 py-3">
-        <div className="text-sm font-medium text-muted-foreground">
+      <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 sm:px-6">
+        <div className="truncate text-sm font-medium text-muted-foreground">
           {conversationId ? "Chat" : "New chat"}
         </div>
-        <div className="text-xs text-muted-foreground">Gemini 3 Flash</div>
+        <div className="shrink-0 text-xs text-muted-foreground">Gemini 3 Flash</div>
       </div>
 
       {/* Messages */}
@@ -311,7 +311,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       </div>
 
       {/* Composer */}
-      <div className="border-t border-border/60 bg-background/80 px-4 py-4 backdrop-blur">
+      <div className="border-t border-border/60 bg-background/80 px-3 py-3 pb-[max(env(safe-area-inset-bottom),12px)] backdrop-blur sm:px-4 sm:py-4">
         <div className="mx-auto max-w-3xl">
           {attachedDocIds.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-1.5">
