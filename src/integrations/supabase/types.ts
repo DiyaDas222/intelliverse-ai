@@ -38,6 +38,50 @@ export type Database = {
         }
         Relationships: []
       }
+      asset_shares: {
+        Row: {
+          allow_download: boolean
+          asset_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          max_views: number | null
+          token: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          allow_download?: boolean
+          asset_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          max_views?: number | null
+          token: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          allow_download?: boolean
+          asset_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          max_views?: number | null
+          token?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_shares_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "generated_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
