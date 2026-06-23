@@ -31,6 +31,21 @@ const SUGGESTIONS = [
   "Plan a 7-day Tokyo trip in October",
 ];
 
+type DirectGenerationKind = "music" | "video";
+
+function getDirectGenerationKind(text: string): DirectGenerationKind | null {
+  const value = text.toLowerCase();
+  const asksToGenerate = /\b(generate|create|make|produce|compose|build)\b/.test(value);
+  if (!asksToGenerate) return null;
+  if (/\b(video|mp4|clip|movie|animation|text-to-video)\b/.test(value)) return "video";
+  if (/\b(music|song|track|beat|instrumental|soundtrack|mp3|wav)\b/.test(value)) return "music";
+  return null;
+}
+
+function directGenerationLabel(kind: DirectGenerationKind) {
+  return kind === "video" ? "video" : "music track";
+}
+
 export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -148,6 +163,59 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
 
     // bump conversation updated_at
     await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", convId);
+
+    const directKind = getDirectGenerationKind(text);
+    if (directKind) {
+      const assistantId = crypto.randomUUID();
+      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
+      setStreaming(true);
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess.session?.access_token;
+        const res = await fetch(directKind === "video" ? "/api/generate-video" : "/api/generate-music", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ prompt: text, title: text.slice(0, 60) }),
+        });
+        const raw = await res.text();
+        let payload: { url?: string; asset?: { title?: string }; message?: string; error?: string } = {};
+        try {
+          payload = raw ? JSON.parse(raw) : {};
+        } catch {
+          payload = { message: raw };
+        }
+        if (!res.ok) throw new Error(payload.message || payload.error || `Generation failed (${res.status})`);
+        const title = payload.asset?.title || text.slice(0, 60) || `IntelliVerse ${directGenerationLabel(directKind)}`;
+        const fileLabel = directKind === "video" ? "Download MP4" : "Download MP3";
+        const content = payload.url
+          ? `Done — I generated the ${directGenerationLabel(directKind)} and saved it to your Library.\n\n[${fileLabel}](${payload.url})`
+          : `Done — I generated “${title}” and saved it to your Library.`;
+        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content } : m)));
+        await supabase.from("messages").insert({
+          conversation_id: convId,
+          user_id: user.id,
+          role: "assistant",
+          content,
+        });
+        qc.invalidateQueries({ queryKey: ["assets"] });
+        return;
+      } catch (err) {
+        const content = err instanceof Error ? err.message : "Generation failed";
+        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content } : m)));
+        await supabase.from("messages").insert({
+          conversation_id: convId,
+          user_id: user.id,
+          role: "assistant",
+          content,
+        });
+        return;
+      } finally {
+        setStreaming(false);
+      }
+    }
 
     // call streaming endpoint
     const assistantId = crypto.randomUUID();
