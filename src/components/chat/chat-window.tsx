@@ -430,6 +430,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
                         <div className="prose-ai text-sm text-foreground">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
                         </div>
+                      ) : genKind && genMsgId === m.id ? (
+                        <GenerationProgress kind={genKind} active />
                       ) : (
                         <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
                           <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
