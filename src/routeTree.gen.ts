@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as STokenRouteImport } from './routes/s.$token'
 import { Route as ApiToolRouteImport } from './routes/api/tool'
+import { Route as ApiGenerateVideoRouteImport } from './routes/api/generate-video'
 import { Route as ApiGenerateMusicRouteImport } from './routes/api/generate-music'
 import { Route as ApiGenerateImageRouteImport } from './routes/api/generate-image'
 import { Route as ApiGenerateDocRouteImport } from './routes/api/generate-doc'
@@ -62,6 +63,11 @@ const STokenRoute = STokenRouteImport.update({
 const ApiToolRoute = ApiToolRouteImport.update({
   id: '/api/tool',
   path: '/api/tool',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateVideoRoute = ApiGenerateVideoRouteImport.update({
+  id: '/api/generate-video',
+  path: '/api/generate-video',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiGenerateMusicRoute = ApiGenerateMusicRouteImport.update({
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/api/generate-doc': typeof ApiGenerateDocRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
   '/api/generate-music': typeof ApiGenerateMusicRoute
+  '/api/generate-video': typeof ApiGenerateVideoRoute
   '/api/tool': typeof ApiToolRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
@@ -238,6 +245,7 @@ export interface FileRoutesByTo {
   '/api/generate-doc': typeof ApiGenerateDocRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
   '/api/generate-music': typeof ApiGenerateMusicRoute
+  '/api/generate-video': typeof ApiGenerateVideoRoute
   '/api/tool': typeof ApiToolRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/api/generate-doc': typeof ApiGenerateDocRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
   '/api/generate-music': typeof ApiGenerateMusicRoute
+  '/api/generate-video': typeof ApiGenerateVideoRoute
   '/api/tool': typeof ApiToolRoute
   '/s/$token': typeof STokenRoute
   '/_app/chat/$id': typeof AppChatIdRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/api/generate-doc'
     | '/api/generate-image'
     | '/api/generate-music'
+    | '/api/generate-video'
     | '/api/tool'
     | '/s/$token'
     | '/chat/$id'
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/api/generate-doc'
     | '/api/generate-image'
     | '/api/generate-music'
+    | '/api/generate-video'
     | '/api/tool'
     | '/s/$token'
     | '/chat/$id'
@@ -366,6 +377,7 @@ export interface FileRouteTypes {
     | '/api/generate-doc'
     | '/api/generate-image'
     | '/api/generate-music'
+    | '/api/generate-video'
     | '/api/tool'
     | '/s/$token'
     | '/_app/chat/$id'
@@ -390,6 +402,7 @@ export interface RootRouteChildren {
   ApiGenerateDocRoute: typeof ApiGenerateDocRoute
   ApiGenerateImageRoute: typeof ApiGenerateImageRoute
   ApiGenerateMusicRoute: typeof ApiGenerateMusicRoute
+  ApiGenerateVideoRoute: typeof ApiGenerateVideoRoute
   ApiToolRoute: typeof ApiToolRoute
   STokenRoute: typeof STokenRoute
   ApiPublicShareTokenRoute: typeof ApiPublicShareTokenRoute
@@ -430,6 +443,13 @@ declare module '@tanstack/react-router' {
       path: '/api/tool'
       fullPath: '/api/tool'
       preLoaderRoute: typeof ApiToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate-video': {
+      id: '/api/generate-video'
+      path: '/api/generate-video'
+      fullPath: '/api/generate-video'
+      preLoaderRoute: typeof ApiGenerateVideoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/generate-music': {
@@ -703,6 +723,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGenerateDocRoute: ApiGenerateDocRoute,
   ApiGenerateImageRoute: ApiGenerateImageRoute,
   ApiGenerateMusicRoute: ApiGenerateMusicRoute,
+  ApiGenerateVideoRoute: ApiGenerateVideoRoute,
   ApiToolRoute: ApiToolRoute,
   STokenRoute: STokenRoute,
   ApiPublicShareTokenRoute: ApiPublicShareTokenRoute,

@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Music2, ChevronLeft, Lock, Settings2 } from "lucide-react";
+import { Music2, ChevronLeft, Loader2, Sparkles, Download, Settings2 } from "lucide-react";
+import { toast } from "sonner";
 import { listProviderStatuses } from "@/lib/providers.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_app/studio/music")({
   head: () => ({ meta: [{ title: "AI Music Generator — IntelliVerse" }] }),
@@ -11,13 +14,41 @@ export const Route = createFileRoute("/_app/studio/music")({
 
 function MusicPage() {
   const list = useServerFn(listProviderStatuses);
+  const [prompt, setPrompt] = useState("");
+  const [title, setTitle] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const { data: providers, isLoading } = useQuery({
     queryKey: ["providerStatusesMusic"],
     queryFn: () => list(),
   });
-  // Suno is the music-capable provider in our registry.
   const music = providers?.find((p) => p.id === "suno");
-  const configured = !!music?.configured && music.enabled;
+
+  async function generate() {
+    if (!prompt.trim() || busy) return;
+    setBusy(true);
+    setAudioUrl(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const r = await fetch("/api/generate-music", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token ?? ""}`,
+        },
+        body: JSON.stringify({ prompt, title }),
+      });
+      const raw = await r.text();
+      const data = raw ? JSON.parse(raw) : {};
+      if (!r.ok) throw new Error(data.message || raw || "Music generation failed");
+      setAudioUrl(data.url);
+      toast.success("Music generated and saved to Library");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Music generation failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="h-full overflow-y-auto">
@@ -35,62 +66,54 @@ function MusicPage() {
           </div>
         </div>
 
-        {isLoading ? null : !configured ? (
-          <SetupCard
-            title="Music provider not configured"
-            provider="Suno"
-            envVar="SUNO_API_KEY"
-            description="Music generation requires a paid third-party provider. Add a Suno API key in Admin → Providers, then refresh this page to start generating MP3 tracks."
-          />
-        ) : (
-          <ComingSoonCard
-            title="Suno integration ready"
-            description="Provider key is set. The Suno generation adapter will produce a real MP3 saved to your Library. This UI ships next — the backend slot is wired."
-          />
+        <div className="space-y-4 rounded-2xl border border-border/60 bg-card/40 p-5">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">Describe the music</label>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              rows={5}
+              placeholder="Upbeat cinematic synthwave track for a product launch, energetic drums, bright lead melody"
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">Title (optional)</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Launch theme"
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </div>
+          <button
+            onClick={generate}
+            disabled={!prompt.trim() || busy}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-primary to-accent px-4 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {busy ? "Generating audio file…" : "Generate music file"}
+          </button>
+
+          {audioUrl && (
+            <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+              <audio controls src={audioUrl} className="w-full" />
+              <a href={audioUrl} download className="mt-2 inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
+                <Download className="h-3 w-3" /> Download WAV
+              </a>
+            </div>
+          )}
+        </div>
+
+        {!isLoading && music && !music.configured && (
+          <div className="mt-4 rounded-xl border border-border/60 bg-card/30 p-4 text-xs text-muted-foreground">
+            Native music export is enabled. For premium provider music, add <code>SUNO_API_KEY</code> in Admin → Providers.
+            <Link to="/providers" className="ml-2 inline-flex items-center gap-1 text-primary hover:underline">
+              <Settings2 className="h-3 w-3" /> Open Providers
+            </Link>
+          </div>
         )}
       </div>
-    </div>
-  );
-}
-
-export function SetupCard({
-  title,
-  provider,
-  envVar,
-  description,
-}: {
-  title: string;
-  provider: string;
-  envVar: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-dashed border-border/60 bg-card/40 p-6">
-      <div className="mb-3 flex items-center gap-2">
-        <Lock className="h-4 w-4 text-muted-foreground" />
-        <h2 className="text-base font-semibold">{title}</h2>
-      </div>
-      <p className="text-sm text-muted-foreground">{description}</p>
-      <div className="mt-4 rounded-lg border border-border/60 bg-background/40 p-3 text-xs">
-        <div className="flex justify-between"><span className="text-muted-foreground">Provider</span><span className="font-medium">{provider}</span></div>
-        <div className="mt-1 flex justify-between"><span className="text-muted-foreground">Required secret</span><code className="font-mono text-[11px]">{envVar}</code></div>
-      </div>
-      <Link
-        to="/providers"
-        className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-primary to-accent px-3 py-1.5 text-xs font-medium text-primary-foreground"
-      >
-        <Settings2 className="h-3 w-3" />
-        Open Admin → Providers
-      </Link>
-    </div>
-  );
-}
-
-function ComingSoonCard({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-2xl border border-border/60 bg-card/40 p-6">
-      <h2 className="text-base font-semibold">{title}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
     </div>
   );
 }
