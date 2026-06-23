@@ -25,7 +25,7 @@ export async function extractText(file: File): Promise<ExtractResult> {
   const ext = extOf(file.name);
 
   if (ext === ".pdf") {
-    const pdfjs = await import("pdfjs-dist");
+    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
     (pdfjs as unknown as { GlobalWorkerOptions: { workerSrc: string } }).GlobalWorkerOptions.workerSrc = "";
     const buf = await file.arrayBuffer();
     const doc = await pdfjs.getDocument({
@@ -46,7 +46,7 @@ export async function extractText(file: File): Promise<ExtractResult> {
 
   if (ext === ".docx") {
     // @ts-expect-error - mammoth browser build has no bundled types
-    const mammoth = await import("mammoth/mammoth.browser");
+    const mammoth = await import("mammoth/mammoth.browser.js");
     const buf = await file.arrayBuffer();
     const { value } = await mammoth.extractRawText({ arrayBuffer: buf });
     return { text: (value as string).slice(0, MAX_CHARS), needsOcr: false };
