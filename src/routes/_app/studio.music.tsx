@@ -62,7 +62,7 @@ function MusicPage() {
           </div>
           <div>
             <h1 className="text-xl font-semibold sm:text-2xl">AI Music Generator</h1>
-            <p className="text-xs text-muted-foreground">Generate real MP3 tracks from a text prompt.</p>
+            <p className="text-xs text-muted-foreground">Generate real WAV music files from a text prompt.</p>
           </div>
         </div>
 
