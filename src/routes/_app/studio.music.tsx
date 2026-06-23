@@ -25,6 +25,15 @@ function MusicPage() {
   });
   const music = providers?.find((p) => p.id === "suno");
 
+  useEffect(() => {
+    const brief = sessionStorage.getItem("iv:wizard-brief:music");
+    if (brief) {
+      setPrompt(brief);
+      sessionStorage.removeItem("iv:wizard-brief:music");
+      toast.success("Brief loaded from chat — review and click Generate");
+    }
+  }, []);
+
   async function generate() {
     if (!prompt.trim() || busy) return;
     setBusy(true);
