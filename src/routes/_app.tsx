@@ -12,6 +12,7 @@ import {
   Trash2,
   Search,
   Loader2,
+  Shield,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -51,6 +52,19 @@ function AppLayout() {
         .limit(100);
       if (error) throw error;
       return data ?? [];
+    },
+  });
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ["isAdminSidebar", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: user!.id,
+        _role: "admin",
+      });
+      if (error) return false;
+      return !!data;
     },
   });
 
@@ -178,6 +192,17 @@ function AppLayout() {
             <FileText className="h-4 w-4" />
             Documents
           </Link>
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
+                location.pathname === "/admin" ? "bg-sidebar-accent" : ""
+              }`}
+            >
+              <Shield className="h-4 w-4 text-accent" />
+              Admin
+            </Link>
+          )}
           <div className="mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-sm">
             <div className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-xs font-semibold text-primary-foreground">
               {(user.email ?? "?").slice(0, 1).toUpperCase()}
