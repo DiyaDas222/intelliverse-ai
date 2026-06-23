@@ -32,6 +32,7 @@ import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppChatRouteImport } from './routes/_app/chat'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppStudioIndexRouteImport } from './routes/_app/studio.index'
+import { Route as AppChatIndexRouteImport } from './routes/_app/chat.index'
 import { Route as AppToolsSlugRouteImport } from './routes/_app/tools.$slug'
 import { Route as AppStudioVideoRouteImport } from './routes/_app/studio.video'
 import { Route as AppStudioMusicRouteImport } from './routes/_app/studio.music'
@@ -156,6 +157,11 @@ const AppStudioIndexRoute = AppStudioIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppStudioRoute,
 } as any)
+const AppChatIndexRoute = AppChatIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppChatRoute,
+} as any)
 const AppToolsSlugRoute = AppToolsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/studio/music': typeof AppStudioMusicRoute
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/chat/': typeof AppChatIndexRoute
   '/studio/': typeof AppStudioIndexRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
@@ -239,7 +246,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AppAdminRoute
-  '/chat': typeof AppChatRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/documents': typeof AppDocumentsRouteWithChildren
   '/library': typeof AppLibraryRoute
@@ -264,6 +270,7 @@ export interface FileRoutesByTo {
   '/studio/music': typeof AppStudioMusicRoute
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/chat': typeof AppChatIndexRoute
   '/studio': typeof AppStudioIndexRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
@@ -299,6 +306,7 @@ export interface FileRoutesById {
   '/_app/studio/music': typeof AppStudioMusicRoute
   '/_app/studio/video': typeof AppStudioVideoRoute
   '/_app/tools/$slug': typeof AppToolsSlugRoute
+  '/_app/chat/': typeof AppChatIndexRoute
   '/_app/studio/': typeof AppStudioIndexRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
@@ -334,6 +342,7 @@ export interface FileRouteTypes {
     | '/studio/music'
     | '/studio/video'
     | '/tools/$slug'
+    | '/chat/'
     | '/studio/'
     | '/api/public/share/$token'
   fileRoutesByTo: FileRoutesByTo
@@ -341,7 +350,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
-    | '/chat'
     | '/dashboard'
     | '/documents'
     | '/library'
@@ -366,6 +374,7 @@ export interface FileRouteTypes {
     | '/studio/music'
     | '/studio/video'
     | '/tools/$slug'
+    | '/chat'
     | '/studio'
     | '/api/public/share/$token'
   id:
@@ -400,6 +409,7 @@ export interface FileRouteTypes {
     | '/_app/studio/music'
     | '/_app/studio/video'
     | '/_app/tools/$slug'
+    | '/_app/chat/'
     | '/_app/studio/'
     | '/api/public/share/$token'
   fileRoutesById: FileRoutesById
@@ -584,6 +594,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStudioIndexRouteImport
       parentRoute: typeof AppStudioRoute
     }
+    '/_app/chat/': {
+      id: '/_app/chat/'
+      path: '/'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof AppChatIndexRouteImport
+      parentRoute: typeof AppChatRoute
+    }
     '/_app/tools/$slug': {
       id: '/_app/tools/$slug'
       path: '/$slug'
@@ -652,10 +669,12 @@ declare module '@tanstack/react-router' {
 
 interface AppChatRouteChildren {
   AppChatIdRoute: typeof AppChatIdRoute
+  AppChatIndexRoute: typeof AppChatIndexRoute
 }
 
 const AppChatRouteChildren: AppChatRouteChildren = {
   AppChatIdRoute: AppChatIdRoute,
+  AppChatIndexRoute: AppChatIndexRoute,
 }
 
 const AppChatRouteWithChildren =
