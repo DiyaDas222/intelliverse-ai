@@ -17,6 +17,9 @@ import {
   X,
   LayoutGrid,
   Settings as SettingsIcon,
+  Wand2,
+  LibraryBig,
+  Plug,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -246,6 +249,24 @@ function AppLayout() {
             Dashboard
           </Link>
           <Link
+            to="/studio"
+            className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
+              location.pathname.startsWith("/studio") ? "bg-sidebar-accent" : ""
+            }`}
+          >
+            <Wand2 className="h-4 w-4" />
+            Creation Studio
+          </Link>
+          <Link
+            to="/library"
+            className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
+              location.pathname === "/library" ? "bg-sidebar-accent" : ""
+            }`}
+          >
+            <LibraryBig className="h-4 w-4" />
+            Library
+          </Link>
+          <Link
             to="/tools"
             className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
               location.pathname.startsWith("/tools") ? "bg-sidebar-accent" : ""
@@ -273,15 +294,26 @@ function AppLayout() {
             Settings
           </Link>
           {isAdmin && (
-            <Link
-              to="/admin"
-              className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
-                location.pathname === "/admin" ? "bg-sidebar-accent" : ""
-              }`}
-            >
-              <Shield className="h-4 w-4 text-accent" />
-              Admin
-            </Link>
+            <>
+              <Link
+                to="/admin"
+                className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
+                  location.pathname === "/admin" ? "bg-sidebar-accent" : ""
+                }`}
+              >
+                <Shield className="h-4 w-4 text-accent" />
+                Admin
+              </Link>
+              <Link
+                to="/providers"
+                className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
+                  location.pathname === "/providers" ? "bg-sidebar-accent" : ""
+                }`}
+              >
+                <Plug className="h-4 w-4 text-accent" />
+                Providers
+              </Link>
+            </>
           )}
           <div className="mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-sm">
             <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-xs font-semibold text-primary-foreground">
