@@ -216,11 +216,11 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   return (
     <div className="relative flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/60 px-6 py-3">
-        <div className="text-sm font-medium text-muted-foreground">
+      <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 sm:px-6">
+        <div className="truncate text-sm font-medium text-muted-foreground">
           {conversationId ? "Chat" : "New chat"}
         </div>
-        <div className="text-xs text-muted-foreground">Gemini 3 Flash</div>
+        <div className="shrink-0 text-xs text-muted-foreground">Gemini 3 Flash</div>
       </div>
 
       {/* Messages */}
