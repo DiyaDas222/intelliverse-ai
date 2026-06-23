@@ -192,6 +192,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     if (directKind) {
       const assistantId = crypto.randomUUID();
       setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
+      setGenKind(directKind);
+      setGenMsgId(assistantId);
       setStreaming(true);
       try {
         const { data: sess } = await supabase.auth.getSession();
