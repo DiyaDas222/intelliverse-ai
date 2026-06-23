@@ -75,6 +75,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [genKind, setGenKind] = useState<DirectGenerationKind | null>(null);
+  const [genMsgId, setGenMsgId] = useState<string | null>(null);
   const [attachedDocIds, setAttachedDocIds] = useState<string[]>([]);
   const [showDocPicker, setShowDocPicker] = useState(false);
   const [model, setModel] = useState<string>(DEFAULT_MODEL);
