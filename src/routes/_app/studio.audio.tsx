@@ -103,6 +103,10 @@ function AudioPage() {
             {gen.isPending ? "Generating…" : "Generate audio"}
           </button>
 
+          <GenerationProgress kind="voice" active={gen.isPending} />
+
+
+
           {audioUrl && (
             <div className="rounded-lg border border-border/60 bg-background/40 p-3">
               <audio controls src={audioUrl} className="w-full" />
