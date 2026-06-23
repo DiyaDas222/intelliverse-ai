@@ -235,6 +235,15 @@ function AppLayout() {
 
         <div className="border-t border-border/60 p-2">
           <Link
+            to="/dashboard"
+            className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
+              location.pathname === "/dashboard" ? "bg-sidebar-accent" : ""
+            }`}
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            Dashboard
+          </Link>
+          <Link
             to="/documents"
             className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent ${
               location.pathname === "/documents" ? "bg-sidebar-accent" : ""
