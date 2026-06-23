@@ -19,6 +19,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_app")({
+  ssr: false,
   component: AppLayout,
 });
 
