@@ -352,6 +352,22 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     await sendMessage(lastUser.content);
   };
 
+  const handleWizardComplete = async (msgId: string, result: WizardResult) => {
+    // Persist the brief for the target Studio page.
+    sessionStorage.setItem(`iv:wizard-brief:${result.kind}`, result.brief);
+    const followup = `**${result.kind.charAt(0).toUpperCase() + result.kind.slice(1)} brief ready ✓**\n\n${result.summary}\n\n[Open the builder with your brief pre-filled →](${result.studioPath})`;
+    setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: followup, wizardDone: true } : m)));
+    if (conversationId && user) {
+      await supabase.from("messages").insert({
+        conversation_id: conversationId,
+        user_id: user.id,
+        role: "assistant",
+        content: followup,
+      });
+    }
+    navigate({ to: result.studioPath as never });
+  };
+
   return (
     <div className="relative flex h-full flex-col">
       {/* Header */}
