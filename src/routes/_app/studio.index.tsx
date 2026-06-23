@@ -2,9 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ImageIcon,
   Mic2,
+  Music2,
   Presentation,
   GraduationCap,
   FolderGit2,
+  Globe,
+  AppWindow,
   VideoIcon,
   Sparkles,
   Lock,
@@ -23,17 +26,20 @@ type Tool = {
   desc: string;
   icon: any;
   tint: string;
-  requires?: string; // provider id required
-  external?: boolean; // requires non-native provider
+  requiresProviderId?: string;
+  requiresVideo?: boolean;
 };
 
 const TOOLS: Tool[] = [
-  { to: "/studio/image", title: "Image Generator", desc: "Text → image, logos, posters, mockups", icon: ImageIcon, tint: "from-pink-500/30 to-rose-500/10" },
-  { to: "/studio/audio", title: "Audio & Voice", desc: "Text-to-speech, narration, voiceover", icon: Mic2, tint: "from-amber-500/30 to-orange-500/10" },
-  { to: "/studio/docs", title: "Presentation", desc: "Generate decks, export PPTX/PDF", icon: Presentation, tint: "from-violet-500/30 to-purple-500/10" },
-  { to: "/studio/docs", title: "Assignment", desc: "Reports, essays, case studies (DOCX/PDF)", icon: GraduationCap, tint: "from-emerald-500/30 to-teal-500/10" },
-  { to: "/studio/docs", title: "Project Generator", desc: "Full project scaffold + README", icon: FolderGit2, tint: "from-blue-500/30 to-cyan-500/10" },
-  { to: "/studio/video", title: "Video Generator", desc: "Text → video (requires Runway/Luma/Pika)", icon: VideoIcon, tint: "from-fuchsia-500/30 to-pink-500/10", external: true },
+  { to: "/studio/image", title: "Image Generator", desc: "Text → PNG. Logos, posters, photos.", icon: ImageIcon, tint: "from-pink-500/30 to-rose-500/10" },
+  { to: "/studio/audio", title: "Voice Generator", desc: "Text-to-speech → real MP3 narration.", icon: Mic2, tint: "from-amber-500/30 to-orange-500/10" },
+  { to: "/studio/music", title: "Music Generator", desc: "Text → MP3 tracks (requires Suno).", icon: Music2, tint: "from-rose-500/30 to-red-500/10", requiresProviderId: "suno" },
+  { to: "/studio/video", title: "Video Generator", desc: "Text → MP4 (Runway / Luma / Pika).", icon: VideoIcon, tint: "from-fuchsia-500/30 to-pink-500/10", requiresVideo: true },
+  { to: "/studio/docs", title: "Presentation", desc: "Real downloadable PPTX decks.", icon: Presentation, tint: "from-violet-500/30 to-purple-500/10" },
+  { to: "/studio/docs", title: "Assignment", desc: "Reports & essays — DOCX + PDF.", icon: GraduationCap, tint: "from-emerald-500/30 to-teal-500/10" },
+  { to: "/studio/docs", title: "Website Builder", desc: "Source-code ZIP of a static site.", icon: Globe, tint: "from-cyan-500/30 to-sky-500/10" },
+  { to: "/studio/docs", title: "App Builder", desc: "Source-code ZIP of a full app.", icon: AppWindow, tint: "from-fuchsia-500/30 to-pink-500/10" },
+  { to: "/studio/docs", title: "Project Generator", desc: "Multi-file project scaffold ZIP.", icon: FolderGit2, tint: "from-blue-500/30 to-cyan-500/10" },
 ];
 
 function StudioHub() {
@@ -42,9 +48,15 @@ function StudioHub() {
     queryKey: ["providerStatusesHub"],
     queryFn: () => list(),
   });
-  const videoConfigured = providers?.some(
-    (p) => p.category === "video" && p.enabled && p.configured,
-  );
+  const videoReady = providers?.some((p) => p.category === "video" && p.enabled && p.configured);
+  const isReady = (t: Tool) => {
+    if (t.requiresVideo) return !!videoReady;
+    if (t.requiresProviderId) {
+      const p = providers?.find((x) => x.id === t.requiresProviderId);
+      return !!(p?.enabled && p.configured);
+    }
+    return true;
+  };
 
   return (
     <div className="h-full overflow-y-auto">
@@ -55,39 +67,32 @@ function StudioHub() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">AI Creation Studio</h1>
-            <p className="text-sm text-muted-foreground">Generate images, audio, presentations, assignments, and more.</p>
+            <p className="text-sm text-muted-foreground">Every tool returns a real downloadable file.</p>
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {TOOLS.map((t) => {
-            const locked = t.external && !videoConfigured;
-            const Card = (
-              <div
-                className={`group relative h-full rounded-2xl border border-border/60 bg-gradient-to-br ${t.tint} p-5 transition-all ${
-                  locked ? "opacity-60" : "hover:-translate-y-0.5 hover:border-primary/50"
-                }`}
-              >
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-background/80 backdrop-blur">
-                    <t.icon className="h-5 w-5" />
-                  </div>
-                  {locked && <Lock className="h-4 w-4 text-muted-foreground" />}
-                </div>
-                <h3 className="text-base font-semibold">{t.title}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">{t.desc}</p>
-                {locked && (
-                  <p className="mt-3 text-[10px] uppercase tracking-wide text-muted-foreground">
-                    Add API key in Admin → Providers
-                  </p>
-                )}
-              </div>
-            );
-            return locked ? (
-              <div key={t.title}>{Card}</div>
-            ) : (
+            const ready = isReady(t);
+            return (
               <Link key={t.title} to={t.to}>
-                {Card}
+                <div
+                  className={`group relative h-full rounded-2xl border border-border/60 bg-gradient-to-br ${t.tint} p-5 transition-all hover:-translate-y-0.5 hover:border-primary/50`}
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="grid h-10 w-10 place-items-center rounded-lg bg-background/80 backdrop-blur">
+                      <t.icon className="h-5 w-5" />
+                    </div>
+                    {!ready && <Lock className="h-4 w-4 text-muted-foreground" />}
+                  </div>
+                  <h3 className="text-base font-semibold">{t.title}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">{t.desc}</p>
+                  {!ready && (
+                    <p className="mt-3 text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Setup required — open to configure
+                    </p>
+                  )}
+                </div>
               </Link>
             );
           })}
