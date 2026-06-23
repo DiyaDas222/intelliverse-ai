@@ -37,14 +37,10 @@ const SUGGESTIONS = [
 
 type DirectGenerationKind = "image" | "voice" | "music" | "video";
 
-function getDirectGenerationKind(text: string): DirectGenerationKind | null {
-  const value = text.toLowerCase();
-  const asksToGenerate = /\b(generate|create|make|produce|compose|build)\b/.test(value);
-  if (!asksToGenerate) return null;
-  if (/\b(video|mp4|clip|movie|animation|text-to-video)\b/.test(value)) return "video";
-  if (/\b(music|song|track|beat|instrumental|soundtrack|mp3|wav)\b/.test(value)) return "music";
-  if (/\b(voice|speech|narration|voiceover|tts|text-to-speech)\b/.test(value)) return "voice";
-  if (/\b(image|photo|picture|poster|logo|jpg|jpeg|png|artwork|illustration)\b/.test(value)) return "image";
+function getDirectGenerationKind(_text: string): DirectGenerationKind | null {
+  // Disabled: the chat AI now runs a requirements interview first and only
+  // routes the user to the Studio tool after they confirm a project summary.
+  // Direct generation is still available from the Studio pages themselves.
   return null;
 }
 
