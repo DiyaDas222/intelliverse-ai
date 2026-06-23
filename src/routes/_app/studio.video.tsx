@@ -6,6 +6,7 @@ import { VideoIcon, ChevronLeft, Lock, Settings2, Loader2, Sparkles, Download } 
 import { toast } from "sonner";
 import { listProviderStatuses } from "@/lib/providers.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { GenerationProgress } from "@/components/generation-progress";
 
 export const Route = createFileRoute("/_app/studio/video")({
   head: () => ({ meta: [{ title: "AI Video Generator — IntelliVerse" }] }),
