@@ -18,12 +18,15 @@ type SharePayload = {
 };
 
 export const Route = createFileRoute("/s/$token")({
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: loaderData ? `${loaderData.asset.title} — Shared on IntelliVerse` : "Shared link" },
-      { name: "description", content: "A file shared via IntelliVerse AI" },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const d = loaderData as SharePayload | undefined;
+    return {
+      meta: [
+        { title: d ? `${d.asset.title} — Shared on IntelliVerse` : "Shared link" },
+        { name: "description", content: "A file shared via IntelliVerse AI" },
+      ],
+    };
+  },
   loader: async ({ params }) => {
     const res = await fetch(`/api/public/share/${params.token}`);
     if (res.status === 404) throw notFound();
