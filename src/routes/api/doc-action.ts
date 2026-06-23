@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { generateText } from "ai";
 import { DEFAULT_MODEL } from "@/lib/models";
 
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/api/doc-action")({
     handlers: {
       POST: async ({ request }) => {
         const apiKey = process.env.LOVABLE_API_KEY;
-        if (!apiKey) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
         const authHeader = request.headers.get("authorization");
         if (!authHeader?.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
 
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/api/doc-action")({
           .single();
         if (error || !doc) return new Response("Document not found", { status: 404 });
 
-        const gateway = createLovableAiGatewayProvider(apiKey);
+        const gateway = createGatewayProvider(apiKey);
         const model = gateway(DEFAULT_MODEL);
 
         try {

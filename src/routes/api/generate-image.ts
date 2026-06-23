@@ -11,7 +11,7 @@ export const Route = createFileRoute("/api/generate-image")({
         if (!prompt) return new Response("prompt required", { status: 400 });
 
         const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        if (!key) return new Response("AI gateway is not configured", { status: 500 });
 
         const upstream = await fetch(
           "https://ai.gateway.lovable.dev/v1/images/generations",

@@ -73,8 +73,8 @@ function AuthPage() {
   const handleGoogle = async () => {
     if (typeof window === "undefined") return;
 
-    const { lovable } = await import("@/integrations/lovable/index");
-    const result = await lovable.auth.signInWithOAuth("google", {
+    const { cloud } = await import("@/integrations/cloud/index");
+    const result = await cloud.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin + "/chat",
     });
     if (result.error) {
