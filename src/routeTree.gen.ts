@@ -12,11 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiToolRouteImport } from './routes/api/tool'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AppToolsRouteImport } from './routes/_app/tools'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppDocumentsRouteImport } from './routes/_app/documents'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppChatRouteImport } from './routes/_app/chat'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppToolsSlugRouteImport } from './routes/_app/tools.$slug'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
 
 const AuthRoute = AuthRouteImport.update({
@@ -33,10 +37,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiToolRoute = ApiToolRouteImport.update({
+  id: '/api/tool',
+  path: '/api/tool',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppToolsRoute = AppToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppDocumentsRoute = AppDocumentsRouteImport.update({
   id: '/documents',
@@ -58,6 +77,11 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
+const AppToolsSlugRoute = AppToolsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AppToolsRoute,
+} as any)
 const AppChatIdRoute = AppChatIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -71,8 +95,12 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AppChatRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/documents': typeof AppDocumentsRoute
+  '/settings': typeof AppSettingsRoute
+  '/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/tool': typeof ApiToolRoute
   '/chat/$id': typeof AppChatIdRoute
+  '/tools/$slug': typeof AppToolsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -81,8 +109,12 @@ export interface FileRoutesByTo {
   '/chat': typeof AppChatRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/documents': typeof AppDocumentsRoute
+  '/settings': typeof AppSettingsRoute
+  '/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/tool': typeof ApiToolRoute
   '/chat/$id': typeof AppChatIdRoute
+  '/tools/$slug': typeof AppToolsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -93,8 +125,12 @@ export interface FileRoutesById {
   '/_app/chat': typeof AppChatRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/documents': typeof AppDocumentsRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/tool': typeof ApiToolRoute
   '/_app/chat/$id': typeof AppChatIdRoute
+  '/_app/tools/$slug': typeof AppToolsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -105,8 +141,12 @@ export interface FileRouteTypes {
     | '/chat'
     | '/dashboard'
     | '/documents'
+    | '/settings'
+    | '/tools'
     | '/api/chat'
+    | '/api/tool'
     | '/chat/$id'
+    | '/tools/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -115,8 +155,12 @@ export interface FileRouteTypes {
     | '/chat'
     | '/dashboard'
     | '/documents'
+    | '/settings'
+    | '/tools'
     | '/api/chat'
+    | '/api/tool'
     | '/chat/$id'
+    | '/tools/$slug'
   id:
     | '__root__'
     | '/'
@@ -126,8 +170,12 @@ export interface FileRouteTypes {
     | '/_app/chat'
     | '/_app/dashboard'
     | '/_app/documents'
+    | '/_app/settings'
+    | '/_app/tools'
     | '/api/chat'
+    | '/api/tool'
     | '/_app/chat/$id'
+    | '/_app/tools/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -135,6 +183,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiToolRoute: typeof ApiToolRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -160,12 +209,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tool': {
+      id: '/api/tool'
+      path: '/api/tool'
+      fullPath: '/api/tool'
+      preLoaderRoute: typeof ApiToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/tools': {
+      id: '/_app/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof AppToolsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/documents': {
       id: '/_app/documents'
@@ -195,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/tools/$slug': {
+      id: '/_app/tools/$slug'
+      path: '/$slug'
+      fullPath: '/tools/$slug'
+      preLoaderRoute: typeof AppToolsSlugRouteImport
+      parentRoute: typeof AppToolsRoute
+    }
     '/_app/chat/$id': {
       id: '/_app/chat/$id'
       path: '/$id'
@@ -216,11 +293,25 @@ const AppChatRouteChildren: AppChatRouteChildren = {
 const AppChatRouteWithChildren =
   AppChatRoute._addFileChildren(AppChatRouteChildren)
 
+interface AppToolsRouteChildren {
+  AppToolsSlugRoute: typeof AppToolsSlugRoute
+}
+
+const AppToolsRouteChildren: AppToolsRouteChildren = {
+  AppToolsSlugRoute: AppToolsSlugRoute,
+}
+
+const AppToolsRouteWithChildren = AppToolsRoute._addFileChildren(
+  AppToolsRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppChatRoute: typeof AppChatRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppToolsRoute: typeof AppToolsRouteWithChildren
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -228,6 +319,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppChatRoute: AppChatRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
   AppDocumentsRoute: AppDocumentsRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppToolsRoute: AppToolsRouteWithChildren,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -237,6 +330,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiToolRoute: ApiToolRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

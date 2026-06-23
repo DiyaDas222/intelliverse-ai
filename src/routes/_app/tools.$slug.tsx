@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 
-import { TOOLS_BY_SLUG } from "@/lib/tools";
+import { TOOLS_BY_SLUG, type ToolField } from "@/lib/tools";
 import { CHAT_MODELS, DEFAULT_MODEL } from "@/lib/models";
 
 export const Route = createFileRoute("/_app/tools/$slug")({
@@ -41,7 +41,7 @@ function ToolPage() {
     (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[tool.icon] ??
     Icons.Sparkles;
   const [values, setValues] = useState<Record<string, string>>(
-    Object.fromEntries(tool.fields.map((f) => [f.name, ""])),
+    Object.fromEntries(tool.fields.map((f: ToolField) => [f.name, ""])),
   );
   const [model, setModel] = useState<string>(
     (typeof localStorage !== "undefined" && localStorage.getItem("iv:model")) || DEFAULT_MODEL,
@@ -133,7 +133,7 @@ function ToolPage() {
           <div className="rounded-2xl border border-border/60 bg-card/40 p-5">
             <h2 className="mb-4 text-sm font-semibold">Input</h2>
             <div className="space-y-4">
-              {tool.fields.map((f) => (
+              {tool.fields.map((f: ToolField) => (
                 <div key={f.name}>
                   <label className="mb-1 block text-xs font-medium text-muted-foreground">
                     {f.label} {f.required === false && <span className="text-muted-foreground/60">(optional)</span>}
