@@ -240,3 +240,16 @@
   background: oklch(1 0 0 / 0.04);
   font-weight: 600;
 }
+
+@keyframes shimmer-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer-text {
+  background: linear-gradient(90deg, oklch(var(--foreground) / 0.55) 0%, oklch(var(--foreground)) 50%, oklch(var(--foreground) / 0.55) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer-sweep 2.2s linear infinite;
+}
