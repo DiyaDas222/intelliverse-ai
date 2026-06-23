@@ -42,6 +42,7 @@ import { Route as AppStudioImageRouteImport } from './routes/_app/studio.image'
 import { Route as AppStudioDocsRouteImport } from './routes/_app/studio.docs'
 import { Route as AppStudioAudioRouteImport } from './routes/_app/studio.audio'
 import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
+import { Route as AppChatVoiceRouteImport } from './routes/_app/chat.voice'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
 import { Route as ApiPublicShareTokenRouteImport } from './routes/api/public/share.$token'
 
@@ -209,6 +210,11 @@ const AppDocumentsIdRoute = AppDocumentsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppDocumentsRoute,
 } as any)
+const AppChatVoiceRoute = AppChatVoiceRouteImport.update({
+  id: '/voice',
+  path: '/voice',
+  getParentRoute: () => AppChatRoute,
+} as any)
 const AppChatIdRoute = AppChatIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/api/tts': typeof ApiTtsRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
+  '/chat/voice': typeof AppChatVoiceRoute
   '/documents/$id': typeof AppDocumentsIdRoute
   '/studio/audio': typeof AppStudioAudioRoute
   '/studio/docs': typeof AppStudioDocsRoute
@@ -279,6 +286,7 @@ export interface FileRoutesByTo {
   '/api/tts': typeof ApiTtsRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
+  '/chat/voice': typeof AppChatVoiceRoute
   '/documents/$id': typeof AppDocumentsIdRoute
   '/studio/audio': typeof AppStudioAudioRoute
   '/studio/docs': typeof AppStudioDocsRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/api/tts': typeof ApiTtsRoute
   '/s/$token': typeof STokenRoute
   '/_app/chat/$id': typeof AppChatIdRoute
+  '/_app/chat/voice': typeof AppChatVoiceRoute
   '/_app/documents/$id': typeof AppDocumentsIdRoute
   '/_app/studio/audio': typeof AppStudioAudioRoute
   '/_app/studio/docs': typeof AppStudioDocsRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/s/$token'
     | '/chat/$id'
+    | '/chat/voice'
     | '/documents/$id'
     | '/studio/audio'
     | '/studio/docs'
@@ -389,6 +399,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/s/$token'
     | '/chat/$id'
+    | '/chat/voice'
     | '/documents/$id'
     | '/studio/audio'
     | '/studio/docs'
@@ -426,6 +437,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/s/$token'
     | '/_app/chat/$id'
+    | '/_app/chat/voice'
     | '/_app/documents/$id'
     | '/_app/studio/audio'
     | '/_app/studio/docs'
@@ -690,6 +702,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDocumentsIdRouteImport
       parentRoute: typeof AppDocumentsRoute
     }
+    '/_app/chat/voice': {
+      id: '/_app/chat/voice'
+      path: '/voice'
+      fullPath: '/chat/voice'
+      preLoaderRoute: typeof AppChatVoiceRouteImport
+      parentRoute: typeof AppChatRoute
+    }
     '/_app/chat/$id': {
       id: '/_app/chat/$id'
       path: '/$id'
@@ -709,11 +728,13 @@ declare module '@tanstack/react-router' {
 
 interface AppChatRouteChildren {
   AppChatIdRoute: typeof AppChatIdRoute
+  AppChatVoiceRoute: typeof AppChatVoiceRoute
   AppChatIndexRoute: typeof AppChatIndexRoute
 }
 
 const AppChatRouteChildren: AppChatRouteChildren = {
   AppChatIdRoute: AppChatIdRoute,
+  AppChatVoiceRoute: AppChatVoiceRoute,
   AppChatIndexRoute: AppChatIndexRoute,
 }
 
