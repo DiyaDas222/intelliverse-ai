@@ -239,6 +239,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         return;
       } finally {
         setStreaming(false);
+        setGenKind(null);
+        setGenMsgId(null);
       }
     }
 
