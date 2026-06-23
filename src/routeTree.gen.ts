@@ -12,14 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiToolRouteImport } from './routes/api/tool'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AppToolsRouteImport } from './routes/_app/tools'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppDocumentsRouteImport } from './routes/_app/documents'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppChatRouteImport } from './routes/_app/chat'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
-import { Route as AppSettingsRouteImport } from './routes/_app/settings'
-import { Route as AppToolsRouteImport } from './routes/_app/tools'
 import { Route as AppToolsSlugRouteImport } from './routes/_app/tools.$slug'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
 
@@ -37,15 +37,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiToolRoute = ApiToolRouteImport.update({
+  id: '/api/tool',
+  path: '/api/tool',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiToolRoute = ApiToolRouteImport.update({
-  id: '/api/tool',
-  path: '/api/tool',
-  getParentRoute: () => rootRouteImport,
+const AppToolsRoute = AppToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppDocumentsRoute = AppDocumentsRouteImport.update({
   id: '/documents',
@@ -65,16 +75,6 @@ const AppChatRoute = AppChatRouteImport.update({
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsRoute = AppToolsRouteImport.update({
-  id: '/tools',
-  path: '/tools',
   getParentRoute: () => AppRoute,
 } as any)
 const AppToolsSlugRoute = AppToolsSlugRouteImport.update({
@@ -209,6 +209,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tool': {
+      id: '/api/tool'
+      path: '/api/tool'
+      fullPath: '/api/tool'
+      preLoaderRoute: typeof ApiToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -216,12 +223,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/tool': {
-      id: '/api/tool'
-      path: '/api/tool'
-      fullPath: '/api/tool'
-      preLoaderRoute: typeof ApiToolRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/tools': {
+      id: '/_app/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof AppToolsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/documents': {
       id: '/_app/documents'
@@ -251,19 +265,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools': {
-      id: '/_app/tools'
-      path: '/tools'
-      fullPath: '/tools'
-      preLoaderRoute: typeof AppToolsRouteImport
-      parentRoute: typeof AppRoute
+    '/_app/tools/$slug': {
+      id: '/_app/tools/$slug'
+      path: '/$slug'
+      fullPath: '/tools/$slug'
+      preLoaderRoute: typeof AppToolsSlugRouteImport
+      parentRoute: typeof AppToolsRoute
     }
     '/_app/chat/$id': {
       id: '/_app/chat/$id'
@@ -271,13 +278,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/chat/$id'
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppChatRoute
-    }
-    '/_app/tools/$slug': {
-      id: '/_app/tools/$slug'
-      path: '/$slug'
-      fullPath: '/tools/$slug'
-      preLoaderRoute: typeof AppToolsSlugRouteImport
-      parentRoute: typeof AppToolsRoute
     }
   }
 }
@@ -301,8 +301,9 @@ const AppToolsRouteChildren: AppToolsRouteChildren = {
   AppToolsSlugRoute: AppToolsSlugRoute,
 }
 
-const AppToolsRouteWithChildren =
-  AppToolsRoute._addFileChildren(AppToolsRouteChildren)
+const AppToolsRouteWithChildren = AppToolsRoute._addFileChildren(
+  AppToolsRouteChildren,
+)
 
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
