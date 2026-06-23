@@ -7,6 +7,8 @@ import {
   Presentation,
   GraduationCap,
   FolderGit2,
+  Globe,
+  AppWindow,
   Loader2,
   Sparkles,
   Download,
@@ -20,7 +22,7 @@ export const Route = createFileRoute("/_app/studio/docs")({
   component: DocsPage,
 });
 
-type DocKind = "presentation" | "assignment" | "project";
+type DocKind = "presentation" | "assignment" | "project" | "website" | "app";
 
 type Slide = { title: string; bullets: string[]; notes?: string };
 type Section = { heading: string; body: string };
@@ -41,13 +43,14 @@ type ProjectContent = {
 
 type AnyContent = PresentationContent | AssignmentContent | ProjectContent;
 
-const KINDS: { id: DocKind; label: string; icon: any; tint: string; placeholder: string }[] = [
+const KINDS: { id: DocKind; label: string; icon: any; tint: string; placeholder: string; ext: string }[] = [
   {
     id: "presentation",
     label: "Presentation",
     icon: Presentation,
     tint: "from-violet-500/30 to-purple-500/10",
     placeholder: "10-slide investor pitch for an AI-powered learning platform",
+    ext: "PPTX",
   },
   {
     id: "assignment",
@@ -55,6 +58,7 @@ const KINDS: { id: DocKind; label: string; icon: any; tint: string; placeholder:
     icon: GraduationCap,
     tint: "from-emerald-500/30 to-teal-500/10",
     placeholder: "College report on the impact of generative AI on education (5 sections)",
+    ext: "DOCX + PDF",
   },
   {
     id: "project",
@@ -62,6 +66,23 @@ const KINDS: { id: DocKind; label: string; icon: any; tint: string; placeholder:
     icon: FolderGit2,
     tint: "from-blue-500/30 to-cyan-500/10",
     placeholder: "Full-stack expense tracker with React, Supabase auth, charts dashboard",
+    ext: "ZIP source",
+  },
+  {
+    id: "website",
+    label: "Website",
+    icon: Globe,
+    tint: "from-cyan-500/30 to-sky-500/10",
+    placeholder: "Marketing site for a SaaS analytics product with hero, features, pricing, FAQ",
+    ext: "ZIP source",
+  },
+  {
+    id: "app",
+    label: "App",
+    icon: AppWindow,
+    tint: "from-fuchsia-500/30 to-pink-500/10",
+    placeholder: "Task management app with auth, projects, drag-and-drop kanban board",
+    ext: "ZIP source",
   },
 ];
 
@@ -116,7 +137,7 @@ function DocsPage() {
     if (!content) return;
     try {
       if (kind === "presentation") await exportPptx(content as PresentationContent);
-      else if (kind === "assignment") await exportDocx(content as AssignmentContent);
+      else if (kind === "assignment") await exportAssignment(content as AssignmentContent);
       else await exportProjectZip(content as ProjectContent);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Export failed");
@@ -131,11 +152,11 @@ function DocsPage() {
         </Link>
 
         <div className="mb-6">
-          <h1 className="text-xl font-semibold sm:text-2xl">Document Generator</h1>
-          <p className="text-xs text-muted-foreground">Presentations, assignments, and full project scaffolds — exportable.</p>
+          <h1 className="text-xl font-semibold sm:text-2xl">Document & Project Generator</h1>
+          <p className="text-xs text-muted-foreground">Real downloadable files — PPTX, DOCX, PDF, and full source-code ZIPs.</p>
         </div>
 
-        <div className="mb-4 grid gap-2 sm:grid-cols-3">
+        <div className="mb-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
           {KINDS.map((k) => (
             <button
               key={k.id}
@@ -152,9 +173,9 @@ function DocsPage() {
               <div className="grid h-9 w-9 place-items-center rounded-lg bg-background/80">
                 <k.icon className="h-4 w-4" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-sm font-medium">{k.label}</div>
-                <div className="text-[10px] text-muted-foreground">{k.id === "project" ? "Code + README + SQL" : k.id === "assignment" ? "DOCX export" : "PPTX export"}</div>
+                <div className="text-[10px] text-muted-foreground">{k.ext}</div>
               </div>
             </button>
           ))}
@@ -201,7 +222,7 @@ function DocsPage() {
                   onClick={exportFile}
                   className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
                 >
-                  <Download className="h-3 w-3" /> Export
+                  <Download className="h-3 w-3" /> Download
                 </button>
               </div>
             </div>
@@ -307,7 +328,7 @@ async function exportPptx(c: PresentationContent) {
   await pptx.writeFile({ fileName: `${safe(c.title)}.pptx` });
 }
 
-async function exportDocx(c: AssignmentContent) {
+async function exportAssignment(c: AssignmentContent) {
   const { Document, Packer, Paragraph, HeadingLevel, TextRun } = await import("docx");
   const { saveAs } = await import("file-saver");
   const children: any[] = [
@@ -327,27 +348,52 @@ async function exportDocx(c: AssignmentContent) {
   const doc = new Document({ sections: [{ children }] });
   const blob = await Packer.toBlob(doc);
   saveAs(blob, `${safe(c.title)}.docx`);
+
+  // Also export a PDF version
+  const { jsPDF } = await import("jspdf");
+  const pdf = new jsPDF({ unit: "pt", format: "a4" });
+  let y = 60;
+  pdf.setFontSize(20);
+  pdf.text(pdf.splitTextToSize(c.title, 500), 40, y);
+  y += 40;
+  pdf.setFontSize(11);
+  if (c.subject) { pdf.text(c.subject, 40, y); y += 20; }
+  for (const s of c.sections ?? []) {
+    if (y > 760) { pdf.addPage(); y = 60; }
+    pdf.setFontSize(14);
+    pdf.text(s.heading, 40, y); y += 20;
+    pdf.setFontSize(11);
+    const lines = pdf.splitTextToSize(s.body, 520);
+    for (const ln of lines) {
+      if (y > 780) { pdf.addPage(); y = 60; }
+      pdf.text(ln, 40, y); y += 14;
+    }
+    y += 8;
+  }
+  pdf.save(`${safe(c.title)}.pdf`);
 }
 
 async function exportProjectZip(c: ProjectContent) {
-  // No JSZip dep; bundle into a single Markdown for now.
-  const { jsPDF } = await import("jspdf");
-  const md =
-    `# ${c.title}\n\n${c.summary}\n\n## Stack\n${c.stack?.join(", ")}\n\n## Features\n${(c.features ?? []).map((f) => `- ${f}`).join("\n")}\n\n## Database Schema\n\`\`\`sql\n${c.schema}\n\`\`\`\n\n## README\n${c.readme}\n\n## Deployment\n${c.deployment}\n\n## Files\n${(c.files ?? []).map((f) => `\n### \`${f.path}\`\n\`\`\`${f.language ?? ""}\n${f.content}\n\`\`\`\n`).join("\n")}\n`;
-  // Save markdown
+  const JSZip = (await import("jszip")).default;
   const { saveAs } = await import("file-saver");
-  saveAs(new Blob([md], { type: "text/markdown" }), `${safe(c.title)}.md`);
-  // Also offer PDF
-  const pdf = new jsPDF({ unit: "pt", format: "a4" });
-  const lines = pdf.splitTextToSize(md, 520);
-  let y = 40;
-  pdf.setFontSize(10);
-  for (const ln of lines) {
-    if (y > 780) { pdf.addPage(); y = 40; }
-    pdf.text(ln, 40, y);
-    y += 14;
+  const zip = new JSZip();
+  const root = zip.folder(safe(c.title))!;
+  root.file("README.md", c.readme || `# ${c.title}\n\n${c.summary}`);
+  if (c.schema?.trim()) root.file("schema.sql", c.schema);
+  if (c.deployment?.trim()) root.file("DEPLOYMENT.md", c.deployment);
+  const meta = {
+    title: c.title,
+    summary: c.summary,
+    stack: c.stack,
+    features: c.features,
+  };
+  root.file("intelliverse.json", JSON.stringify(meta, null, 2));
+  for (const f of c.files ?? []) {
+    const path = f.path.replace(/^\/+/, "");
+    root.file(path, f.content ?? "");
   }
-  pdf.save(`${safe(c.title)}.pdf`);
+  const blob = await zip.generateAsync({ type: "blob" });
+  saveAs(blob, `${safe(c.title)}.zip`);
 }
 
 function safe(s: string) {
