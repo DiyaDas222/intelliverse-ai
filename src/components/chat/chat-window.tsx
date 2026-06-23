@@ -21,10 +21,11 @@ import { useAuth } from "@/lib/auth-context";
 import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
 import { GenerationProgress } from "@/components/generation-progress";
 import { ThinkingIndicator, detectIntent } from "@/components/thinking-indicator";
+import { CreationWizard, detectWizardKind, type WizardKind, type WizardResult } from "@/components/chat/creation-wizard";
 
 
 
-type Msg = { id: string; role: "user" | "assistant"; content: string; created_at?: string };
+type Msg = { id: string; role: "user" | "assistant"; content: string; created_at?: string; wizardKind?: WizardKind; wizardDone?: boolean };
 
 type DocumentRow = { id: string; filename: string };
 
