@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { GATEWAY_BASE_URL, getGatewayApiKey, gatewayHeaders } from "@/lib/gateway-config.server";
 
 export const Route = createFileRoute("/api/generate-image")({
   server: {
@@ -10,16 +11,15 @@ export const Route = createFileRoute("/api/generate-image")({
         };
         if (!prompt) return new Response("prompt required", { status: 400 });
 
-        const key = process.env.LOVABLE_API_KEY;
+        const key = getGatewayApiKey();
         if (!key) return new Response("AI gateway is not configured", { status: 500 });
 
         const upstream = await fetch(
-          "https://ai.gateway.lovable.dev/v1/images/generations",
+          `${GATEWAY_BASE_URL}/images/generations`,
           {
             method: "POST",
             headers: {
-              "Lovable-API-Key": key,
-              "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+              ...gatewayHeaders(key),
               "Content-Type": "application/json",
             },
             body: JSON.stringify({

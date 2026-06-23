@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { generateText } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
+import { getGatewayApiKey } from "@/lib/gateway-config.server";
 
 type MusicPlan = {
   title?: string;
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/api/generate-music")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.LOVABLE_API_KEY;
+        const apiKey = getGatewayApiKey();
         if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
 
         const auth = request.headers.get("authorization") ?? "";

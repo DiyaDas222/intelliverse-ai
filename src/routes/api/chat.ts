@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { streamText, convertToModelMessages, type UIMessage } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
+import { getGatewayApiKey } from "@/lib/gateway-config.server";
 import { isValidModel, DEFAULT_MODEL } from "@/lib/models";
 
 type ChatBody = {
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.LOVABLE_API_KEY;
+        const apiKey = getGatewayApiKey();
         if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
 
         let body: ChatBody;

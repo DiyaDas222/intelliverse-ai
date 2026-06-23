@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
+import { getGatewayApiKey } from "@/lib/gateway-config.server";
 import { generateText } from "ai";
 import { DEFAULT_MODEL } from "@/lib/models";
 
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/api/doc-action")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.LOVABLE_API_KEY;
+        const apiKey = getGatewayApiKey();
         if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
         const authHeader = request.headers.get("authorization");
         if (!authHeader?.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
