@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { generateText } from "ai";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { createGatewayProvider } from "@/lib/ai-gateway.server";
 
 type MusicPlan = {
   title?: string;
@@ -36,8 +36,8 @@ export const Route = createFileRoute("/api/generate-music")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const lovableKey = process.env.LOVABLE_API_KEY;
-        if (!lovableKey) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const apiKey = process.env.LOVABLE_API_KEY;
+        if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
 
         const auth = request.headers.get("authorization") ?? "";
         const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/api/generate-music")({
         const { data: u, error: ue } = await supabase.auth.getUser();
         if (ue || !u.user) return new Response("Unauthorized", { status: 401 });
 
-        const plan = await createMusicPlan(lovableKey, body.prompt);
+        const plan = await createMusicPlan(apiKey, body.prompt);
         const title = body.title?.trim() || plan.title?.trim() || body.prompt.slice(0, 60) || "Generated music";
         const wav = synthesizeWav(plan, body.prompt);
         const path = `${u.user.id}/music/${crypto.randomUUID()}.wav`;
@@ -88,7 +88,7 @@ export const Route = createFileRoute("/api/generate-music")({
 
 async function createMusicPlan(key: string, prompt: string): Promise<MusicPlan> {
   try {
-    const gateway = createLovableAiGatewayProvider(key);
+    const gateway = createGatewayProvider(key);
     const result = await generateText({
       model: gateway("google/gemini-3-flash-preview"),
       system: "Return only compact JSON for a short instrumental music render. No markdown.",

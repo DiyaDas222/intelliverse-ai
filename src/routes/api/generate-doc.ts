@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { generateText } from "ai";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { createGatewayProvider } from "@/lib/ai-gateway.server";
 
 type DocKind = "presentation" | "assignment" | "project" | "website" | "app";
 
@@ -43,7 +43,7 @@ export const Route = createFileRoute("/api/generate-doc")({
     handlers: {
       POST: async ({ request }) => {
         const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        if (!key) return new Response("AI gateway is not configured", { status: 500 });
 
         const { kind, prompt, model } = (await request.json().catch(() => ({}))) as {
           kind?: DocKind;
@@ -54,7 +54,7 @@ export const Route = createFileRoute("/api/generate-doc")({
           return new Response("kind and prompt required", { status: 400 });
         }
 
-        const gateway = createLovableAiGatewayProvider(key);
+        const gateway = createGatewayProvider(key);
         try {
           const { text } = await generateText({
             model: gateway(model || "google/gemini-2.5-flash"),

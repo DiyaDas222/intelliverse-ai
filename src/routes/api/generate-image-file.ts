@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/generate-image-file")({
     handlers: {
       POST: async ({ request }) => {
         const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        if (!key) return new Response("AI gateway is not configured", { status: 500 });
 
         const auth = request.headers.get("authorization") ?? "";
         const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;

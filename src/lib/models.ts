@@ -5,7 +5,7 @@ export type ChatModel = {
   tier: "fast" | "balanced" | "smart";
 };
 
-// All routed through Lovable AI Gateway.
+// All chat models routed through the AI Gateway.
 export const CHAT_MODELS: ChatModel[] = [
   { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash", hint: "Fast · default", tier: "fast" },
   { id: "google/gemini-3.5-flash", label: "Gemini 3.5 Flash", hint: "Faster reasoning", tier: "fast" },
