@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Mic2, Loader2, ChevronLeft, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { GenerationProgress } from "@/components/generation-progress";
 
 export const Route = createFileRoute("/_app/studio/audio")({
   head: () => ({ meta: [{ title: "AI Audio Studio — IntelliVerse" }] }),
