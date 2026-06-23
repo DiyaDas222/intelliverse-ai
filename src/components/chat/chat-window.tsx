@@ -19,6 +19,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
+import { GenerationProgress } from "@/components/generation-progress";
+
+
 
 type Msg = { id: string; role: "user" | "assistant"; content: string; created_at?: string };
 
@@ -72,6 +75,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [genKind, setGenKind] = useState<DirectGenerationKind | null>(null);
+  const [genMsgId, setGenMsgId] = useState<string | null>(null);
   const [attachedDocIds, setAttachedDocIds] = useState<string[]>([]);
   const [showDocPicker, setShowDocPicker] = useState(false);
   const [model, setModel] = useState<string>(DEFAULT_MODEL);
@@ -187,6 +192,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     if (directKind) {
       const assistantId = crypto.randomUUID();
       setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
+      setGenKind(directKind);
+      setGenMsgId(assistantId);
       setStreaming(true);
       try {
         const { data: sess } = await supabase.auth.getSession();
@@ -232,6 +239,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         return;
       } finally {
         setStreaming(false);
+        setGenKind(null);
+        setGenMsgId(null);
       }
     }
 
@@ -421,6 +430,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
                         <div className="prose-ai text-sm text-foreground">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
                         </div>
+                      ) : genKind && genMsgId === m.id ? (
+                        <GenerationProgress kind={genKind} active />
                       ) : (
                         <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
                           <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />

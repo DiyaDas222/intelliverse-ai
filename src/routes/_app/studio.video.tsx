@@ -6,6 +6,7 @@ import { VideoIcon, ChevronLeft, Lock, Settings2, Loader2, Sparkles, Download } 
 import { toast } from "sonner";
 import { listProviderStatuses } from "@/lib/providers.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { GenerationProgress } from "@/components/generation-progress";
 
 export const Route = createFileRoute("/_app/studio/video")({
   head: () => ({ meta: [{ title: "AI Video Generator — IntelliVerse" }] }),
@@ -128,6 +129,10 @@ function VideoPage() {
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {busy ? "Generating MP4…" : "Generate video file"}
             </button>
+
+            <GenerationProgress kind="video" active={busy} />
+
+
 
             {videoUrl && (
               <div className="rounded-lg border border-border/60 bg-background/40 p-3">

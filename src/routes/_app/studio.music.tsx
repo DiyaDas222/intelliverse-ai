@@ -6,6 +6,7 @@ import { Music2, ChevronLeft, Loader2, Sparkles, Download, Settings2 } from "luc
 import { toast } from "sonner";
 import { listProviderStatuses } from "@/lib/providers.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { GenerationProgress } from "@/components/generation-progress";
 
 export const Route = createFileRoute("/_app/studio/music")({
   head: () => ({ meta: [{ title: "AI Music Generator — IntelliVerse" }] }),
@@ -94,6 +95,10 @@ function MusicPage() {
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {busy ? "Generating audio file…" : "Generate music file"}
           </button>
+
+          <GenerationProgress kind="music" active={busy} />
+
+
 
           {audioUrl && (
             <div className="rounded-lg border border-border/60 bg-background/40 p-3">
