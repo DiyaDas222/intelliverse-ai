@@ -6,7 +6,7 @@ import {
   MessageSquarePlus,
   MessageSquare,
   FileText,
-  Settings,
+  LayoutDashboard,
   LogOut,
   Pin,
   Trash2,
