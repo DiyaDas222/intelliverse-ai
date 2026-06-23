@@ -21,7 +21,7 @@ export type AssetRow = {
   public_url: string | null;
   mime_type: string | null;
   size_bytes: number | null;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, any>;
   created_at: string;
 };
 
@@ -115,7 +115,7 @@ export const saveDocAsset = createServerFn({ method: "POST" })
       kind: "presentation" | "assignment" | "project";
       title: string;
       prompt: string;
-      content: unknown;
+      content: any;
     }) => d,
   )
   .handler(async ({ data, context }) => {
