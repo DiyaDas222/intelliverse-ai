@@ -37,10 +37,16 @@ function AppLayout() {
   const location = useLocation();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
   }, [loading, user, navigate]);
+
+  // close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   const { data: conversations = [] } = useQuery({
     queryKey: ["conversations", user?.id],
