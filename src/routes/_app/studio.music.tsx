@@ -96,6 +96,10 @@ function MusicPage() {
             {busy ? "Generating audio file…" : "Generate music file"}
           </button>
 
+          <GenerationProgress kind="music" active={busy} />
+
+
+
           {audioUrl && (
             <div className="rounded-lg border border-border/60 bg-background/40 p-3">
               <audio controls src={audioUrl} className="w-full" />
