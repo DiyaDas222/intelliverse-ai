@@ -13,6 +13,8 @@ import {
   Search,
   Loader2,
   Shield,
+  Menu,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
