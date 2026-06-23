@@ -54,7 +54,7 @@ const ICONS: Record<string, any> = {
 };
 
 function SharePage() {
-  const { asset, fileUrl, expiresAt, allowDownload } = Route.useLoaderData();
+  const { asset, fileUrl, expiresAt, allowDownload } = Route.useLoaderData() as SharePayload;
   const Icon = ICONS[asset.kind] ?? FileText;
   const expires = new Date(expiresAt);
 
