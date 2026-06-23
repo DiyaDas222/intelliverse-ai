@@ -4,7 +4,6 @@ import { z } from "zod";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth-context";
 
 const searchSchema = z.object({
@@ -72,6 +71,9 @@ function AuthPage() {
   };
 
   const handleGoogle = async () => {
+    if (typeof window === "undefined") return;
+
+    const { lovable } = await import("@/integrations/lovable/index");
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin + "/chat",
     });
