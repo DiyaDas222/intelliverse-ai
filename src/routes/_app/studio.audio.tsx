@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Mic2, Loader2, ChevronLeft, Sparkles } from "lucide-react";
@@ -19,6 +19,15 @@ function AudioPage() {
   const [title, setTitle] = useState("");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const qc = useQueryClient();
+
+  useEffect(() => {
+    const brief = sessionStorage.getItem("iv:wizard-brief:audio");
+    if (brief) {
+      setText(brief);
+      sessionStorage.removeItem("iv:wizard-brief:audio");
+      toast.success("Brief loaded from chat — review and click Generate");
+    }
+  }, []);
 
   const gen = useMutation({
     mutationFn: async () => {

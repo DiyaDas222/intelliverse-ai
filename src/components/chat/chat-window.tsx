@@ -21,10 +21,11 @@ import { useAuth } from "@/lib/auth-context";
 import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
 import { GenerationProgress } from "@/components/generation-progress";
 import { ThinkingIndicator, detectIntent } from "@/components/thinking-indicator";
+import { CreationWizard, detectWizardKind, type WizardKind, type WizardResult } from "@/components/chat/creation-wizard";
 
 
 
-type Msg = { id: string; role: "user" | "assistant"; content: string; created_at?: string };
+type Msg = { id: string; role: "user" | "assistant"; content: string; created_at?: string; wizardKind?: WizardKind; wizardDone?: boolean };
 
 type DocumentRow = { id: string; filename: string };
 
@@ -241,6 +242,22 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       }
     }
 
+    // Intercept creation requests with an interactive wizard instead of a chat reply.
+    const wizardKind = detectWizardKind(text);
+    if (wizardKind) {
+      const assistantId = crypto.randomUUID();
+      const intro = `Let's build your ${wizardKind} together. I've prepared a quick wizard — pick options below.`;
+      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: intro, wizardKind }]);
+      await supabase.from("messages").insert({
+        conversation_id: convId,
+        user_id: user.id,
+        role: "assistant",
+        content: intro,
+      });
+      return;
+    }
+
+
     // call streaming endpoint
     const assistantId = crypto.randomUUID();
     setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
@@ -333,6 +350,22 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     }
     setMessages((prev) => prev.filter((m) => m.id !== lastAssistant?.id));
     await sendMessage(lastUser.content);
+  };
+
+  const handleWizardComplete = async (msgId: string, result: WizardResult) => {
+    // Persist the brief for the target Studio page.
+    sessionStorage.setItem(`iv:wizard-brief:${result.kind}`, result.brief);
+    const followup = `**${result.kind.charAt(0).toUpperCase() + result.kind.slice(1)} brief ready ✓**\n\n${result.summary}\n\n[Open the builder with your brief pre-filled →](${result.studioPath})`;
+    setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: followup, wizardDone: true } : m)));
+    if (conversationId && user) {
+      await supabase.from("messages").insert({
+        conversation_id: conversationId,
+        user_id: user.id,
+        role: "assistant",
+        content: followup,
+      });
+    }
+    navigate({ to: result.studioPath as never });
   };
 
   return (
@@ -431,6 +464,14 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
                         <GenerationProgress kind={genKind} active />
                       ) : (
                         <ThinkingIndicator intent={detectIntent([...messages].reverse().find((x) => x.role === "user")?.content ?? "")} />
+                      )}
+                      {m.wizardKind && !m.wizardDone && (
+                        <div className="mt-3">
+                          <CreationWizard
+                            kind={m.wizardKind}
+                            onComplete={(result) => handleWizardComplete(m.id, result)}
+                          />
+                        </div>
                       )}
                       {!streaming && m.content && (
                         <div className="mt-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">

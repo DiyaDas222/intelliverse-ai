@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { VideoIcon, ChevronLeft, Lock, Settings2, Loader2, Sparkles, Download } from "lucide-react";
@@ -25,6 +25,15 @@ function VideoPage() {
   });
   const videoProviders = providers?.filter((p) => p.category === "video") ?? [];
   const ready = videoProviders.find((p) => p.enabled && p.configured);
+
+  useEffect(() => {
+    const brief = sessionStorage.getItem("iv:wizard-brief:video");
+    if (brief) {
+      setPrompt(brief);
+      sessionStorage.removeItem("iv:wizard-brief:video");
+      toast.success("Brief loaded from chat — review and click Generate");
+    }
+  }, []);
 
   async function generate() {
     if (!prompt.trim() || busy) return;

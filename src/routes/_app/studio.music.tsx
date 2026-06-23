@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Music2, ChevronLeft, Loader2, Sparkles, Download, Settings2 } from "lucide-react";
@@ -24,6 +24,15 @@ function MusicPage() {
     queryFn: () => list(),
   });
   const music = providers?.find((p) => p.id === "suno");
+
+  useEffect(() => {
+    const brief = sessionStorage.getItem("iv:wizard-brief:music");
+    if (brief) {
+      setPrompt(brief);
+      sessionStorage.removeItem("iv:wizard-brief:music");
+      toast.success("Brief loaded from chat — review and click Generate");
+    }
+  }, []);
 
   async function generate() {
     if (!prompt.trim() || busy) return;
