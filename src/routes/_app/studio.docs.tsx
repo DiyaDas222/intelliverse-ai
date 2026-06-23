@@ -104,9 +104,9 @@ function DocsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind, prompt }),
       });
-      if (!r.ok) throw new Error(await r.text());
-      const data = (await r.json()) as { content: AnyContent };
-      setContent(data.content);
+      const data = await r.json().catch(() => ({ error: "Unexpected server response" }));
+      if (!r.ok) throw new Error(data.error || "Generation failed");
+      setContent(data.content as AnyContent);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Generation failed");
     } finally {
