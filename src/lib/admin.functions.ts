@@ -138,9 +138,10 @@ export type ActivityLogRow = {
   user_id: string | null;
   email: string | null;
   action: string;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, string | number | boolean | null>;
   created_at: string;
 };
+
 
 export const listActivityLogs = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -170,7 +171,7 @@ export const listActivityLogs = createServerFn({ method: "GET" })
       user_id: l.user_id,
       email: l.user_id ? emails.get(l.user_id) ?? null : null,
       action: l.action,
-      metadata: (l.metadata ?? {}) as Record<string, unknown>,
+      metadata: (l.metadata ?? {}) as Record<string, string | number | boolean | null>,
       created_at: l.created_at,
     }));
   });
