@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { Mail, Twitter, Github, Linkedin, Send, CheckCircle2, Loader2 } from "lucide-react";
+import { Mail, Send, CheckCircle2, Loader2 } from "lucide-react";
 import { SiteNav, SiteFooter } from "@/components/site-chrome";
 
 export const Route = createFileRoute("/contact")({
