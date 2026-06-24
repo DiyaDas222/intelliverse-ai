@@ -56,7 +56,7 @@
 }
 
 /* Dark by default — premium SaaS feel */
-.dark {
+:root.dark {
   --radius: 0.75rem;
 
   --background: oklch(0.16 0.02 270);
