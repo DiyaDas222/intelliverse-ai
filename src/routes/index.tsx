@@ -222,7 +222,7 @@ const tiers = [
   },
   {
     name: "Pro",
-    price: "$19",
+    price: "$5",
     suffix: "/mo",
     desc: "For power users and professionals.",
     features: [
@@ -237,7 +237,7 @@ const tiers = [
   },
   {
     name: "Team",
-    price: "$49",
+    price: "$15",
     suffix: "/mo",
     desc: "For small teams collaborating with AI.",
     features: ["Everything in Pro", "Shared workspaces", "Admin dashboard", "Usage analytics"],
