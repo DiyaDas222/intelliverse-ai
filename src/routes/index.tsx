@@ -382,9 +382,9 @@ function Footer() {
           <span>© {new Date().getFullYear()} IntelliVerse AI</span>
         </div>
         <div className="flex gap-5">
-          <a href="#" className="hover:text-foreground">Privacy</a>
-          <a href="#" className="hover:text-foreground">Terms</a>
-          <a href="#" className="hover:text-foreground">Contact</a>
+          <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+          <Link to="/terms" className="hover:text-foreground">Terms</Link>
+          <Link to="/contact" className="hover:text-foreground">Contact</Link>
         </div>
       </div>
     </footer>
