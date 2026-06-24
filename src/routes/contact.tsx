@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { Mail, Twitter, Github, Linkedin, Send, CheckCircle2, Loader2 } from "lucide-react";
+import { Mail, Send, CheckCircle2, Loader2 } from "lucide-react";
 import { SiteNav, SiteFooter } from "@/components/site-chrome";
 
 export const Route = createFileRoute("/contact")({
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/contact")({
       {
         name: "description",
         content:
-          "Get in touch with the IntelliVerse AI team. Send us a message or reach out on social media.",
+          "Get in touch with the IntelliVerse AI team. Send us a message.",
       },
       { property: "og:title", content: "Contact Us — IntelliVerse AI" },
       {
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/contact")({
   component: ContactPage,
 });
 
-const SUPPORT_EMAIL = "hello@intelliverse.ai";
+const SUPPORT_EMAIL = "intelliverseai9@gmail.com";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name is too long"),
@@ -103,14 +103,6 @@ function ContactPage() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-border/60 bg-card/40 p-6">
-              <h2 className="text-sm font-semibold">Follow us</h2>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <SocialLink href="https://twitter.com/" label="Twitter / X" icon={Twitter} />
-                <SocialLink href="https://github.com/" label="GitHub" icon={Github} />
-                <SocialLink href="https://linkedin.com/" label="LinkedIn" icon={Linkedin} />
-              </div>
-            </div>
           </aside>
 
           {/* Form */}
@@ -241,25 +233,3 @@ function Field({
   );
 }
 
-function SocialLink({
-  href,
-  label,
-  icon: Icon,
-}: {
-  href: string;
-  label: string;
-  icon: typeof Mail;
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={label}
-      className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-    >
-      <Icon className="h-3.5 w-3.5" />
-      {label}
-    </a>
-  );
-}
