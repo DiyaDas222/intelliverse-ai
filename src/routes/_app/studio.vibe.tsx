@@ -149,24 +149,82 @@ function VibeHub() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((p) => {
               const k = KINDS.find((x) => x.id === p.kind) ?? KINDS[0];
+              const status = p.deploy_status ?? "draft";
+              const statusStyles: Record<string, string> = {
+                deployed: "bg-emerald-500/15 text-emerald-500",
+                building: "bg-amber-500/15 text-amber-500",
+                failed: "bg-red-500/15 text-red-500",
+                draft: "bg-muted text-muted-foreground",
+              };
               return (
-                <div key={p.id} className="group relative rounded-2xl border border-border/60 bg-card p-5 transition hover:-translate-y-0.5 hover:border-primary/50">
+                <div key={p.id} className="group relative flex flex-col rounded-2xl border border-border/60 bg-card p-5 transition hover:-translate-y-0.5 hover:border-primary/50">
                   <Link to="/studio/vibe/$id" params={{ id: p.id }} className="block">
                     <div className="mb-3 flex items-center gap-2">
                       <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-indigo-500/30 to-fuchsia-500/20">
                         <k.icon className="h-4 w-4" />
                       </div>
                       <span className="text-xs text-muted-foreground">{k.label}</span>
+                      <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${statusStyles[status] ?? statusStyles.draft}`}>
+                        {status}
+                      </span>
                     </div>
                     <h3 className="line-clamp-1 text-base font-semibold">{p.name}</h3>
                     <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                       {p.description || "No description"}
                     </p>
                     <p className="mt-3 text-[10px] uppercase tracking-wide text-muted-foreground">
-                      {(p.files?.length ?? 0)} file{(p.files?.length ?? 0) === 1 ? "" : "s"} ·
+                      {(p.files?.length ?? 0)} file{(p.files?.length ?? 0) === 1 ? "" : "s"} · v{p.version ?? 1} ·
                       Updated {new Date(p.updated_at).toLocaleDateString()}
                     </p>
                   </Link>
+                  <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-border/40 pt-3">
+                    {status === "deployed" && p.slug ? (
+                      <a
+                        href={`/live/${p.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-1 text-[11px] font-medium text-emerald-500 hover:bg-emerald-500/25"
+                      >
+                        <ExternalLink className="h-3 w-3" /> Live
+                      </a>
+                    ) : null}
+                    <Link
+                      to="/studio/vibe/$id"
+                      params={{ id: p.id }}
+                      className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[11px] hover:bg-muted/70"
+                    >
+                      <Pencil className="h-3 w-3" /> Edit
+                    </Link>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await deployFn({ data: { id: p.id } });
+                          qc.invalidateQueries({ queryKey: ["vibeProjects"] });
+                          toast.success("Redeployed");
+                        } catch (e: any) {
+                          toast.error(e?.message ?? "Redeploy failed");
+                        }
+                      }}
+                      disabled={(p.files?.length ?? 0) === 0}
+                      className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[11px] hover:bg-muted/70 disabled:opacity-40"
+                    >
+                      <Rocket className="h-3 w-3" /> Redeploy
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const zip = new JSZip();
+                        (p.files ?? []).forEach((f: any) => zip.file(f.path, f.content));
+                        const blob = await zip.generateAsync({ type: "blob" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url; a.download = `${p.name}.zip`; a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[11px] hover:bg-muted/70"
+                    >
+                      <Download className="h-3 w-3" /> ZIP
+                    </button>
+                  </div>
                   <button
                     onClick={() => {
                       if (confirm(`Delete "${p.name}"? This cannot be undone.`)) delMut.mutate(p.id);
