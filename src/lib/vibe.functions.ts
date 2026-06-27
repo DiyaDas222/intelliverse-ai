@@ -140,12 +140,13 @@ export const deployVibeProject = createServerFn({ method: "POST" })
       .maybeSingle();
     if (getErr) throw new Error(getErr.message);
     if (!cur) throw new Error("Project not found");
-    const files = (cur as { files: VibeFile[] }).files ?? [];
+    const curAny = cur as unknown as { files: VibeFile[]; slug: string | null; version: number; name: string };
+    const files = curAny.files ?? [];
     if (files.length === 0) throw new Error("Nothing to deploy — generate files first");
 
-    let slug = (cur as { slug: string | null }).slug;
+    let slug = curAny.slug;
     if (!slug) {
-      slug = `${slugify((cur as { name: string }).name || "site")}-${randSuffix()}`;
+      slug = `${slugify(curAny.name || "site")}-${randSuffix()}`;
     }
 
     const logs: DeployLogEntry[] = (data.logs ?? []).slice(-50);

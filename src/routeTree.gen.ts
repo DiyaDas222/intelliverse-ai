@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as STokenRouteImport } from './routes/s.$token'
+import { Route as LiveSlugRouteImport } from './routes/live.$slug'
 import { Route as ApiVibeGenerateRouteImport } from './routes/api/vibe-generate'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
@@ -89,6 +90,11 @@ const IndexRoute = IndexRouteImport.update({
 const STokenRoute = STokenRouteImport.update({
   id: '/s/$token',
   path: '/s/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveSlugRoute = LiveSlugRouteImport.update({
+  id: '/live/$slug',
+  path: '/live/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVibeGenerateRoute = ApiVibeGenerateRouteImport.update({
@@ -322,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/vibe-generate': typeof ApiVibeGenerateRoute
+  '/live/$slug': typeof LiveSlugRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
   '/chat/voice': typeof AppChatVoiceRoute
@@ -368,6 +375,7 @@ export interface FileRoutesByTo {
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/vibe-generate': typeof ApiVibeGenerateRoute
+  '/live/$slug': typeof LiveSlugRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
   '/chat/voice': typeof AppChatVoiceRoute
@@ -418,6 +426,7 @@ export interface FileRoutesById {
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/vibe-generate': typeof ApiVibeGenerateRoute
+  '/live/$slug': typeof LiveSlugRoute
   '/s/$token': typeof STokenRoute
   '/_app/chat/$id': typeof AppChatIdRoute
   '/_app/chat/voice': typeof AppChatVoiceRoute
@@ -468,6 +477,7 @@ export interface FileRouteTypes {
     | '/api/transcribe'
     | '/api/tts'
     | '/api/vibe-generate'
+    | '/live/$slug'
     | '/s/$token'
     | '/chat/$id'
     | '/chat/voice'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/api/transcribe'
     | '/api/tts'
     | '/api/vibe-generate'
+    | '/live/$slug'
     | '/s/$token'
     | '/chat/$id'
     | '/chat/voice'
@@ -563,6 +574,7 @@ export interface FileRouteTypes {
     | '/api/transcribe'
     | '/api/tts'
     | '/api/vibe-generate'
+    | '/live/$slug'
     | '/s/$token'
     | '/_app/chat/$id'
     | '/_app/chat/voice'
@@ -603,6 +615,7 @@ export interface RootRouteChildren {
   ApiTranscribeRoute: typeof ApiTranscribeRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVibeGenerateRoute: typeof ApiVibeGenerateRoute
+  LiveSlugRoute: typeof LiveSlugRoute
   STokenRoute: typeof STokenRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicShareTokenRoute: typeof ApiPublicShareTokenRoute
@@ -657,6 +670,13 @@ declare module '@tanstack/react-router' {
       path: '/s/$token'
       fullPath: '/s/$token'
       preLoaderRoute: typeof STokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live/$slug': {
+      id: '/live/$slug'
+      path: '/live/$slug'
+      fullPath: '/live/$slug'
+      preLoaderRoute: typeof LiveSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/vibe-generate': {
@@ -1079,6 +1099,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTranscribeRoute: ApiTranscribeRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiVibeGenerateRoute: ApiVibeGenerateRoute,
+  LiveSlugRoute: LiveSlugRoute,
   STokenRoute: STokenRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicShareTokenRoute: ApiPublicShareTokenRoute,
