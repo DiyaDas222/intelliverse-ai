@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
 import { requireUser } from "@/lib/require-auth.server";
+import { consumeCreditsOrReject, COST } from "@/lib/credits.server";
 
 type VibeFile = { path: string; content: string };
 type Stack = Record<string, unknown>;
@@ -45,6 +46,9 @@ export const Route = createFileRoute("/api/vibe-generate")({
       POST: async ({ request }) => {
         const authed = await requireUser(request);
         if (authed instanceof Response) return authed;
+
+        const blocked = await consumeCreditsOrReject(authed.userId, COST.vibe);
+        if (blocked) return blocked;
         const key = getGatewayApiKey();
         if (!key) {
           return new Response(JSON.stringify({ error: "AI gateway is not configured" }), {
