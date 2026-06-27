@@ -4,7 +4,7 @@ import { Check, ShieldCheck, Sparkles, ArrowLeft, Users, Loader2, Zap } from "lu
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/stripe-embedded-checkout";
-import { changeSubscriptionPlan, getCurrentPlan } from "@/lib/payments.functions";
+import { changeSubscriptionPlan, getCurrentPlan, createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 
 export const Route = createFileRoute("/_app/upgrade")({
