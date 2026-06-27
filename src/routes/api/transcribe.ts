@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
+import { requireUser } from "@/lib/require-auth.server";
 
 export const Route = createFileRoute("/api/transcribe")({
   server: {
