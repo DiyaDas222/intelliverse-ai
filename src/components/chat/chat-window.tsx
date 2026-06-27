@@ -259,7 +259,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     const nextHistory = [...messages, userMsg];
     setMessages(nextHistory);
 
-    await supabase
+    // Fire-and-forget persistence so we don't block the AI request on DB round-trips.
+    void supabase
       .from("messages")
       .insert({
         conversation_id: convId,
@@ -268,7 +269,11 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         content: body,
         ...(images.length ? { images } : {}),
       } as never);
-    await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", convId);
+    void supabase
+      .from("conversations")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", convId);
+
 
     // Creation wizard intercept
     const wizardKind = detectWizardKind(body);
@@ -287,9 +292,10 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
 
     if (messages.length === 0 && body) {
       const newTitle = body.slice(0, 60);
-      await supabase.from("conversations").update({ title: newTitle }).eq("id", convId);
+      void supabase.from("conversations").update({ title: newTitle }).eq("id", convId);
       qc.invalidateQueries({ queryKey: ["conversations"] });
     }
+
 
     await runChat(convId, nextHistory);
   };
