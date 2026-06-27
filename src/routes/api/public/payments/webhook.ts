@@ -9,14 +9,37 @@ async function getSupabase() {
   );
 }
 
-async function ensureProRole(supabase: any, userId: string) {
-  await supabase
-    .from("user_roles")
-    .upsert({ user_id: userId, role: "pro" }, { onConflict: "user_id,role" });
+type PlanRole = "pro" | "team";
+const WELCOME_BONUS_CREDITS = 50;
+
+function planRoleFromPriceId(priceId?: string | null): PlanRole {
+  if (priceId && priceId.startsWith("team_")) return "team";
+  return "pro";
 }
 
-async function removeProRole(supabase: any, userId: string) {
-  await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "pro");
+async function setPlanRole(supabase: any, userId: string, role: PlanRole) {
+  // Add the new role and remove the opposite one so plan switches stick.
+  const other: PlanRole = role === "pro" ? "team" : "pro";
+  await supabase
+    .from("user_roles")
+    .upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
+  await supabase
+    .from("user_roles")
+    .delete()
+    .eq("user_id", userId)
+    .eq("role", other);
+}
+
+async function removePlanRoles(supabase: any, userId: string) {
+  await supabase
+    .from("user_roles")
+    .delete()
+    .eq("user_id", userId)
+    .in("role", ["pro", "team"]);
+}
+
+async function notifyAdmin(supabase: any, kind: string, userId: string | null, payload: Record<string, unknown>) {
+  await supabase.from("admin_notifications").insert({ kind, user_id: userId, payload });
 }
 
 async function handleSubscription(event: any, env: StripeEnv) {
@@ -32,6 +55,14 @@ async function handleSubscription(event: any, env: StripeEnv) {
   const productId = item?.price?.product;
   const periodStart = item?.current_period_start ?? sub.current_period_start;
   const periodEnd = item?.current_period_end ?? sub.current_period_end;
+  const role = planRoleFromPriceId(priceId);
+
+  // Detect first-time activation for this subscription id.
+  const { data: existing } = await supabase
+    .from("subscriptions")
+    .select("id, status, price_id")
+    .eq("stripe_subscription_id", sub.id)
+    .maybeSingle();
 
   await supabase.from("subscriptions").upsert(
     {
@@ -50,12 +81,65 @@ async function handleSubscription(event: any, env: StripeEnv) {
     { onConflict: "stripe_subscription_id" },
   );
 
-  const isActive =
-    sub.status === "active" || sub.status === "trialing" ||
-    (sub.status === "canceled" && periodEnd && periodEnd * 1000 > Date.now());
+  const periodEndMs = periodEnd ? periodEnd * 1000 : null;
+  const isActiveNow =
+    sub.status === "active" ||
+    sub.status === "trialing" ||
+    sub.status === "past_due" ||
+    (sub.status === "canceled" && periodEndMs && periodEndMs > Date.now());
 
-  if (isActive) await ensureProRole(supabase, userId);
-  else await removeProRole(supabase, userId);
+  if (isActiveNow) {
+    await setPlanRole(supabase, userId, role);
+  } else {
+    await removePlanRoles(supabase, userId);
+  }
+
+  const firstActivation =
+    !existing && (sub.status === "active" || sub.status === "trialing");
+
+  if (firstActivation) {
+    // Seed welcome bonus credits (atomic increment, only on first activation).
+    await supabase.rpc("noop").catch(() => null); // safe noop
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("bonus_credits, email, display_name")
+      .eq("id", userId)
+      .maybeSingle();
+    await supabase
+      .from("profiles")
+      .update({ bonus_credits: (profile?.bonus_credits ?? 0) + WELCOME_BONUS_CREDITS })
+      .eq("id", userId);
+
+    await notifyAdmin(supabase, "subscription_activated", userId, {
+      plan: role,
+      price_id: priceId,
+      environment: env,
+      email: profile?.email,
+      display_name: profile?.display_name,
+      bonus_credits_granted: WELCOME_BONUS_CREDITS,
+    });
+
+    // Queue a welcome email entry. Wired up to Lovable Emails once a domain
+    // is configured; until then the row serves as an audit trail.
+    await supabase.from("admin_notifications").insert({
+      kind: "welcome_email_pending",
+      user_id: userId,
+      payload: { plan: role, email: profile?.email },
+    });
+  } else if (existing && existing.price_id !== priceId) {
+    await notifyAdmin(supabase, "subscription_plan_changed", userId, {
+      from: existing.price_id,
+      to: priceId,
+      environment: env,
+    });
+  } else if (sub.cancel_at_period_end && existing && !sub.canceled_at_was_set) {
+    // Cancellation requested but grace period remains.
+    await notifyAdmin(supabase, "subscription_cancel_scheduled", userId, {
+      price_id: priceId,
+      period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+      environment: env,
+    });
+  }
 }
 
 async function handleSubscriptionDeleted(event: any, env: StripeEnv) {
@@ -66,7 +150,14 @@ async function handleSubscriptionDeleted(event: any, env: StripeEnv) {
     .update({ status: "canceled", updated_at: new Date().toISOString() })
     .eq("stripe_subscription_id", sub.id)
     .eq("environment", env);
-  if (sub.metadata?.userId) await removeProRole(supabase, sub.metadata.userId);
+  const userId = sub.metadata?.userId;
+  if (userId) {
+    await removePlanRoles(supabase, userId);
+    await notifyAdmin(supabase, "subscription_canceled", userId, {
+      stripe_subscription_id: sub.id,
+      environment: env,
+    });
+  }
 }
 
 export const Route = createFileRoute("/api/public/payments/webhook")({
