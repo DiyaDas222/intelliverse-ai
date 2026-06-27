@@ -171,10 +171,24 @@ function VibeWorkspace() {
       await update({
         data: { id, files: merged, messages: finalMessages, entry_file: newEntry },
       });
+
+      // Auto-deploy: mark as deployed and grant a live URL.
+      try {
+        setDeploying(true);
+        await deployFn({ data: { id, logs: phases.logs.map((l) => ({ at: new Date().toISOString(), level: "info" as const, message: l })) } });
+        phases.complete();
+        toast.success("Deployed — live URL ready");
+      } catch (de: any) {
+        phases.fail("deployment", de?.message ?? "Deploy failed");
+        toast.error(de?.message ?? "Deploy failed");
+      } finally {
+        setDeploying(false);
+      }
+
       qc.invalidateQueries({ queryKey: ["vibeProject", id] });
       qc.invalidateQueries({ queryKey: ["vibeProjects"] });
-      toast.success(`Updated ${data.files?.length ?? 0} file(s)`);
     } catch (e: any) {
+      phases.fail(phases.current ?? "frontend", e?.message ?? "Generation failed");
       toast.error(e?.message ?? "Generation failed");
       setMessages((m) => [...m, { role: "assistant", content: `⚠️ ${e?.message ?? "Generation failed"}`, at: new Date().toISOString() }]);
     } finally {
