@@ -87,7 +87,7 @@ class Builder {
       return { data: arr, error: null };
     }
     if (this.op === "update") {
-      const targets = rows.filter((r) => matches(r, this.filters, this.ins, this.contains));
+      const targets = rows.filter((r) => matches(r, this.filters, this.ins, this._contains));
       for (const r of targets) Object.assign(r, this.payload);
       return { data: targets, error: null };
     }
