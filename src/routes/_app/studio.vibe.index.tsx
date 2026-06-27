@@ -31,7 +31,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  listVibeProjects, createVibeProject, deleteVibeProject, deployVibeProject,
+  listVibeProjects, deleteVibeProject, deployVibeProject,
 } from "@/lib/vibe.functions";
 
 export const Route = createFileRoute("/_app/studio/vibe/")({
@@ -54,7 +54,6 @@ const STYLING = ["Tailwind CSS", "Plain CSS", "Material UI", "Bootstrap", "shadc
 
 function VibeHub() {
   const list = useServerFn(listVibeProjects);
-  const create = useServerFn(createVibeProject);
   const del = useServerFn(deleteVibeProject);
   const deployFn = useServerFn(deployVibeProject);
   const qc = useQueryClient();
