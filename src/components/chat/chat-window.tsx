@@ -292,9 +292,10 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
 
     if (messages.length === 0 && body) {
       const newTitle = body.slice(0, 60);
-      await supabase.from("conversations").update({ title: newTitle }).eq("id", convId);
+      void supabase.from("conversations").update({ title: newTitle }).eq("id", convId);
       qc.invalidateQueries({ queryKey: ["conversations"] });
     }
+
 
     await runChat(convId, nextHistory);
   };
