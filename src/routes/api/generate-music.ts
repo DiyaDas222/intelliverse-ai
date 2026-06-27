@@ -54,6 +54,10 @@ export const Route = createFileRoute("/api/generate-music")({
         const { data: u, error: ue } = await supabase.auth.getUser();
         if (ue || !u.user) return new Response("Unauthorized", { status: 401 });
 
+        const { consumeCreditsOrReject, COST } = await import("@/lib/credits.server");
+        const blocked = await consumeCreditsOrReject(u.user.id, COST.music);
+        if (blocked) return blocked;
+
         const plan = await createMusicPlan(apiKey, body.prompt);
         const title = body.title?.trim() || plan.title?.trim() || body.prompt.slice(0, 60) || "Generated music";
         const wav = synthesizeWav(plan, body.prompt);

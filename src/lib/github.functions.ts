@@ -136,7 +136,8 @@ export const getProStatus = createServerFn({ method: "GET" })
       .from("user_roles")
       .select("id")
       .eq("user_id", context.userId)
-      .eq("role", "pro" as any)
+      .in("role", ["pro", "team"] as any)
+      .limit(1)
       .maybeSingle();
     return { isPro: !!data };
   });

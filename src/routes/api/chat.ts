@@ -4,6 +4,7 @@ import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
 import { isValidModel, DEFAULT_MODEL } from "@/lib/models";
 import { requireUser } from "@/lib/require-auth.server";
+import { consumeCreditsOrReject, COST } from "@/lib/credits.server";
 
 type ChatBody = {
   messages: { role: "user" | "assistant" | "system"; content: string; images?: string[] }[];
@@ -45,6 +46,10 @@ export const Route = createFileRoute("/api/chat")({
 
         const authed = await requireUser(request);
         if (authed instanceof Response) return authed;
+
+        const blocked = await consumeCreditsOrReject(authed.userId, COST.chat);
+        if (blocked) return blocked;
+
 
 
         let body: ChatBody;

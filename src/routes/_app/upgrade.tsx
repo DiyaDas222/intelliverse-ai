@@ -4,7 +4,7 @@ import { Check, ShieldCheck, Sparkles, ArrowLeft, Users, Loader2, Zap } from "lu
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/stripe-embedded-checkout";
-import { changeSubscriptionPlan, getCurrentPlan } from "@/lib/payments.functions";
+import { changeSubscriptionPlan, getCurrentPlan, createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 
 export const Route = createFileRoute("/_app/upgrade")({
@@ -73,6 +73,22 @@ function UpgradePage() {
   const [currentPriceId, setCurrentPriceId] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
   const [packPriceId, setPackPriceId] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  async function openPortal() {
+    setPortalLoading(true);
+    try {
+      const res = await createPortalSession({
+        data: { environment: getStripeEnvironment(), returnUrl: window.location.href },
+      });
+      if ("error" in res) throw new Error(res.error);
+      window.location.href = res.url;
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not open billing portal");
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   const selected = TIERS[tier].prices[cycle];
   const isCurrentPlan = currentPriceId === selected.id;
@@ -181,9 +197,13 @@ function UpgradePage() {
               </Button>
             </div>
           ) : isCurrentPlan ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              You're already on this plan. Manage billing from your account portal.
-            </p>
+            <div className="flex flex-col items-center gap-3 py-6 text-center">
+              <p className="text-sm text-muted-foreground">You're already on this plan.</p>
+              <Button size="lg" variant="outline" onClick={openPortal} disabled={portalLoading}>
+                {portalLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Manage subscription
+              </Button>
+            </div>
           ) : checkoutOpen ? (
             <StripeEmbeddedCheckout priceId={selected.id} />
           ) : (

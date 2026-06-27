@@ -3,6 +3,7 @@ import { streamText } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
 import { requireUser } from "@/lib/require-auth.server";
+import { consumeCreditsOrReject, COST } from "@/lib/credits.server";
 
 type Action = "edit" | "debug" | "explain" | "complete" | "chat";
 
@@ -43,6 +44,9 @@ export const Route = createFileRoute("/api/code-assist")({
       POST: async ({ request }) => {
         const authed = await requireUser(request);
         if (authed instanceof Response) return authed;
+
+        const blocked = await consumeCreditsOrReject(authed.userId, COST.code);
+        if (blocked) return blocked;
         const key = getGatewayApiKey();
         if (!key) return new Response("AI gateway is not configured", { status: 500 });
 

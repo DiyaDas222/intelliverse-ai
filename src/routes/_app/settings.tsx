@@ -1,12 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Save, User as UserIcon, Palette, Cpu } from "lucide-react";
+import { Loader2, Save, User as UserIcon, Palette, Cpu, Zap, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
+import { getCreditsSummary } from "@/lib/credits.functions";
+import { createPortalSession } from "@/lib/payments.functions";
+import { getStripeEnvironment } from "@/lib/stripe";
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({ meta: [{ title: "Settings — IntelliVerse" }] }),
@@ -21,6 +24,29 @@ function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light" | "system">("dark");
   const [defaultModel, setDefaultModel] = useState<string>(DEFAULT_MODEL);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const credits = useQuery({
+    queryKey: ["credits-summary", user?.id],
+    enabled: !!user,
+    queryFn: () => getCreditsSummary(),
+    refetchOnWindowFocus: false,
+  });
+
+  async function openPortal() {
+    setPortalLoading(true);
+    try {
+      const res = await createPortalSession({
+        data: { environment: getStripeEnvironment(), returnUrl: window.location.href },
+      });
+      if ("error" in res) throw new Error(res.error);
+      window.location.href = res.url;
+    } catch (e: any) {
+      toast.error(e?.message ?? "No active subscription to manage");
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", user?.id],
@@ -189,6 +215,53 @@ function SettingsPage() {
               </button>
             ))}
           </div>
+        </section>
+
+        {/* Billing & Usage */}
+        <section className="mt-6 rounded-2xl border border-border/60 bg-card/40 p-5">
+          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+            <Zap className="h-4 w-4 text-amber-500" /> Billing & Usage
+          </h2>
+          {credits.isLoading || !credits.data ? (
+            <p className="text-xs text-muted-foreground">Loading…</p>
+          ) : (
+            <>
+              <div className="flex items-center justify-between text-sm">
+                <div>
+                  <div className="font-medium capitalize">{credits.data.plan} plan</div>
+                  <div className="text-xs text-muted-foreground">
+                    {credits.data.used} / {credits.data.allowance} monthly credits used
+                    {credits.data.bonus > 0 && <> · +{credits.data.bonus} bonus</>}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{credits.data.remaining}</div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">remaining</div>
+                </div>
+              </div>
+              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-accent"
+                  style={{ width: `${Math.min(100, (credits.data.used / Math.max(1, credits.data.allowance)) * 100)}%` }}
+                />
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link to="/upgrade" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+                  {credits.data.plan === "free" ? "Upgrade plan" : "Change plan / buy credits"}
+                </Link>
+                {credits.data.plan !== "free" && (
+                  <button
+                    onClick={openPortal}
+                    disabled={portalLoading}
+                    className="inline-flex items-center gap-1 rounded-lg border border-border px-4 py-2 text-sm hover:bg-card disabled:opacity-50"
+                  >
+                    {portalLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ExternalLink className="h-3 w-3" />}
+                    Manage subscription
+                  </button>
+                )}
+              </div>
+            </>
+          )}
         </section>
 
         {/* Account */}

@@ -334,27 +334,33 @@ export type Database = {
           avatar_url: string | null
           bonus_credits: number
           created_at: string
+          credits_period_start: string
           display_name: string | null
           email: string | null
           id: string
+          monthly_credits_used: number
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           bonus_credits?: number
           created_at?: string
+          credits_period_start?: string
           display_name?: string | null
           email?: string | null
           id: string
+          monthly_credits_used?: number
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           bonus_credits?: number
           created_at?: string
+          credits_period_start?: string
           display_name?: string | null
           email?: string | null
           id?: string
+          monthly_credits_used?: number
           updated_at?: string
         }
         Relationships: []
@@ -562,7 +568,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      consume_credits: {
+        Args: { _amount: number; _user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "pro" | "team"
