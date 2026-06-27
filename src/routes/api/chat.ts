@@ -47,6 +47,10 @@ export const Route = createFileRoute("/api/chat")({
         const authed = await requireUser(request);
         if (authed instanceof Response) return authed;
 
+        const blocked = await consumeCreditsOrReject(authed.userId, COST.chat);
+        if (blocked) return blocked;
+
+
 
         let body: ChatBody;
         try {
