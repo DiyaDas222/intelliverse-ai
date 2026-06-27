@@ -11,6 +11,7 @@ import {
   VideoIcon,
   Sparkles,
   Lock,
+  Code2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -31,15 +32,16 @@ type Tool = {
 };
 
 const TOOLS: Tool[] = [
+  { to: "/studio/code", title: "Code Studio", desc: "Edit, debug & explain ANY language code. Chat in any language.", icon: Code2, tint: "from-indigo-500/30 to-blue-500/10" },
   { to: "/studio/image", title: "Image Generator", desc: "Text → PNG. Logos, posters, photos.", icon: ImageIcon, tint: "from-pink-500/30 to-rose-500/10" },
   { to: "/studio/audio", title: "Voice Generator", desc: "Text-to-speech → real MP3 narration.", icon: Mic2, tint: "from-amber-500/30 to-orange-500/10" },
   { to: "/studio/music", title: "Music Generator", desc: "Text → MP3 tracks (requires Suno).", icon: Music2, tint: "from-rose-500/30 to-red-500/10", requiresProviderId: "suno" },
   { to: "/studio/video", title: "Video Generator", desc: "Text → MP4 (Runway / Luma / Pika).", icon: VideoIcon, tint: "from-fuchsia-500/30 to-pink-500/10", requiresVideo: true },
-  { to: "/studio/docs", title: "Presentation", desc: "Real downloadable PPTX decks.", icon: Presentation, tint: "from-violet-500/30 to-purple-500/10" },
-  { to: "/studio/docs", title: "Assignment", desc: "Reports & essays — DOCX + PDF.", icon: GraduationCap, tint: "from-emerald-500/30 to-teal-500/10" },
-  { to: "/studio/docs", title: "Website Builder", desc: "Source-code ZIP of a static site.", icon: Globe, tint: "from-cyan-500/30 to-sky-500/10" },
-  { to: "/studio/docs", title: "App Builder", desc: "Source-code ZIP of a full app.", icon: AppWindow, tint: "from-fuchsia-500/30 to-pink-500/10" },
-  { to: "/studio/docs", title: "Project Generator", desc: "Multi-file project scaffold ZIP.", icon: FolderGit2, tint: "from-blue-500/30 to-cyan-500/10" },
+  { to: "/studio/docs?kind=website", title: "Website Builder", desc: "Prompt → full source ZIP + live preview.", icon: Globe, tint: "from-cyan-500/30 to-sky-500/10" },
+  { to: "/studio/docs?kind=app", title: "App Builder", desc: "Prompt → full source ZIP + live preview.", icon: AppWindow, tint: "from-fuchsia-500/30 to-pink-500/10" },
+  { to: "/studio/docs?kind=project", title: "Project Generator", desc: "Multi-file scaffold ZIP for any stack.", icon: FolderGit2, tint: "from-blue-500/30 to-cyan-500/10" },
+  { to: "/studio/docs?kind=presentation", title: "Presentation", desc: "Real downloadable PPTX decks.", icon: Presentation, tint: "from-violet-500/30 to-purple-500/10" },
+  { to: "/studio/docs?kind=assignment", title: "Assignment", desc: "Reports & essays — DOCX + PDF.", icon: GraduationCap, tint: "from-emerald-500/30 to-teal-500/10" },
 ];
 
 function StudioHub() {

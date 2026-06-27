@@ -291,6 +291,20 @@ function Preview({ kind, content }: { kind: DocKind; content: AnyContent }) {
     );
   }
   const c = content as ProjectContent;
+  const htmlFile = c.files?.find((f) => /(^|\/)index\.html$/i.test(f.path));
+  let previewDoc = "";
+  if (htmlFile) {
+    previewDoc = htmlFile.content || "";
+    // Inline same-folder CSS/JS so the iframe can render without a server.
+    previewDoc = previewDoc.replace(/<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi, (_m, href) => {
+      const file = c.files?.find((f) => f.path.endsWith(href.replace(/^\.?\//, "")));
+      return file ? `<style>${file.content}</style>` : "";
+    });
+    previewDoc = previewDoc.replace(/<script[^>]+src=["']([^"']+\.js)["'][^>]*><\/script>/gi, (_m, src) => {
+      const file = c.files?.find((f) => f.path.endsWith(src.replace(/^\.?\//, "")));
+      return file ? `<script>${file.content}<\/script>` : "";
+    });
+  }
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">{c.summary}</p>
@@ -305,6 +319,17 @@ function Preview({ kind, content }: { kind: DocKind; content: AnyContent }) {
           {c.features?.map((f, i) => <li key={i}>{f}</li>)}
         </ul>
       </div>
+      {previewDoc && (
+        <div>
+          <h3 className="mb-1 text-sm font-medium">Live preview</h3>
+          <iframe
+            title="project preview"
+            className="h-[480px] w-full rounded-lg border border-border/60 bg-white"
+            sandbox="allow-scripts"
+            srcDoc={previewDoc}
+          />
+        </div>
+      )}
       <div>
         <h3 className="text-sm font-medium">Files ({c.files?.length ?? 0})</h3>
         <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
