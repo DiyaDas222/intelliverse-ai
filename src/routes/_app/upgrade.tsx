@@ -73,6 +73,22 @@ function UpgradePage() {
   const [currentPriceId, setCurrentPriceId] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
   const [packPriceId, setPackPriceId] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  async function openPortal() {
+    setPortalLoading(true);
+    try {
+      const res = await createPortalSession({
+        data: { environment: getStripeEnvironment(), returnUrl: window.location.href },
+      });
+      if ("error" in res) throw new Error(res.error);
+      window.location.href = res.url;
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not open billing portal");
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   const selected = TIERS[tier].prices[cycle];
   const isCurrentPlan = currentPriceId === selected.id;
