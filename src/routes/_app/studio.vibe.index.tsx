@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { authedFetch } from "@/lib/authed-fetch";
 import {
   Code2,
   Plus,
@@ -30,7 +31,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  listVibeProjects, createVibeProject, deleteVibeProject, deployVibeProject,
+  listVibeProjects, deleteVibeProject, deployVibeProject,
 } from "@/lib/vibe.functions";
 
 export const Route = createFileRoute("/_app/studio/vibe/")({
@@ -53,7 +54,6 @@ const STYLING = ["Tailwind CSS", "Plain CSS", "Material UI", "Bootstrap", "shadc
 
 function VibeHub() {
   const list = useServerFn(listVibeProjects);
-  const create = useServerFn(createVibeProject);
   const del = useServerFn(deleteVibeProject);
   const deployFn = useServerFn(deployVibeProject);
   const qc = useQueryClient();
@@ -79,8 +79,11 @@ function VibeHub() {
   const createMut = useMutation({
     mutationFn: async () => {
       if (!form.name.trim()) throw new Error("Name your project first");
-      return create({
-        data: {
+      if (!form.description.trim()) throw new Error("Describe what to build first");
+      const res = await authedFetch("/api/vibe-start", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
           name: form.name.trim(),
           description: form.description.trim(),
           kind: form.kind,
@@ -91,22 +94,24 @@ function VibeHub() {
             auth: form.auth,
             styling: form.styling,
           },
-        },
+        }),
       });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.project?.id) throw new Error(data?.error || "Failed to build");
+      return data.project;
     },
     onSuccess: (p) => {
       qc.invalidateQueries({ queryKey: ["vibeProjects"] });
       setOpen(false);
-      if (form.description.trim()) {
-        sessionStorage.setItem(
-          `iv:vibe-auto:${p.id}`,
-          `${form.description.trim()}\n\nBuild it directly from this prompt, generate complete files, deploy automatically, and show the live URL.`,
-        );
-      }
-      toast.success(form.description.trim() ? "Project building started" : "Project created");
+      toast.success("Built and deployed");
       navigate({ to: "/studio/vibe/$id", params: { id: p.id } });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to create"),
+    onError: (e: any) => toast.error(e?.message ?? "Failed to build"),
+  });
+
+  const visibleProjects = projects.filter((p) => {
+    const status = p.deploy_status ?? "idle";
+    return (p.files?.length ?? 0) > 0 || (status === "deployed" && !!p.slug);
   });
 
   const delMut = useMutation({
@@ -139,7 +144,7 @@ function VibeHub() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading your projects…
           </div>
-        ) : projects.length === 0 ? (
+        ) : visibleProjects.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border/60 p-10 text-center">
             <Sparkles className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
             <h2 className="text-lg font-semibold">No projects yet</h2>
@@ -153,7 +158,7 @@ function VibeHub() {
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((p) => {
+            {visibleProjects.map((p) => {
               const k = KINDS.find((x) => x.id === p.kind) ?? KINDS[0];
               const status = p.deploy_status ?? "draft";
               const statusStyles: Record<string, string> = {
@@ -280,7 +285,7 @@ function VibeHub() {
             <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
             <Button onClick={() => createMut.mutate()} disabled={createMut.isPending}>
               {createMut.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-              Create & build
+              Generate & deploy
             </Button>
           </DialogFooter>
         </DialogContent>

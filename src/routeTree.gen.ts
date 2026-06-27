@@ -17,6 +17,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as STokenRouteImport } from './routes/s.$token'
 import { Route as LiveSlugRouteImport } from './routes/live.$slug'
+import { Route as ApiVibeStartRouteImport } from './routes/api/vibe-start'
 import { Route as ApiVibeGenerateRouteImport } from './routes/api/vibe-generate'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
@@ -96,6 +97,11 @@ const STokenRoute = STokenRouteImport.update({
 const LiveSlugRoute = LiveSlugRouteImport.update({
   id: '/live/$slug',
   path: '/live/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVibeStartRoute = ApiVibeStartRouteImport.update({
+  id: '/api/vibe-start',
+  path: '/api/vibe-start',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVibeGenerateRoute = ApiVibeGenerateRouteImport.update({
@@ -334,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/vibe-generate': typeof ApiVibeGenerateRoute
+  '/api/vibe-start': typeof ApiVibeStartRoute
   '/live/$slug': typeof LiveSlugRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
@@ -382,6 +389,7 @@ export interface FileRoutesByTo {
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/vibe-generate': typeof ApiVibeGenerateRoute
+  '/api/vibe-start': typeof ApiVibeStartRoute
   '/live/$slug': typeof LiveSlugRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
@@ -433,6 +441,7 @@ export interface FileRoutesById {
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/vibe-generate': typeof ApiVibeGenerateRoute
+  '/api/vibe-start': typeof ApiVibeStartRoute
   '/live/$slug': typeof LiveSlugRoute
   '/s/$token': typeof STokenRoute
   '/_app/chat/$id': typeof AppChatIdRoute
@@ -485,6 +494,7 @@ export interface FileRouteTypes {
     | '/api/transcribe'
     | '/api/tts'
     | '/api/vibe-generate'
+    | '/api/vibe-start'
     | '/live/$slug'
     | '/s/$token'
     | '/chat/$id'
@@ -533,6 +543,7 @@ export interface FileRouteTypes {
     | '/api/transcribe'
     | '/api/tts'
     | '/api/vibe-generate'
+    | '/api/vibe-start'
     | '/live/$slug'
     | '/s/$token'
     | '/chat/$id'
@@ -583,6 +594,7 @@ export interface FileRouteTypes {
     | '/api/transcribe'
     | '/api/tts'
     | '/api/vibe-generate'
+    | '/api/vibe-start'
     | '/live/$slug'
     | '/s/$token'
     | '/_app/chat/$id'
@@ -625,6 +637,7 @@ export interface RootRouteChildren {
   ApiTranscribeRoute: typeof ApiTranscribeRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVibeGenerateRoute: typeof ApiVibeGenerateRoute
+  ApiVibeStartRoute: typeof ApiVibeStartRoute
   LiveSlugRoute: typeof LiveSlugRoute
   STokenRoute: typeof STokenRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -687,6 +700,13 @@ declare module '@tanstack/react-router' {
       path: '/live/$slug'
       fullPath: '/live/$slug'
       preLoaderRoute: typeof LiveSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vibe-start': {
+      id: '/api/vibe-start'
+      path: '/api/vibe-start'
+      fullPath: '/api/vibe-start'
+      preLoaderRoute: typeof ApiVibeStartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/vibe-generate': {
@@ -1118,6 +1138,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTranscribeRoute: ApiTranscribeRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiVibeGenerateRoute: ApiVibeGenerateRoute,
+  ApiVibeStartRoute: ApiVibeStartRoute,
   LiveSlugRoute: LiveSlugRoute,
   STokenRoute: STokenRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
