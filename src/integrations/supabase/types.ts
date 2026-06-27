@@ -228,6 +228,39 @@ export type Database = {
         }
         Relationships: []
       }
+      github_connections: {
+        Row: {
+          access_token: string
+          created_at: string
+          github_user_id: number | null
+          github_username: string
+          scopes: string[] | null
+          token_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          github_user_id?: number | null
+          github_username: string
+          scopes?: string[] | null
+          token_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          github_user_id?: number | null
+          github_username?: string
+          scopes?: string[] | null
+          token_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -329,6 +362,60 @@ export type Database = {
         }
         Relationships: []
       }
+      publish_history: {
+        Row: {
+          branch: string
+          commit_sha: string | null
+          created_at: string
+          error: string | null
+          file_count: number
+          id: string
+          is_private: boolean
+          pro_at_publish: boolean
+          repo_name: string
+          repo_owner: string
+          repo_url: string
+          source_id: string | null
+          source_kind: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          branch?: string
+          commit_sha?: string | null
+          created_at?: string
+          error?: string | null
+          file_count?: number
+          id?: string
+          is_private?: boolean
+          pro_at_publish?: boolean
+          repo_name: string
+          repo_owner: string
+          repo_url: string
+          source_id?: string | null
+          source_kind: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          branch?: string
+          commit_sha?: string | null
+          created_at?: string
+          error?: string | null
+          file_count?: number
+          id?: string
+          is_private?: boolean
+          pro_at_publish?: boolean
+          repo_name?: string
+          repo_owner?: string
+          repo_url?: string
+          source_id?: string | null
+          source_kind?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -406,7 +493,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "pro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -534,7 +621,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "pro"],
     },
   },
 } as const
