@@ -10,6 +10,7 @@ import {
   Download,
   Eye,
   FileCode2,
+  Github,
   Loader2,
   Plus,
   Send,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { GithubPublishDialog } from "@/components/github-publish-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import {
   getVibeProject, updateVibeProject,
@@ -62,6 +64,7 @@ function VibeWorkspace() {
   const [generating, setGenerating] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [dirty, setDirty] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -244,8 +247,21 @@ function VibeWorkspace() {
           <Button size="sm" variant="outline" onClick={downloadZip}>
             <Download className="mr-1 h-3.5 w-3.5" /> ZIP
           </Button>
+          <Button size="sm" onClick={() => setPublishOpen(true)} disabled={files.length === 0}>
+            <Github className="mr-1 h-3.5 w-3.5" /> Publish
+          </Button>
         </div>
       </div>
+
+      <GithubPublishDialog
+        open={publishOpen}
+        onOpenChange={setPublishOpen}
+        files={files.map((f) => ({ path: f.path, content: f.content }))}
+        defaultRepoName={(project?.name || "vibe-project").replace(/[^A-Za-z0-9._-]+/g, "-").slice(0, 80)}
+        defaultDescription={project?.description ?? ""}
+        sourceKind="vibe"
+        sourceId={id}
+      />
 
       <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[220px_1fr_380px]">
         {/* File tree */}
