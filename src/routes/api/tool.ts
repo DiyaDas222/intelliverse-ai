@@ -3,6 +3,7 @@ import { streamText } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
 import { isValidModel, DEFAULT_MODEL } from "@/lib/models";
+import { requireUser } from "@/lib/require-auth.server";
 
 type ToolBody = {
   system?: string;
