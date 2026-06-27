@@ -93,6 +93,7 @@ function DocsPage() {
   const [prompt, setPrompt] = useState("");
   const [content, setContent] = useState<AnyContent | null>(null);
   const [genBusy, setGenBusy] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
 
   // Prefill from chat wizard & honor ?kind=... query param
   useEffect(() => {
