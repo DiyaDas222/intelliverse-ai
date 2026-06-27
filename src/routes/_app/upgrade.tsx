@@ -181,9 +181,13 @@ function UpgradePage() {
               </Button>
             </div>
           ) : isCurrentPlan ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              You're already on this plan. Manage billing from your account portal.
-            </p>
+            <div className="flex flex-col items-center gap-3 py-6 text-center">
+              <p className="text-sm text-muted-foreground">You're already on this plan.</p>
+              <Button size="lg" variant="outline" onClick={openPortal} disabled={portalLoading}>
+                {portalLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Manage subscription
+              </Button>
+            </div>
           ) : checkoutOpen ? (
             <StripeEmbeddedCheckout priceId={selected.id} />
           ) : (
