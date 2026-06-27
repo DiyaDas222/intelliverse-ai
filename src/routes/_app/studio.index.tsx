@@ -32,6 +32,7 @@ type Tool = {
 };
 
 const TOOLS: Tool[] = [
+  { to: "/studio/vibe", title: "Vibe Coding", desc: "Build full apps, sites & APIs from chat. Project memory + live preview.", icon: Sparkles, tint: "from-indigo-500/30 to-fuchsia-500/10" },
   { to: "/studio/code", title: "Code Studio", desc: "Edit, debug & explain ANY language code. Chat in any language.", icon: Code2, tint: "from-indigo-500/30 to-blue-500/10" },
   { to: "/studio/image", title: "Image Generator", desc: "Text → PNG. Logos, posters, photos.", icon: ImageIcon, tint: "from-pink-500/30 to-rose-500/10" },
   { to: "/studio/audio", title: "Voice Generator", desc: "Text-to-speech → real MP3 narration.", icon: Mic2, tint: "from-amber-500/30 to-orange-500/10" },
