@@ -412,14 +412,14 @@ function VibeWorkspace() {
                   <iframe
                     title="live preview"
                     className="min-h-0 flex-1 bg-white"
-                    sandbox="allow-scripts allow-forms allow-modals"
+                    sandbox="allow-scripts allow-forms allow-modals allow-popups"
                     src={`/live/${project.slug}`}
                   />
                 ) : (
                   <iframe
                     title="preview"
                     className="min-h-0 flex-1 bg-white"
-                    sandbox="allow-scripts allow-forms allow-modals"
+                    sandbox="allow-scripts allow-forms allow-modals allow-popups"
                     srcDoc={previewDoc}
                   />
                 )}
