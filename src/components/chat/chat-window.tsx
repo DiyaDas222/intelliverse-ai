@@ -274,20 +274,32 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     setMessages(nextHistory);
 
 
-    // Fire-and-forget persistence so we don't block the AI request on DB round-trips.
-    void supabase
-      .from("messages")
-      .insert({
-        conversation_id: convId,
+    // Resolve convId (await pending creation if first message). Persist DB
+    // writes in background — none of these block the AI fetch below.
+    const resolveConv = async (): Promise<string | null> => {
+      if (convId) return convId;
+      const id = await convPromise;
+      return id ?? null;
+    };
+    void resolveConv().then((id) => {
+      if (!id) return;
+      void supabase.from("messages").insert({
+        conversation_id: id,
         user_id: user.id,
         role: "user",
         content: body,
         ...(images.length ? { images } : {}),
       } as never);
-    void supabase
-      .from("conversations")
-      .update({ updated_at: new Date().toISOString() })
-      .eq("id", convId);
+      void supabase
+        .from("conversations")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (messages.length === 0 && body) {
+        const newTitle = body.slice(0, 60);
+        void supabase.from("conversations").update({ title: newTitle }).eq("id", id);
+        qc.invalidateQueries({ queryKey: ["conversations"] });
+      }
+    });
 
 
     // Creation wizard intercept
@@ -296,24 +308,23 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       const assistantId = crypto.randomUUID();
       const intro = `Let's build your ${wizardKind} together. I've prepared a quick wizard — pick options below.`;
       setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: intro, wizardKind }]);
-      await supabase.from("messages").insert({
-        conversation_id: convId,
-        user_id: user.id,
-        role: "assistant",
-        content: intro,
+      void resolveConv().then((id) => {
+        if (!id) return;
+        void supabase.from("messages").insert({
+          conversation_id: id,
+          user_id: user.id,
+          role: "assistant",
+          content: intro,
+        });
       });
       return;
     }
 
-    if (messages.length === 0 && body) {
-      const newTitle = body.slice(0, 60);
-      void supabase.from("conversations").update({ title: newTitle }).eq("id", convId);
-      qc.invalidateQueries({ queryKey: ["conversations"] });
-    }
-
-
-    await runChat(convId, nextHistory);
+    // Start AI immediately; runChat will resolve convId in the background for persistence.
+    const finalConvId = (await resolveConv()) ?? "";
+    await runChat(finalConvId, nextHistory);
   };
+
 
   const stop = () => abortRef.current?.abort();
 
