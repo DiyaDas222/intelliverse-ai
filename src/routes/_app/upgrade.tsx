@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Check, ShieldCheck, Sparkles, ArrowLeft, Users, Loader2 } from "lucide-react";
+import { Check, ShieldCheck, Sparkles, ArrowLeft, Users, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { StripeEmbeddedCheckout, PaymentTestModeBanner } from "@/components/stripe-embedded-checkout";
