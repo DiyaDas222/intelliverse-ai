@@ -10,6 +10,7 @@ import {
   Download,
   Eye,
   FileCode2,
+  Github,
   Loader2,
   Plus,
   Send,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { GithubPublishDialog } from "@/components/github-publish-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import {
   getVibeProject, updateVibeProject,
