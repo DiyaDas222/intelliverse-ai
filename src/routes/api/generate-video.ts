@@ -21,6 +21,10 @@ export const Route = createFileRoute("/api/generate-video")({
         const { data: u, error: ue } = await supabase.auth.getUser();
         if (ue || !u.user) return new Response("Unauthorized", { status: 401 });
 
+        const { consumeCreditsOrReject, COST } = await import("@/lib/credits.server");
+        const blocked = await consumeCreditsOrReject(u.user.id, COST.video);
+        if (blocked) return blocked;
+
         if (!process.env.RUNWAY_API_KEY && !process.env.LUMA_API_KEY) {
           return Response.json(
             {
