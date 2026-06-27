@@ -172,14 +172,9 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       const controller = new AbortController();
       abortRef.current = controller;
       try {
-        const { data: sess } = await supabase.auth.getSession();
-        const token = sess.session?.access_token;
         const res = await authedFetch("/api/chat", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          headers: { "Content-Type": "application/json" },
           signal: controller.signal,
           body: JSON.stringify({
             messages: history.map((m) => ({
@@ -202,16 +197,29 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let acc = "";
+        let pending = false;
+        const flush = () => {
+          pending = false;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === assistantId ? { ...m, content: acc } : m)),
+          );
+        };
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           acc += decoder.decode(value, { stream: true });
-          setMessages((prev) =>
-            prev.map((m) => (m.id === assistantId ? { ...m, content: acc } : m)),
-          );
+          // Throttle re-renders to animation frames so long markdown trees
+          // don't re-layout per byte on low-end devices.
+          if (!pending) {
+            pending = true;
+            requestAnimationFrame(flush);
+          }
         }
+        // Final flush to guarantee last bytes render.
+        flush();
         if (user) {
-          await supabase.from("messages").insert({
+          // Don't block UI on persistence.
+          void supabase.from("messages").insert({
             conversation_id: convId,
             user_id: user.id,
             role: "assistant",
@@ -230,6 +238,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     },
     [attachedDocIds, model, user],
   );
+
 
   const sendMessage = async (text: string, images: string[] = []) => {
     const body = text.trim();
