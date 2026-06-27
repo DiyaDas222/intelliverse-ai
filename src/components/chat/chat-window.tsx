@@ -247,20 +247,21 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     setPendingImages([]);
 
     let convId = conversationId;
+    let convPromise: Promise<string | null> | null = null;
     if (!convId) {
       const title = (body || "Image chat").slice(0, 60);
-      const { data, error } = await supabase
+      // Kick off conversation creation in parallel; don't block AI request.
+      convPromise = supabase
         .from("conversations")
         .insert({ user_id: user.id, title })
         .select("id")
-        .single();
-      if (error || !data) {
-        toast.error("Couldn't start a chat");
-        return;
-      }
-      convId = data.id;
-      qc.invalidateQueries({ queryKey: ["conversations"] });
-      navigate({ to: "/chat/$id", params: { id: convId } });
+        .single()
+        .then(({ data, error }) => {
+          if (error || !data) return null;
+          qc.invalidateQueries({ queryKey: ["conversations"] });
+          navigate({ to: "/chat/$id", params: { id: data.id } });
+          return data.id as string;
+        });
     }
 
     const userMsg: Msg = {
@@ -271,6 +272,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     };
     const nextHistory = [...messages, userMsg];
     setMessages(nextHistory);
+
 
     // Fire-and-forget persistence so we don't block the AI request on DB round-trips.
     void supabase
