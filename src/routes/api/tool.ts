@@ -15,6 +15,8 @@ export const Route = createFileRoute("/api/tool")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const authed = await requireUser(request);
+        if (authed instanceof Response) return authed;
         const apiKey = getGatewayApiKey();
         if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
 
