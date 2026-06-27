@@ -28,7 +28,7 @@ function matches(row: Row, filters: Array<[string, any]>, ins: Array<[string, an
 class Builder {
   private filters: Array<[string, any]> = [];
   private ins: Array<[string, any[]]> = [];
-  private contains: Array<[string, Row]> = [];
+  private _contains: Array<[string, Row]> = [];
   private op: Op = "select";
   private payload: any = null;
   private opts: UpsertOpts = {};
@@ -46,7 +46,7 @@ class Builder {
   delete() { this.op = "delete"; return this; }
   eq(col: string, val: any) { this.filters.push([col, val]); return this; }
   in(col: string, arr: any[]) { this.ins.push([col, arr]); return this; }
-  contains(col: string, obj: Row) { this.contains.push([col, obj]); return this; }
+  contains(col: string, obj: Row) { this._contains.push([col, obj]); return this; }
   limit(n: number) { this.limitN = n; return this; }
   maybeSingle() { this.mode = "maybeSingle"; return this.run(); }
   single() { this.mode = "single"; return this.run(); }
@@ -63,11 +63,13 @@ class Builder {
     this.store[this.table] ||= [];
     const rows = this.rows();
     if (this.op === "select") {
-      let out = rows.filter((r) => matches(r, this.filters, this.ins, this.contains));
+      let out = rows.filter((r) => matches(r, this.filters, this.ins, this._contains));
       if (this.limitN != null) out = out.slice(0, this.limitN);
-      if (this.mode === "maybeSingle") return { data: out[0] ?? null, error: null };
-      if (this.mode === "single") return { data: out[0], error: out[0] ? null : { message: "no rows" } };
-      return { data: out, error: null };
+      // Return shallow copies so callers cannot mutate store rows by reference.
+      const copy = out.map((r) => ({ ...r }));
+      if (this.mode === "maybeSingle") return { data: copy[0] ?? null, error: null };
+      if (this.mode === "single") return { data: copy[0], error: copy[0] ? null : { message: "no rows" } };
+      return { data: copy, error: null };
     }
     if (this.op === "insert") {
       const arr = Array.isArray(this.payload) ? this.payload : [this.payload];
