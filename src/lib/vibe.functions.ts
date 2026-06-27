@@ -154,7 +154,7 @@ export const deployVibeProject = createServerFn({ method: "POST" })
       slug,
       deploy_status: "deployed" as const,
       deployed_at: new Date().toISOString(),
-      version: ((cur as { version: number }).version ?? 0) + 1,
+      version: (curAny.version ?? 0) + 1,
       deploy_logs: logs,
     };
 
