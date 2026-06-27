@@ -26,16 +26,25 @@ function matches(row: Row, filters: Array<[string, any]>, ins: Array<[string, an
 }
 
 class Builder {
-  private filters: Array<[string, any]> = [];
-  private ins: Array<[string, any[]]> = [];
-  private _contains: Array<[string, Row]> = [];
-  private op: Op = "select";
-  private payload: any = null;
-  private opts: UpsertOpts = {};
-  private limitN: number | null = null;
-  private mode: "many" | "maybeSingle" | "single" = "many";
+  filters: Array<[string, any]>;
+  ins: Array<[string, any[]]>;
+  containsFilters: Array<[string, Row]>;
+  op: Op;
+  payload: any;
+  opts: UpsertOpts;
+  limitN: number | null;
+  mode: "many" | "maybeSingle" | "single";
 
-  constructor(private store: Store, private table: string) {}
+  constructor(private store: Store, private table: string) {
+    this.filters = [];
+    this.ins = [];
+    this.containsFilters = [];
+    this.op = "select";
+    this.payload = null;
+    this.opts = {};
+    this.limitN = null;
+    this.mode = "many";
+  }
 
   select(_cols?: string) { this.op = "select"; return this; }
   insert(payload: any) { this.op = "insert"; this.payload = payload; return this; }
