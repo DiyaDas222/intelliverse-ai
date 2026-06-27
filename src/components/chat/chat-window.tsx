@@ -172,14 +172,9 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       const controller = new AbortController();
       abortRef.current = controller;
       try {
-        const { data: sess } = await supabase.auth.getSession();
-        const token = sess.session?.access_token;
         const res = await authedFetch("/api/chat", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          headers: { "Content-Type": "application/json" },
           signal: controller.signal,
           body: JSON.stringify({
             messages: history.map((m) => ({
@@ -202,16 +197,29 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let acc = "";
+        let pending = false;
+        const flush = () => {
+          pending = false;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === assistantId ? { ...m, content: acc } : m)),
+          );
+        };
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           acc += decoder.decode(value, { stream: true });
-          setMessages((prev) =>
-            prev.map((m) => (m.id === assistantId ? { ...m, content: acc } : m)),
-          );
+          // Throttle re-renders to animation frames so long markdown trees
+          // don't re-layout per byte on low-end devices.
+          if (!pending) {
+            pending = true;
+            requestAnimationFrame(flush);
+          }
         }
+        // Final flush to guarantee last bytes render.
+        flush();
         if (user) {
-          await supabase.from("messages").insert({
+          // Don't block UI on persistence.
+          void supabase.from("messages").insert({
             conversation_id: convId,
             user_id: user.id,
             role: "assistant",
@@ -231,6 +239,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     [attachedDocIds, model, user],
   );
 
+
   const sendMessage = async (text: string, images: string[] = []) => {
     const body = text.trim();
     if ((!body && images.length === 0) || streaming || !user) return;
@@ -238,20 +247,23 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     setPendingImages([]);
 
     let convId = conversationId;
+    let convPromise: Promise<string | null> | null = null;
     if (!convId) {
       const title = (body || "Image chat").slice(0, 60);
-      const { data, error } = await supabase
-        .from("conversations")
-        .insert({ user_id: user.id, title })
-        .select("id")
-        .single();
-      if (error || !data) {
-        toast.error("Couldn't start a chat");
-        return;
-      }
-      convId = data.id;
-      qc.invalidateQueries({ queryKey: ["conversations"] });
-      navigate({ to: "/chat/$id", params: { id: convId } });
+      // Kick off conversation creation in parallel; don't block AI request.
+      convPromise = Promise.resolve(
+        supabase
+          .from("conversations")
+          .insert({ user_id: user.id, title })
+          .select("id")
+          .single(),
+      ).then(({ data, error }) => {
+        if (error || !data) return null;
+        qc.invalidateQueries({ queryKey: ["conversations"] });
+        navigate({ to: "/chat/$id", params: { id: data.id } });
+        return data.id as string;
+      });
+
     }
 
     const userMsg: Msg = {
@@ -263,20 +275,33 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     const nextHistory = [...messages, userMsg];
     setMessages(nextHistory);
 
-    // Fire-and-forget persistence so we don't block the AI request on DB round-trips.
-    void supabase
-      .from("messages")
-      .insert({
-        conversation_id: convId,
+
+    // Resolve convId (await pending creation if first message). Persist DB
+    // writes in background — none of these block the AI fetch below.
+    const resolveConv = async (): Promise<string | null> => {
+      if (convId) return convId;
+      const id = await convPromise;
+      return id ?? null;
+    };
+    void resolveConv().then((id) => {
+      if (!id) return;
+      void supabase.from("messages").insert({
+        conversation_id: id,
         user_id: user.id,
         role: "user",
         content: body,
         ...(images.length ? { images } : {}),
       } as never);
-    void supabase
-      .from("conversations")
-      .update({ updated_at: new Date().toISOString() })
-      .eq("id", convId);
+      void supabase
+        .from("conversations")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (messages.length === 0 && body) {
+        const newTitle = body.slice(0, 60);
+        void supabase.from("conversations").update({ title: newTitle }).eq("id", id);
+        qc.invalidateQueries({ queryKey: ["conversations"] });
+      }
+    });
 
 
     // Creation wizard intercept
@@ -285,24 +310,23 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       const assistantId = crypto.randomUUID();
       const intro = `Let's build your ${wizardKind} together. I've prepared a quick wizard — pick options below.`;
       setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: intro, wizardKind }]);
-      await supabase.from("messages").insert({
-        conversation_id: convId,
-        user_id: user.id,
-        role: "assistant",
-        content: intro,
+      void resolveConv().then((id) => {
+        if (!id) return;
+        void supabase.from("messages").insert({
+          conversation_id: id,
+          user_id: user.id,
+          role: "assistant",
+          content: intro,
+        });
       });
       return;
     }
 
-    if (messages.length === 0 && body) {
-      const newTitle = body.slice(0, 60);
-      void supabase.from("conversations").update({ title: newTitle }).eq("id", convId);
-      qc.invalidateQueries({ queryKey: ["conversations"] });
-    }
-
-
-    await runChat(convId, nextHistory);
+    // Start AI immediately; runChat will resolve convId in the background for persistence.
+    const finalConvId = (await resolveConv()) ?? "";
+    await runChat(finalConvId, nextHistory);
   };
+
 
   const stop = () => abortRef.current?.abort();
 
