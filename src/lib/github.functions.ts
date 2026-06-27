@@ -132,10 +132,12 @@ export const disconnectGithub = createServerFn({ method: "POST" })
 export const getProStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ isPro: boolean }> => {
-    const { data } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "pro" as any,
-    });
+    const { data } = await context.supabase
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", context.userId)
+      .eq("role", "pro" as any)
+      .maybeSingle();
     return { isPro: !!data };
   });
 
