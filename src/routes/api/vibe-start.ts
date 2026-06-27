@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
 import { generateText } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
@@ -93,16 +92,9 @@ export const Route = createFileRoute("/api/vibe-start")({
           },
         ];
 
-        const supabase = createClient(
-          process.env.SUPABASE_URL!,
-          process.env.SUPABASE_PUBLISHABLE_KEY!,
-          {
-            global: { headers: { Authorization: `Bearer ${authed.token}` } },
-            auth: { persistSession: false, autoRefreshToken: false },
-          },
-        );
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
           .from("vibe_projects")
           .insert({
             user_id: authed.userId,
