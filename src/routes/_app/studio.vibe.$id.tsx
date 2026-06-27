@@ -436,10 +436,42 @@ function VibeWorkspace() {
                 {m.content}
               </div>
             ))}
-            {generating && (
-              <div className="mr-4 flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Generating files…
+            {(generating || phases.failedAt) && (
+              <VibePhases
+                current={phases.current}
+                status={phases.status}
+                logs={phases.logs}
+                failedAt={phases.failedAt}
+              />
+            )}
+            {!generating && project.deploy_status === "deployed" && project.slug && (
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-emerald-500">Live & deployed ✓</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      Version {project.version} · {project.deployed_at ? new Date(project.deployed_at).toLocaleString() : ""}
+                    </p>
+                    <a
+                      href={`/live/${project.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 inline-flex items-center gap-1 break-all text-[11px] text-primary hover:underline"
+                    >
+                      {typeof window !== "undefined" ? window.location.origin : ""}/live/{project.slug}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+                <div className="mt-2 overflow-hidden rounded-md border border-border/40 bg-white">
+                  <iframe
+                    title="live"
+                    className="h-48 w-full"
+                    sandbox="allow-scripts allow-forms allow-modals"
+                    src={`/live/${project.slug}`}
+                  />
+                </div>
               </div>
             )}
           </div>
