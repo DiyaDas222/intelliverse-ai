@@ -1,18 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getCachedAccessToken, setAuthTokenSession, type MinimalAuthSession } from "@/lib/auth-token-cache";
 
-let cachedAccessToken: string | null = null;
-let cachedExpiresAt = 0;
-
-export function setAuthedFetchSession(session: { access_token?: string; expires_at?: number } | null) {
-  cachedAccessToken = session?.access_token ?? null;
-  cachedExpiresAt = session?.expires_at ? session.expires_at * 1000 : 0;
+export function setAuthedFetchSession(session: MinimalAuthSession) {
+  setAuthTokenSession(session);
 }
 
 async function getAccessToken(): Promise<string | null> {
   // Avoid an auth round-trip on every chat/command request. The auth provider
   // keeps this cache fresh whenever the session changes.
-  if (cachedAccessToken && cachedExpiresAt - Date.now() > 60_000) return cachedAccessToken;
+  const cached = getCachedAccessToken();
+  if (cached) return cached;
   const { data } = await supabase.auth.getSession();
   setAuthedFetchSession(data.session);
   return data.session?.access_token ?? null;

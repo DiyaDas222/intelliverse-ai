@@ -282,8 +282,12 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     setInput("");
     setPendingImages([]);
 
+    const wizardKind = detectWizardKind(body);
+    const directBuild = wizardKind === "website" || wizardKind === "app" || wizardKind === "project";
+
     let convId = conversationId;
     let convPromise: Promise<string | null> | null = null;
+    let shouldNavigateToConversation = !directBuild;
     if (!convId) {
       const title = (body || "Image chat").slice(0, 60);
       // Kick off conversation creation in parallel; don't block AI request.
@@ -296,7 +300,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       ).then(({ data, error }) => {
         if (error || !data) return null;
         qc.invalidateQueries({ queryKey: ["conversations"] });
-        navigate({ to: "/chat/$id", params: { id: data.id } });
+        if (shouldNavigateToConversation) navigate({ to: "/chat/$id", params: { id: data.id } });
         return data.id as string;
       });
 
@@ -339,10 +343,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       }
     });
 
-
-    const wizardKind = detectWizardKind(body);
-    const directBuild = wizardKind === "website" || wizardKind === "app" || wizardKind === "project";
     if (directBuild) {
+      shouldNavigateToConversation = false;
       const assistantId = crypto.randomUUID();
       const intro = `Got it — I’m building your ${wizardKind} now ✨\n\nI’m creating the project, generating the files, and preparing a live preview link.`;
       setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: intro }]);
@@ -367,7 +369,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         });
         const fullBrief = `${body}\n\nBuild it directly from this prompt. Use sensible defaults for anything missing. Generate complete runnable files, deploy automatically, and show the live URL.`;
         sessionStorage.setItem(`iv:vibe-auto:${project.id}`, fullBrief);
-        const linkText = `**Building started ✅**\n\nOpening your live builder now. Your files, preview, and live link will appear there automatically.\n\n[Open builder](/studio/vibe/${project.id})`;
+        const liveLine = project.slug ? `\n\nLive link after deployment: [/live/${project.slug}](/live/${project.slug})` : "";
+        const linkText = `**Building started ✅**\n\nOpening your live builder now. Your files, preview, and live link will appear there automatically.${liveLine}\n\n[Open builder](/studio/vibe/${project.id})`;
         setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: linkText } : m)));
         void resolveConv().then((id) => {
           if (!id) return;
