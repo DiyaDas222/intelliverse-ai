@@ -111,7 +111,7 @@ function VibeHub() {
 
   const visibleProjects = projects.filter((p) => {
     const status = p.deploy_status ?? "idle";
-    return (p.files?.length ?? 0) > 0 || status === "deployed" || status === "deploying" || status === "failed";
+    return (p.files?.length ?? 0) > 0 || (status === "deployed" && !!p.slug);
   });
 
   const delMut = useMutation({
