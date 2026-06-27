@@ -171,7 +171,7 @@ export function GithubPublishDialog({
                   </div>
                   <p className="mt-1 text-muted-foreground">
                     A small "Built with IntelliVerse AI" watermark and source comments will be added.{" "}
-                    <a href="/#pricing" className="underline">Upgrade to Pro</a> to publish a clean, unbranded project.
+                    <a href="/upgrade" className="underline font-medium">Upgrade to Pro</a> to publish a clean, unbranded project.
                   </p>
                 </div>
               )}
