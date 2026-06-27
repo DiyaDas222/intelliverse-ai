@@ -98,8 +98,7 @@ async function handleSubscription(event: any, env: StripeEnv) {
     !existing && (sub.status === "active" || sub.status === "trialing");
 
   if (firstActivation) {
-    // Seed welcome bonus credits (atomic increment, only on first activation).
-    await supabase.rpc("noop").catch(() => null); // safe noop
+    // Seed welcome bonus credits (only on first activation).
     const { data: profile } = await supabase
       .from("profiles")
       .select("bonus_credits, email, display_name")
