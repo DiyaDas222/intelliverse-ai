@@ -56,6 +56,8 @@ const SUGGESTIONS = [
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+type ConversationTarget = string | Promise<string | null> | null;
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -152,7 +154,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
 
   const { data: documents = [] } = useQuery({
     queryKey: ["documents", user?.id],
-    enabled: !!user,
+    enabled: !!user && (showDocPicker || attachedDocIds.length > 0),
+    staleTime: 60_000,
     queryFn: async (): Promise<DocumentRow[]> => {
       const { data, error } = await supabase
         .from("documents")
@@ -165,7 +168,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
 
   // Core send. `historyOverride` lets edit-and-regenerate replay from a truncated history.
   const runChat = useCallback(
-    async (convId: string, history: Msg[]) => {
+    async (convTarget: ConversationTarget, history: Msg[]) => {
       const assistantId = crypto.randomUUID();
       setMessages([...history, { id: assistantId, role: "assistant", content: "" }]);
       setStreaming(true);
@@ -219,11 +222,14 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         flush();
         if (user) {
           // Don't block UI on persistence.
-          void supabase.from("messages").insert({
-            conversation_id: convId,
-            user_id: user.id,
-            role: "assistant",
-            content: acc,
+          void Promise.resolve(convTarget).then((id) => {
+            if (!id) return;
+            void supabase.from("messages").insert({
+              conversation_id: id,
+              user_id: user.id,
+              role: "assistant",
+              content: acc,
+            });
           });
         }
       } catch (err) {
@@ -239,6 +245,36 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     [attachedDocIds, model, user],
   );
 
+  const inferVibeName = (text: string, kind: WizardKind) => {
+    const quoted = text.match(/["“']([^"”']{3,60})["”']/)?.[1];
+    if (quoted) return quoted.trim();
+    const cleaned = text
+      .replace(/\b(please|can you|could you|build|create|make|generate|develop|code|design|for me|a|an|the|website|web ?site|app|application|project)\b/gi, " ")
+      .replace(/[^a-z0-9 ]+/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    const title = cleaned
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 5)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(" ");
+    return title || `${kind.charAt(0).toUpperCase() + kind.slice(1)} Builder`;
+  };
+
+  const stackFromPrompt = (text: string, kind: WizardKind) => {
+    const lower = text.toLowerCase();
+    const wantsBackend = /\b(api|backend|database|login|auth|dashboard|admin|payment|saas|crud|account)\b/.test(lower);
+    return {
+      frontend: /\b(html|css|javascript|vanilla)\b/.test(lower) ? "Plain HTML/CSS/JS" : "React",
+      backend: wantsBackend ? "Node.js (Express)" : "None",
+      database: /\b(database|crud|users|accounts|dashboard|admin|saas)\b/.test(lower) ? "PostgreSQL" : "None",
+      auth: /\b(login|signup|sign up|auth|account|user)\b/.test(lower) ? "Email/Password" : "None",
+      styling: /\b(bootstrap)\b/.test(lower) ? "Bootstrap" : "Tailwind CSS",
+      extras: kind === "app" ? ["direct-from-chat"] : ["direct-from-chat", "auto-deploy"],
+    };
+  };
+
 
   const sendMessage = async (text: string, images: string[] = []) => {
     const body = text.trim();
@@ -246,8 +282,12 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     setInput("");
     setPendingImages([]);
 
+    const wizardKind = detectWizardKind(body);
+    const directBuild = wizardKind === "website" || wizardKind === "app" || wizardKind === "project";
+
     let convId = conversationId;
     let convPromise: Promise<string | null> | null = null;
+    let shouldNavigateToConversation = !directBuild;
     if (!convId) {
       const title = (body || "Image chat").slice(0, 60);
       // Kick off conversation creation in parallel; don't block AI request.
@@ -260,7 +300,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       ).then(({ data, error }) => {
         if (error || !data) return null;
         qc.invalidateQueries({ queryKey: ["conversations"] });
-        navigate({ to: "/chat/$id", params: { id: data.id } });
+        if (shouldNavigateToConversation) navigate({ to: "/chat/$id", params: { id: data.id } });
         return data.id as string;
       });
 
@@ -303,9 +343,54 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       }
     });
 
+    if (directBuild) {
+      shouldNavigateToConversation = false;
+      const assistantId = crypto.randomUUID();
+      const intro = `Got it — I’m building your ${wizardKind} now ✨\n\nI’m creating the project, generating the files, and preparing a live preview link.`;
+      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: intro }]);
+      void resolveConv().then((id) => {
+        if (!id) return;
+        void supabase.from("messages").insert({
+          conversation_id: id,
+          user_id: user.id,
+          role: "assistant",
+          content: intro,
+        });
+      });
+      try {
+        const name = inferVibeName(body, wizardKind);
+        const project = await createVibe({
+          data: {
+            name,
+            description: body.slice(0, 300),
+            kind: wizardKind === "website" ? "website" : "webapp",
+            stack: stackFromPrompt(body, wizardKind),
+          },
+        });
+        const fullBrief = `${body}\n\nBuild it directly from this prompt. Use sensible defaults for anything missing. Generate complete runnable files, deploy automatically, and show the live URL.`;
+        sessionStorage.setItem(`iv:vibe-auto:${project.id}`, fullBrief);
+        const liveLine = project.slug ? `\n\nLive link after deployment: [/live/${project.slug}](/live/${project.slug})` : "";
+        const linkText = `**Building started ✅**\n\nOpening your live builder now. Your files, preview, and live link will appear there automatically.${liveLine}\n\n[Open builder](/studio/vibe/${project.id})`;
+        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: linkText } : m)));
+        void resolveConv().then((id) => {
+          if (!id) return;
+          void supabase.from("messages").insert({
+            conversation_id: id,
+            user_id: user.id,
+            role: "assistant",
+            content: linkText,
+          });
+        });
+        navigate({ to: "/studio/vibe/$id", params: { id: project.id } });
+      } catch (e: any) {
+        const msg = e?.message ?? "Couldn't start the builder";
+        toast.error(msg);
+        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: `⚠️ ${msg}` } : m)));
+      }
+      return;
+    }
 
-    // Creation wizard intercept
-    const wizardKind = detectWizardKind(body);
+    // Creation wizard intercept for media/docs where a few structured options help.
     if (wizardKind) {
       const assistantId = crypto.randomUUID();
       const intro = `Let's build your ${wizardKind} together. I've prepared a quick wizard — pick options below.`;
@@ -322,9 +407,8 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       return;
     }
 
-    // Start AI immediately; runChat will resolve convId in the background for persistence.
-    const finalConvId = (await resolveConv()) ?? "";
-    await runChat(finalConvId, nextHistory);
+    // Start AI immediately; runChat resolves the conversation in the background for persistence.
+    await runChat(convId ?? convPromise, nextHistory);
   };
 
 

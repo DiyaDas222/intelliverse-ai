@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { setAuthedFetchSession } from "@/lib/authed-fetch";
 
 type AuthContextValue = {
   user: User | null;
@@ -18,16 +19,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
+      setAuthedFetchSession(s);
       setLoading(false);
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
+      setAuthedFetchSession(data.session);
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
+    setAuthedFetchSession(null);
     await supabase.auth.signOut();
   };
 

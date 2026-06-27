@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
 import { buildPreviewDoc, type PreviewFile } from "@/lib/build-preview";
 
 export const Route = createFileRoute("/live/$slug")({
@@ -7,12 +6,8 @@ export const Route = createFileRoute("/live/$slug")({
     handlers: {
       GET: async ({ params }) => {
         const slug = params.slug;
-        const supabase = createClient(
-          process.env.SUPABASE_URL!,
-          process.env.SUPABASE_PUBLISHABLE_KEY!,
-          { auth: { persistSession: false, autoRefreshToken: false, storage: undefined } },
-        );
-        const { data, error } = await supabase
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data, error } = await supabaseAdmin
           .from("vibe_projects")
           .select("name,files,entry_file,deploy_status")
           .eq("slug", slug)
