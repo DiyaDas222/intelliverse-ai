@@ -97,7 +97,13 @@ function VibeHub() {
     onSuccess: (p) => {
       qc.invalidateQueries({ queryKey: ["vibeProjects"] });
       setOpen(false);
-      toast.success("Project created");
+      if (form.description.trim()) {
+        sessionStorage.setItem(
+          `iv:vibe-auto:${p.id}`,
+          `${form.description.trim()}\n\nBuild it directly from this prompt, generate complete files, deploy automatically, and show the live URL.`,
+        );
+      }
+      toast.success(form.description.trim() ? "Project building started" : "Project created");
       navigate({ to: "/studio/vibe/$id", params: { id: p.id } });
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to create"),
@@ -273,7 +279,7 @@ function VibeHub() {
             <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
             <Button onClick={() => createMut.mutate()} disabled={createMut.isPending}>
               {createMut.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-              Create & open
+              Create & build
             </Button>
           </DialogFooter>
         </DialogContent>

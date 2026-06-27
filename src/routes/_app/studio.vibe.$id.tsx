@@ -175,7 +175,8 @@ function VibeWorkspace() {
       // Auto-deploy: mark as deployed and grant a live URL.
       try {
         setDeploying(true);
-        await deployFn({ data: { id, logs: phases.logs.map((l) => ({ at: new Date().toISOString(), level: "info" as const, message: l })) } });
+        const deployed = await deployFn({ data: { id, logs: phases.logs.map((l) => ({ at: new Date().toISOString(), level: "info" as const, message: l })) } });
+        qc.setQueryData(["vibeProject", id], deployed);
         phases.complete();
         toast.success("Deployed — live URL ready");
       } catch (de: any) {
@@ -298,7 +299,8 @@ function VibeWorkspace() {
               if (files.length === 0) return toast.error("Generate the project first");
               setDeploying(true);
               try {
-                await deployFn({ data: { id } });
+                const deployed = await deployFn({ data: { id } });
+                qc.setQueryData(["vibeProject", id], deployed);
                 qc.invalidateQueries({ queryKey: ["vibeProject", id] });
                 toast.success("Redeployed");
               } catch (e: any) {
