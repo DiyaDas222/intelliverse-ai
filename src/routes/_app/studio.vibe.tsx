@@ -13,7 +13,12 @@ import {
   Database,
   LayoutDashboard,
   Sparkles,
+  ExternalLink,
+  Rocket,
+  Download,
+  Pencil,
 } from "lucide-react";
+import JSZip from "jszip";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +30,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  listVibeProjects, createVibeProject, deleteVibeProject,
+  listVibeProjects, createVibeProject, deleteVibeProject, deployVibeProject,
 } from "@/lib/vibe.functions";
 
 export const Route = createFileRoute("/_app/studio/vibe")({
