@@ -242,6 +242,14 @@ function DocsPage() {
                 >
                   <Download className="h-3 w-3" /> Download
                 </button>
+                {(kind === "website" || kind === "app") && (content as any)?.files?.length > 0 && (
+                  <button
+                    onClick={() => setPublishOpen(true)}
+                    className="flex items-center gap-1.5 rounded-md border border-border bg-gradient-to-r from-indigo-500/20 to-fuchsia-500/20 px-3 py-1.5 text-xs font-medium hover:opacity-90"
+                  >
+                    <Github className="h-3 w-3" /> Publish to GitHub
+                  </button>
+                )}
               </div>
             </div>
 
@@ -249,6 +257,17 @@ function DocsPage() {
           </div>
         )}
       </div>
+
+      {(kind === "website" || kind === "app") && content && (content as any).files && (
+        <GithubPublishDialog
+          open={publishOpen}
+          onOpenChange={setPublishOpen}
+          files={(content as any).files.map((f: any) => ({ path: f.path, content: f.content }))}
+          defaultRepoName={(content as any).title?.replace(/[^A-Za-z0-9._-]+/g, "-").toLowerCase().slice(0, 80) || `intelliverse-${kind}`}
+          defaultDescription={(content as any).description || `${kind} generated with IntelliVerse AI`}
+          sourceKind={`docs-${kind}`}
+        />
+      )}
     </div>
   );
 }
