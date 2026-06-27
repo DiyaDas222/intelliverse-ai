@@ -195,6 +195,43 @@ function UpgradePage() {
             </div>
           )}
         </div>
+
+        {/* Credit Packs — one-time top-ups */}
+        <div className="mt-12">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold">Need a quick top-up?</h2>
+            <p className="mt-1 text-sm text-muted-foreground">One-time credit packs. Credits never expire and stack with your plan.</p>
+          </div>
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {CREDIT_PACKS.map((p) => (
+              <div key={p.id} className="rounded-2xl border border-border/60 bg-card/40 p-5">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-amber-500" />
+                  <span className="text-lg font-semibold">{p.credits} credits</span>
+                  {p.badge && (
+                    <span className="ml-auto rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">{p.badge}</span>
+                  )}
+                </div>
+                <div className="mt-3 flex items-baseline gap-2">
+                  <span className="text-2xl font-bold">{p.price}</span>
+                  <span className="text-xs text-muted-foreground">{p.per}</span>
+                </div>
+                <Button
+                  className="mt-4 w-full"
+                  variant={packPriceId === p.id ? "secondary" : "default"}
+                  onClick={() => setPackPriceId(packPriceId === p.id ? null : p.id)}
+                >
+                  {packPriceId === p.id ? "Close" : "Buy pack"}
+                </Button>
+              </div>
+            ))}
+          </div>
+          {packPriceId && (
+            <div className="mt-6 rounded-2xl border border-border/60 bg-card/40 p-4">
+              <StripeEmbeddedCheckout priceId={packPriceId} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
