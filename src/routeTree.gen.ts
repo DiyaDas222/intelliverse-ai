@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as STokenRouteImport } from './routes/s.$token'
+import { Route as ApiVibeGenerateRouteImport } from './routes/api/vibe-generate'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 import { Route as ApiToolRouteImport } from './routes/api/tool'
@@ -41,6 +42,7 @@ import { Route as AppStudioIndexRouteImport } from './routes/_app/studio.index'
 import { Route as AppChatIndexRouteImport } from './routes/_app/chat.index'
 import { Route as AppToolsSlugRouteImport } from './routes/_app/tools.$slug'
 import { Route as AppStudioVideoRouteImport } from './routes/_app/studio.video'
+import { Route as AppStudioVibeRouteImport } from './routes/_app/studio.vibe'
 import { Route as AppStudioMusicRouteImport } from './routes/_app/studio.music'
 import { Route as AppStudioImageRouteImport } from './routes/_app/studio.image'
 import { Route as AppStudioDocsRouteImport } from './routes/_app/studio.docs'
@@ -50,6 +52,7 @@ import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
 import { Route as AppChatVoiceRouteImport } from './routes/_app/chat.voice'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
 import { Route as ApiPublicShareTokenRouteImport } from './routes/api/public/share.$token'
+import { Route as AppStudioVibeIdRouteImport } from './routes/_app/studio.vibe.$id'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -83,6 +86,11 @@ const IndexRoute = IndexRouteImport.update({
 const STokenRoute = STokenRouteImport.update({
   id: '/s/$token',
   path: '/s/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVibeGenerateRoute = ApiVibeGenerateRouteImport.update({
+  id: '/api/vibe-generate',
+  path: '/api/vibe-generate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTtsRoute = ApiTtsRouteImport.update({
@@ -210,6 +218,11 @@ const AppStudioVideoRoute = AppStudioVideoRouteImport.update({
   path: '/video',
   getParentRoute: () => AppStudioRoute,
 } as any)
+const AppStudioVibeRoute = AppStudioVibeRouteImport.update({
+  id: '/vibe',
+  path: '/vibe',
+  getParentRoute: () => AppStudioRoute,
+} as any)
 const AppStudioMusicRoute = AppStudioMusicRouteImport.update({
   id: '/music',
   path: '/music',
@@ -255,6 +268,11 @@ const ApiPublicShareTokenRoute = ApiPublicShareTokenRouteImport.update({
   path: '/api/public/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppStudioVibeIdRoute = AppStudioVibeIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppStudioVibeRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -283,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/api/tool': typeof ApiToolRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/vibe-generate': typeof ApiVibeGenerateRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
   '/chat/voice': typeof AppChatVoiceRoute
@@ -292,10 +311,12 @@ export interface FileRoutesByFullPath {
   '/studio/docs': typeof AppStudioDocsRoute
   '/studio/image': typeof AppStudioImageRoute
   '/studio/music': typeof AppStudioMusicRoute
+  '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
   '/chat/': typeof AppChatIndexRoute
   '/studio/': typeof AppStudioIndexRoute
+  '/studio/vibe/$id': typeof AppStudioVibeIdRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
 export interface FileRoutesByTo {
@@ -323,6 +344,7 @@ export interface FileRoutesByTo {
   '/api/tool': typeof ApiToolRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/vibe-generate': typeof ApiVibeGenerateRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
   '/chat/voice': typeof AppChatVoiceRoute
@@ -332,10 +354,12 @@ export interface FileRoutesByTo {
   '/studio/docs': typeof AppStudioDocsRoute
   '/studio/image': typeof AppStudioImageRoute
   '/studio/music': typeof AppStudioMusicRoute
+  '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
   '/chat': typeof AppChatIndexRoute
   '/studio': typeof AppStudioIndexRoute
+  '/studio/vibe/$id': typeof AppStudioVibeIdRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
 export interface FileRoutesById {
@@ -367,6 +391,7 @@ export interface FileRoutesById {
   '/api/tool': typeof ApiToolRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/vibe-generate': typeof ApiVibeGenerateRoute
   '/s/$token': typeof STokenRoute
   '/_app/chat/$id': typeof AppChatIdRoute
   '/_app/chat/voice': typeof AppChatVoiceRoute
@@ -376,10 +401,12 @@ export interface FileRoutesById {
   '/_app/studio/docs': typeof AppStudioDocsRoute
   '/_app/studio/image': typeof AppStudioImageRoute
   '/_app/studio/music': typeof AppStudioMusicRoute
+  '/_app/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/_app/studio/video': typeof AppStudioVideoRoute
   '/_app/tools/$slug': typeof AppToolsSlugRoute
   '/_app/chat/': typeof AppChatIndexRoute
   '/_app/studio/': typeof AppStudioIndexRoute
+  '/_app/studio/vibe/$id': typeof AppStudioVibeIdRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
 export interface FileRouteTypes {
@@ -411,6 +438,7 @@ export interface FileRouteTypes {
     | '/api/tool'
     | '/api/transcribe'
     | '/api/tts'
+    | '/api/vibe-generate'
     | '/s/$token'
     | '/chat/$id'
     | '/chat/voice'
@@ -420,10 +448,12 @@ export interface FileRouteTypes {
     | '/studio/docs'
     | '/studio/image'
     | '/studio/music'
+    | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
     | '/chat/'
     | '/studio/'
+    | '/studio/vibe/$id'
     | '/api/public/share/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -451,6 +481,7 @@ export interface FileRouteTypes {
     | '/api/tool'
     | '/api/transcribe'
     | '/api/tts'
+    | '/api/vibe-generate'
     | '/s/$token'
     | '/chat/$id'
     | '/chat/voice'
@@ -460,10 +491,12 @@ export interface FileRouteTypes {
     | '/studio/docs'
     | '/studio/image'
     | '/studio/music'
+    | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
     | '/chat'
     | '/studio'
+    | '/studio/vibe/$id'
     | '/api/public/share/$token'
   id:
     | '__root__'
@@ -494,6 +527,7 @@ export interface FileRouteTypes {
     | '/api/tool'
     | '/api/transcribe'
     | '/api/tts'
+    | '/api/vibe-generate'
     | '/s/$token'
     | '/_app/chat/$id'
     | '/_app/chat/voice'
@@ -503,10 +537,12 @@ export interface FileRouteTypes {
     | '/_app/studio/docs'
     | '/_app/studio/image'
     | '/_app/studio/music'
+    | '/_app/studio/vibe'
     | '/_app/studio/video'
     | '/_app/tools/$slug'
     | '/_app/chat/'
     | '/_app/studio/'
+    | '/_app/studio/vibe/$id'
     | '/api/public/share/$token'
   fileRoutesById: FileRoutesById
 }
@@ -529,6 +565,7 @@ export interface RootRouteChildren {
   ApiToolRoute: typeof ApiToolRoute
   ApiTranscribeRoute: typeof ApiTranscribeRoute
   ApiTtsRoute: typeof ApiTtsRoute
+  ApiVibeGenerateRoute: typeof ApiVibeGenerateRoute
   STokenRoute: typeof STokenRoute
   ApiPublicShareTokenRoute: typeof ApiPublicShareTokenRoute
 }
@@ -582,6 +619,13 @@ declare module '@tanstack/react-router' {
       path: '/s/$token'
       fullPath: '/s/$token'
       preLoaderRoute: typeof STokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vibe-generate': {
+      id: '/api/vibe-generate'
+      path: '/api/vibe-generate'
+      fullPath: '/api/vibe-generate'
+      preLoaderRoute: typeof ApiVibeGenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tts': {
@@ -759,6 +803,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStudioVideoRouteImport
       parentRoute: typeof AppStudioRoute
     }
+    '/_app/studio/vibe': {
+      id: '/_app/studio/vibe'
+      path: '/vibe'
+      fullPath: '/studio/vibe'
+      preLoaderRoute: typeof AppStudioVibeRouteImport
+      parentRoute: typeof AppStudioRoute
+    }
     '/_app/studio/music': {
       id: '/_app/studio/music'
       path: '/music'
@@ -822,6 +873,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/studio/vibe/$id': {
+      id: '/_app/studio/vibe/$id'
+      path: '/$id'
+      fullPath: '/studio/vibe/$id'
+      preLoaderRoute: typeof AppStudioVibeIdRouteImport
+      parentRoute: typeof AppStudioVibeRoute
+    }
   }
 }
 
@@ -852,12 +910,25 @@ const AppDocumentsRouteWithChildren = AppDocumentsRoute._addFileChildren(
   AppDocumentsRouteChildren,
 )
 
+interface AppStudioVibeRouteChildren {
+  AppStudioVibeIdRoute: typeof AppStudioVibeIdRoute
+}
+
+const AppStudioVibeRouteChildren: AppStudioVibeRouteChildren = {
+  AppStudioVibeIdRoute: AppStudioVibeIdRoute,
+}
+
+const AppStudioVibeRouteWithChildren = AppStudioVibeRoute._addFileChildren(
+  AppStudioVibeRouteChildren,
+)
+
 interface AppStudioRouteChildren {
   AppStudioAudioRoute: typeof AppStudioAudioRoute
   AppStudioCodeRoute: typeof AppStudioCodeRoute
   AppStudioDocsRoute: typeof AppStudioDocsRoute
   AppStudioImageRoute: typeof AppStudioImageRoute
   AppStudioMusicRoute: typeof AppStudioMusicRoute
+  AppStudioVibeRoute: typeof AppStudioVibeRouteWithChildren
   AppStudioVideoRoute: typeof AppStudioVideoRoute
   AppStudioIndexRoute: typeof AppStudioIndexRoute
 }
@@ -868,6 +939,7 @@ const AppStudioRouteChildren: AppStudioRouteChildren = {
   AppStudioDocsRoute: AppStudioDocsRoute,
   AppStudioImageRoute: AppStudioImageRoute,
   AppStudioMusicRoute: AppStudioMusicRoute,
+  AppStudioVibeRoute: AppStudioVibeRouteWithChildren,
   AppStudioVideoRoute: AppStudioVideoRoute,
   AppStudioIndexRoute: AppStudioIndexRoute,
 }
@@ -933,6 +1005,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiToolRoute: ApiToolRoute,
   ApiTranscribeRoute: ApiTranscribeRoute,
   ApiTtsRoute: ApiTtsRoute,
+  ApiVibeGenerateRoute: ApiVibeGenerateRoute,
   STokenRoute: STokenRoute,
   ApiPublicShareTokenRoute: ApiPublicShareTokenRoute,
 }
