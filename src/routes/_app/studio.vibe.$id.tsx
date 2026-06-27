@@ -56,6 +56,7 @@ function VibeWorkspace() {
   const { id } = Route.useParams();
   const get = useServerFn(getVibeProject);
   const update = useServerFn(updateVibeProject);
+  const deployFn = useServerFn(deployVibeProject);
   const qc = useQueryClient();
   const navigate = useNavigate();
 
@@ -69,10 +70,15 @@ function VibeWorkspace() {
   const [activePath, setActivePath] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [deploying, setDeploying] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [dirty, setDirty] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
+
+  const skipBackend = !project?.stack?.backend || project.stack.backend === "None";
+  const phases = usePhaseRunner(generating, { skipBackend });
+
 
   useEffect(() => {
     if (project) {
