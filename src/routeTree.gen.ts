@@ -54,6 +54,7 @@ import { Route as AppStudioAudioRouteImport } from './routes/_app/studio.audio'
 import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
 import { Route as AppChatVoiceRouteImport } from './routes/_app/chat.voice'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
+import { Route as AppStudioVibeIndexRouteImport } from './routes/_app/studio.vibe.index'
 import { Route as ApiPublicShareTokenRouteImport } from './routes/api/public/share.$token'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as AppStudioVibeIdRouteImport } from './routes/_app/studio.vibe.$id'
@@ -282,6 +283,11 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppChatRoute,
 } as any)
+const AppStudioVibeIndexRoute = AppStudioVibeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppStudioVibeRoute,
+} as any)
 const ApiPublicShareTokenRoute = ApiPublicShareTokenRouteImport.update({
   id: '/api/public/share/$token',
   path: '/api/public/share/$token',
@@ -347,6 +353,7 @@ export interface FileRoutesByFullPath {
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
+  '/studio/vibe/': typeof AppStudioVibeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -385,7 +392,6 @@ export interface FileRoutesByTo {
   '/studio/docs': typeof AppStudioDocsRoute
   '/studio/image': typeof AppStudioImageRoute
   '/studio/music': typeof AppStudioMusicRoute
-  '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
   '/upgrade/return': typeof AppUpgradeReturnRoute
@@ -394,6 +400,7 @@ export interface FileRoutesByTo {
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
+  '/studio/vibe': typeof AppStudioVibeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -445,6 +452,7 @@ export interface FileRoutesById {
   '/_app/studio/vibe/$id': typeof AppStudioVibeIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
+  '/_app/studio/vibe/': typeof AppStudioVibeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -496,6 +504,7 @@ export interface FileRouteTypes {
     | '/studio/vibe/$id'
     | '/api/public/payments/webhook'
     | '/api/public/share/$token'
+    | '/studio/vibe/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -534,7 +543,6 @@ export interface FileRouteTypes {
     | '/studio/docs'
     | '/studio/image'
     | '/studio/music'
-    | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
     | '/upgrade/return'
@@ -543,6 +551,7 @@ export interface FileRouteTypes {
     | '/studio/vibe/$id'
     | '/api/public/payments/webhook'
     | '/api/public/share/$token'
+    | '/studio/vibe'
   id:
     | '__root__'
     | '/'
@@ -593,6 +602,7 @@ export interface FileRouteTypes {
     | '/_app/studio/vibe/$id'
     | '/api/public/payments/webhook'
     | '/api/public/share/$token'
+    | '/_app/studio/vibe/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -938,6 +948,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppChatRoute
     }
+    '/_app/studio/vibe/': {
+      id: '/_app/studio/vibe/'
+      path: '/'
+      fullPath: '/studio/vibe/'
+      preLoaderRoute: typeof AppStudioVibeIndexRouteImport
+      parentRoute: typeof AppStudioVibeRoute
+    }
     '/api/public/share/$token': {
       id: '/api/public/share/$token'
       path: '/api/public/share/$token'
@@ -991,10 +1008,12 @@ const AppDocumentsRouteWithChildren = AppDocumentsRoute._addFileChildren(
 
 interface AppStudioVibeRouteChildren {
   AppStudioVibeIdRoute: typeof AppStudioVibeIdRoute
+  AppStudioVibeIndexRoute: typeof AppStudioVibeIndexRoute
 }
 
 const AppStudioVibeRouteChildren: AppStudioVibeRouteChildren = {
   AppStudioVibeIdRoute: AppStudioVibeIdRoute,
+  AppStudioVibeIndexRoute: AppStudioVibeIndexRoute,
 }
 
 const AppStudioVibeRouteWithChildren = AppStudioVibeRoute._addFileChildren(
