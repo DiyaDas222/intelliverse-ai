@@ -95,7 +95,7 @@ export const updateVibeProject = createServerFn({ method: "POST" })
     }
     const { data: row, error } = await context.supabase
       .from("vibe_projects")
-      .update(patch)
+      .update(patch as never)
       .eq("id", data.id)
       .select("*")
       .single();
