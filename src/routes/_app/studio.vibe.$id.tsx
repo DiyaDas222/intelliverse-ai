@@ -74,6 +74,16 @@ function VibeWorkspace() {
       setMessages(project.messages ?? []);
       setActivePath((project.files ?? [])[0]?.path ?? null);
       setDirty(false);
+
+      // Auto-run the first generation when the chat wizard handed us a brief.
+      const key = `iv:vibe-auto:${project.id}`;
+      const pending = typeof window !== "undefined" ? sessionStorage.getItem(key) : null;
+      if (pending && (project.files ?? []).length === 0) {
+        sessionStorage.removeItem(key);
+        setPrompt(pending);
+        // defer so state settles before we call generate()
+        setTimeout(() => { void generate(pending); }, 50);
+      }
     }
   }, [project?.id]);
 
