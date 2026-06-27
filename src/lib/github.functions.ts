@@ -246,10 +246,12 @@ export const publishToGithub = createServerFn({ method: "POST" })
     if (!conn) throw new Error("GitHub not connected. Connect your account first.");
 
     // Pro status
-    const { data: isProRow } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "pro" as any,
-    });
+    const { data: isProRow } = await context.supabase
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", context.userId)
+      .eq("role", "pro" as any)
+      .maybeSingle();
     const isPro = !!isProRow;
 
     const owner = conn.github_username;
