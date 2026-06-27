@@ -524,6 +524,9 @@ export type Database = {
       vibe_projects: {
         Row: {
           created_at: string
+          deploy_logs: Json
+          deploy_status: string
+          deployed_at: string | null
           description: string | null
           entry_file: string | null
           files: Json
@@ -531,12 +534,17 @@ export type Database = {
           kind: string
           messages: Json
           name: string
+          slug: string | null
           stack: Json
           updated_at: string
           user_id: string
+          version: number
         }
         Insert: {
           created_at?: string
+          deploy_logs?: Json
+          deploy_status?: string
+          deployed_at?: string | null
           description?: string | null
           entry_file?: string | null
           files?: Json
@@ -544,12 +552,17 @@ export type Database = {
           kind?: string
           messages?: Json
           name: string
+          slug?: string | null
           stack?: Json
           updated_at?: string
           user_id: string
+          version?: number
         }
         Update: {
           created_at?: string
+          deploy_logs?: Json
+          deploy_status?: string
+          deployed_at?: string | null
           description?: string | null
           entry_file?: string | null
           files?: Json
@@ -557,9 +570,11 @@ export type Database = {
           kind?: string
           messages?: Json
           name?: string
+          slug?: string | null
           stack?: Json
           updated_at?: string
           user_id?: string
+          version?: number
         }
         Relationships: []
       }

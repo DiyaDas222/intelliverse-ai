@@ -7,13 +7,17 @@ import Editor from "@monaco-editor/react";
 import JSZip from "jszip";
 import {
   ArrowLeft,
+  CheckCircle2,
   Code2,
   Download,
+  ExternalLink,
   Eye,
   FileCode2,
   Github,
   Loader2,
   Plus,
+  RefreshCcw,
+  Rocket,
   Send,
   Sparkles,
   Trash2,
@@ -22,8 +26,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { GithubPublishDialog } from "@/components/github-publish-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { VibePhases, usePhaseRunner } from "@/components/vibe-phases";
+import { buildPreviewDoc } from "@/lib/build-preview";
 import {
-  getVibeProject, updateVibeProject,
+  getVibeProject, updateVibeProject, deployVibeProject,
   type VibeFile, type VibeMessage, type VibeProject,
 } from "@/lib/vibe.functions";
 
@@ -50,6 +56,7 @@ function VibeWorkspace() {
   const { id } = Route.useParams();
   const get = useServerFn(getVibeProject);
   const update = useServerFn(updateVibeProject);
+  const deployFn = useServerFn(deployVibeProject);
   const qc = useQueryClient();
   const navigate = useNavigate();
 
@@ -63,10 +70,15 @@ function VibeWorkspace() {
   const [activePath, setActivePath] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [deploying, setDeploying] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [dirty, setDirty] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
+
+  const skipBackend = !project?.stack?.backend || project.stack.backend === "None";
+  const phases = usePhaseRunner(generating, { skipBackend });
+
 
   useEffect(() => {
     if (project) {
@@ -159,10 +171,24 @@ function VibeWorkspace() {
       await update({
         data: { id, files: merged, messages: finalMessages, entry_file: newEntry },
       });
+
+      // Auto-deploy: mark as deployed and grant a live URL.
+      try {
+        setDeploying(true);
+        await deployFn({ data: { id, logs: phases.logs.map((l) => ({ at: new Date().toISOString(), level: "info" as const, message: l })) } });
+        phases.complete();
+        toast.success("Deployed — live URL ready");
+      } catch (de: any) {
+        phases.fail("deployment", de?.message ?? "Deploy failed");
+        toast.error(de?.message ?? "Deploy failed");
+      } finally {
+        setDeploying(false);
+      }
+
       qc.invalidateQueries({ queryKey: ["vibeProject", id] });
       qc.invalidateQueries({ queryKey: ["vibeProjects"] });
-      toast.success(`Updated ${data.files?.length ?? 0} file(s)`);
     } catch (e: any) {
+      phases.fail(phases.current ?? "frontend", e?.message ?? "Generation failed");
       toast.error(e?.message ?? "Generation failed");
       setMessages((m) => [...m, { role: "assistant", content: `⚠️ ${e?.message ?? "Generation failed"}`, at: new Date().toISOString() }]);
     } finally {
@@ -252,8 +278,39 @@ function VibeWorkspace() {
               Save
             </Button>
           )}
+          {project.deploy_status === "deployed" && project.slug && (
+            <a
+              href={`/live/${project.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-8 items-center gap-1 rounded-md bg-emerald-500/15 px-2.5 text-xs font-medium text-emerald-500 hover:bg-emerald-500/25"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Live
+            </a>
+          )}
           <Button size="sm" variant={previewOpen ? "default" : "outline"} onClick={() => setPreviewOpen((v) => !v)} disabled={!canPreview}>
             <Eye className="mr-1 h-3.5 w-3.5" /> Preview
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={async () => {
+              if (files.length === 0) return toast.error("Generate the project first");
+              setDeploying(true);
+              try {
+                await deployFn({ data: { id } });
+                qc.invalidateQueries({ queryKey: ["vibeProject", id] });
+                toast.success("Redeployed");
+              } catch (e: any) {
+                toast.error(e?.message ?? "Redeploy failed");
+              } finally {
+                setDeploying(false);
+              }
+            }}
+            disabled={deploying || files.length === 0}
+          >
+            {deploying ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <Rocket className="mr-1 h-3.5 w-3.5" />}
+            Redeploy
           </Button>
           <Button size="sm" variant="outline" onClick={downloadZip}>
             <Download className="mr-1 h-3.5 w-3.5" /> ZIP
@@ -379,10 +436,42 @@ function VibeWorkspace() {
                 {m.content}
               </div>
             ))}
-            {generating && (
-              <div className="mr-4 flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Generating files…
+            {(generating || phases.failedAt) && (
+              <VibePhases
+                current={phases.current}
+                status={phases.status}
+                logs={phases.logs}
+                failedAt={phases.failedAt}
+              />
+            )}
+            {!generating && project.deploy_status === "deployed" && project.slug && (
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-emerald-500">Live & deployed ✓</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      Version {project.version} · {project.deployed_at ? new Date(project.deployed_at).toLocaleString() : ""}
+                    </p>
+                    <a
+                      href={`/live/${project.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 inline-flex items-center gap-1 break-all text-[11px] text-primary hover:underline"
+                    >
+                      {typeof window !== "undefined" ? window.location.origin : ""}/live/{project.slug}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+                <div className="mt-2 overflow-hidden rounded-md border border-border/40 bg-white">
+                  <iframe
+                    title="live"
+                    className="h-48 w-full"
+                    sandbox="allow-scripts allow-forms allow-modals"
+                    src={`/live/${project.slug}`}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -428,41 +517,3 @@ function guessEntry(files: VibeFile[]): string | null {
   return null;
 }
 
-function buildPreviewDoc(files: VibeFile[], entry: string | null): string | null {
-  const entryFile =
-    (entry && files.find((f) => f.path === entry)) ||
-    files.find((f) => /(^|\/)index\.html$/i.test(f.path));
-  if (!entryFile) return null;
-
-  let html = entryFile.content;
-  const dir = entryFile.path.includes("/") ? entryFile.path.replace(/\/[^/]+$/, "/") : "";
-
-  // Inline <link rel="stylesheet" href="...">
-  html = html.replace(/<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi, (m, href) => {
-    const resolved = resolvePath(dir, href);
-    const css = files.find((f) => f.path === resolved);
-    return css ? `<style>\n${css.content}\n</style>` : m;
-  });
-
-  // Inline <script src="..."></script>
-  html = html.replace(/<script([^>]*)\s+src=["']([^"']+)["']([^>]*)><\/script>/gi, (m, pre, src, post) => {
-    const resolved = resolvePath(dir, src);
-    const js = files.find((f) => f.path === resolved);
-    return js ? `<script${pre}${post}>\n${js.content}\n</script>` : m;
-  });
-
-  return html;
-}
-
-function resolvePath(dir: string, href: string): string {
-  if (/^https?:\/\//i.test(href)) return href;
-  if (href.startsWith("/")) return href.replace(/^\/+/, "");
-  const parts = (dir + href).split("/");
-  const out: string[] = [];
-  for (const p of parts) {
-    if (p === "" || p === ".") continue;
-    if (p === "..") out.pop();
-    else out.push(p);
-  }
-  return out.join("/");
-}
