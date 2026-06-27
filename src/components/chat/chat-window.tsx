@@ -67,6 +67,7 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const navigate = useNavigate();
+  const createVibe = useServerFn(createVibeProject);
   const qc = useQueryClient();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([]);
