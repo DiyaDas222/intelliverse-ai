@@ -55,6 +55,7 @@ function VibeHub() {
   const list = useServerFn(listVibeProjects);
   const create = useServerFn(createVibeProject);
   const del = useServerFn(deleteVibeProject);
+  const deployFn = useServerFn(deployVibeProject);
   const qc = useQueryClient();
   const navigate = useNavigate();
 
