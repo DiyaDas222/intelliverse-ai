@@ -1,21 +1,24 @@
 /**
- * Tiny in-memory mock of the slice of supabase-js the webhook handler and
- * credit helpers use. Tables are arrays of plain objects. Each query starts
- * with `.from(table)` and returns a thenable builder that supports the
- * chained methods the production code uses: select / insert / upsert /
- * update / delete / eq / in / contains / limit / maybeSingle / single.
+ * Minimal in-memory mock of the slice of supabase-js the webhook handler
+ * and credit helpers exercise. Tables are arrays of plain objects. Each
+ * `.from(table)` returns a thenable query builder supporting the methods
+ * used in production: select / insert / upsert / update / delete / eq /
+ * in / contains / limit / maybeSingle / single / order.
  */
 
 export type Row = Record<string, any>;
 export type Store = Record<string, Row[]>;
 
-type Op = "select" | "insert" | "upsert" | "update" | "delete";
-
 interface UpsertOpts {
   onConflict?: string;
 }
 
-function matches(row: Row, filters: Array<[string, any]>, ins: Array<[string, any[]]>, contains: Array<[string, Row]>) {
+function rowMatches(
+  row: Row,
+  filters: Array<[string, any]>,
+  ins: Array<[string, any[]]>,
+  contains: Array<[string, Row]>,
+): boolean {
   for (const [c, v] of filters) if (row[c] !== v) return false;
   for (const [c, arr] of ins) if (!arr.includes(row[c])) return false;
   for (const [c, obj] of contains) {
@@ -25,69 +28,38 @@ function matches(row: Row, filters: Array<[string, any]>, ins: Array<[string, an
   return true;
 }
 
-class Builder {
-  filters: Array<[string, any]>;
-  ins: Array<[string, any[]]>;
-  containsFilters: Array<[string, Row]>;
-  op: Op;
-  payload: any;
-  opts: UpsertOpts;
-  limitN: number | null;
-  mode: "many" | "maybeSingle" | "single";
+function makeBuilder(store: Store, table: string) {
+  const state = {
+    filters: [] as Array<[string, any]>,
+    ins: [] as Array<[string, any[]]>,
+    containsFilters: [] as Array<[string, Row]>,
+    op: "select" as "select" | "insert" | "upsert" | "update" | "delete",
+    payload: null as any,
+    opts: {} as UpsertOpts,
+    limitN: null as number | null,
+    mode: "many" as "many" | "maybeSingle" | "single",
+  };
 
-  constructor(private store: Store, private table: string) {
-    this.filters = [];
-    this.ins = [];
-    this.containsFilters = [];
-    this.op = "select";
-    this.payload = null;
-    this.opts = {};
-    this.limitN = null;
-    this.mode = "many";
-  }
+  store[table] ||= [];
 
-  select(_cols?: string) { this.op = "select"; return this; }
-  insert(payload: any) { this.op = "insert"; this.payload = payload; return this; }
-  upsert(payload: any, opts: UpsertOpts = {}) {
-    this.op = "upsert"; this.payload = payload; this.opts = opts; return this;
-  }
-  update(payload: any) { this.op = "update"; this.payload = payload; return this; }
-  delete() { this.op = "delete"; return this; }
-  eq(col: string, val: any) { this.filters.push([col, val]); return this; }
-  in(col: string, arr: any[]) { this.ins.push([col, arr]); return this; }
-  contains(col: string, obj: Row) { this._contains.push([col, obj]); return this; }
-  limit(n: number) { this.limitN = n; return this; }
-  maybeSingle() { this.mode = "maybeSingle"; return this.run(); }
-  single() { this.mode = "single"; return this.run(); }
-  order() { return this; }
-
-  then<T>(onFulfilled: (v: any) => T) { return this.run().then(onFulfilled); }
-
-  private rows(): Row[] {
-    this.store[this.table] ||= [];
-    return this.store[this.table];
-  }
-
-  private async run() {
-    this.store[this.table] ||= [];
-    const rows = this.rows();
-    if (this.op === "select") {
-      let out = rows.filter((r) => matches(r, this.filters, this.ins, this._contains));
-      if (this.limitN != null) out = out.slice(0, this.limitN);
-      // Return shallow copies so callers cannot mutate store rows by reference.
+  async function run(): Promise<{ data: any; error: any }> {
+    const rows = (store[table] ||= []);
+    if (state.op === "select") {
+      let out = rows.filter((r) => rowMatches(r, state.filters, state.ins, state.containsFilters));
+      if (state.limitN != null) out = out.slice(0, state.limitN);
       const copy = out.map((r) => ({ ...r }));
-      if (this.mode === "maybeSingle") return { data: copy[0] ?? null, error: null };
-      if (this.mode === "single") return { data: copy[0], error: copy[0] ? null : { message: "no rows" } };
+      if (state.mode === "maybeSingle") return { data: copy[0] ?? null, error: null };
+      if (state.mode === "single") return { data: copy[0], error: copy[0] ? null : { message: "no rows" } };
       return { data: copy, error: null };
     }
-    if (this.op === "insert") {
-      const arr = Array.isArray(this.payload) ? this.payload : [this.payload];
+    if (state.op === "insert") {
+      const arr = Array.isArray(state.payload) ? state.payload : [state.payload];
       for (const r of arr) rows.push({ ...r });
       return { data: arr, error: null };
     }
-    if (this.op === "upsert") {
-      const arr = Array.isArray(this.payload) ? this.payload : [this.payload];
-      const conflictCols = (this.opts.onConflict ?? "id").split(",").map((c) => c.trim());
+    if (state.op === "upsert") {
+      const arr = Array.isArray(state.payload) ? state.payload : [state.payload];
+      const conflictCols = (state.opts.onConflict ?? "id").split(",").map((c) => c.trim());
       for (const r of arr) {
         const existing = rows.find((row) => conflictCols.every((c) => row[c] === r[c]));
         if (existing) Object.assign(existing, r);
@@ -95,23 +67,43 @@ class Builder {
       }
       return { data: arr, error: null };
     }
-    if (this.op === "update") {
-      const targets = rows.filter((r) => matches(r, this.filters, this.ins, this._contains));
-      for (const r of targets) Object.assign(r, this.payload);
+    if (state.op === "update") {
+      const targets = rows.filter((r) => rowMatches(r, state.filters, state.ins, state.containsFilters));
+      for (const r of targets) Object.assign(r, state.payload);
       return { data: targets, error: null };
     }
-    if (this.op === "delete") {
-      const keep = rows.filter((r) => !matches(r, this.filters, this.ins, this._contains));
-      this.store[this.table] = keep;
+    if (state.op === "delete") {
+      store[table] = rows.filter((r) => !rowMatches(r, state.filters, state.ins, state.containsFilters));
       return { data: null, error: null };
     }
     return { data: null, error: null };
   }
+
+  const builder: any = {
+    select(_cols?: string) { state.op = "select"; return builder; },
+    insert(payload: any) { state.op = "insert"; state.payload = payload; return builder; },
+    upsert(payload: any, opts: UpsertOpts = {}) {
+      state.op = "upsert"; state.payload = payload; state.opts = opts; return builder;
+    },
+    update(payload: any) { state.op = "update"; state.payload = payload; return builder; },
+    delete() { state.op = "delete"; return builder; },
+    eq(col: string, val: any) { state.filters.push([col, val]); return builder; },
+    in(col: string, arr: any[]) { state.ins.push([col, arr]); return builder; },
+    contains(col: string, obj: Row) { state.containsFilters.push([col, obj]); return builder; },
+    limit(n: number) { state.limitN = n; return builder; },
+    order() { return builder; },
+    maybeSingle() { state.mode = "maybeSingle"; return run(); },
+    single() { state.mode = "single"; return run(); },
+    then<T>(onFulfilled: (v: any) => T, onRejected?: (e: any) => any) {
+      return run().then(onFulfilled, onRejected);
+    },
+  };
+  return builder;
 }
 
 export interface MockSupabase {
   store: Store;
-  from(table: string): Builder;
+  from(table: string): any;
   rpc(name: string, args: Record<string, any>): Promise<{ data: any; error: any }>;
   __rpcHandlers: Record<string, (args: any) => any>;
 }
@@ -122,7 +114,7 @@ export function createMockSupabase(seed: Store = {}): MockSupabase {
   return {
     store,
     __rpcHandlers: rpcHandlers,
-    from(table) { return new Builder(store, table); },
+    from(table: string) { return makeBuilder(store, table); },
     async rpc(name, args) {
       const h = rpcHandlers[name];
       if (!h) return { data: null, error: { message: `unmocked rpc ${name}` } };
