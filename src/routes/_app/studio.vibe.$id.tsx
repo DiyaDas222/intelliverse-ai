@@ -372,9 +372,8 @@ function VibeWorkspace() {
         </aside>
 
         {/* Editor + Preview */}
-        <section className="flex min-h-0 flex-col">
-          <div className={`grid min-h-0 flex-1 ${previewOpen && canPreview ? "grid-rows-2" : "grid-rows-1"}`}>
-            <div className="min-h-0 border-b border-border/60">
+        <section className={`grid min-h-0 ${previewOpen && canPreview ? "grid-rows-[minmax(320px,1fr)_minmax(320px,1fr)] xl:grid-cols-2 xl:grid-rows-1" : "grid-cols-1"}`}>
+            <div className="min-h-0 border-b border-border/60 xl:border-b-0 xl:border-r">
               {active ? (
                 <Editor
                   height="100%"
@@ -400,16 +399,32 @@ function VibeWorkspace() {
               )}
             </div>
             {previewOpen && canPreview && (
-              <div className="min-h-0 bg-white">
-                <iframe
-                  title="preview"
-                  className="h-full w-full"
-                  sandbox="allow-scripts allow-forms allow-modals"
-                  srcDoc={previewDoc}
-                />
+              <div className="flex min-h-0 flex-col bg-background">
+                <div className="flex h-9 shrink-0 items-center gap-2 border-b border-border/60 px-3 text-xs text-muted-foreground">
+                  <Eye className="h-3.5 w-3.5" /> Live preview
+                  {project.deploy_status === "deployed" && project.slug ? (
+                    <a href={`/live/${project.slug}`} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-primary hover:underline">
+                      Open live <ExternalLink className="h-3 w-3" />
+                    </a>
+                  ) : null}
+                </div>
+                {project.deploy_status === "deployed" && project.slug ? (
+                  <iframe
+                    title="live preview"
+                    className="min-h-0 flex-1 bg-white"
+                    sandbox="allow-scripts allow-forms allow-modals"
+                    src={`/live/${project.slug}`}
+                  />
+                ) : (
+                  <iframe
+                    title="preview"
+                    className="min-h-0 flex-1 bg-white"
+                    sandbox="allow-scripts allow-forms allow-modals"
+                    srcDoc={previewDoc}
+                  />
+                )}
               </div>
             )}
-          </div>
         </section>
 
         {/* Chat */}

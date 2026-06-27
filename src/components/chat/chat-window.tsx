@@ -30,8 +30,6 @@ import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
 import { GenerationProgress } from "@/components/generation-progress";
 import { ThinkingIndicator, detectIntent } from "@/components/thinking-indicator";
 import { CreationWizard, detectWizardKind, type WizardKind, type WizardResult } from "@/components/chat/creation-wizard";
-import { useServerFn } from "@tanstack/react-start";
-import { createVibeProject } from "@/lib/vibe.functions";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 
 type Msg = {
@@ -69,7 +67,6 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const navigate = useNavigate();
-  const createVibe = useServerFn(createVibeProject);
   const qc = useQueryClient();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -275,6 +272,29 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     };
   };
 
+  const startVibeBuild = async ({
+    name,
+    description,
+    kind,
+    stack,
+  }: {
+    name: string;
+    description: string;
+    kind: string;
+    stack: Record<string, unknown>;
+  }) => {
+    const res = await authedFetch("/api/vibe-start", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name, description, kind, stack }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data?.project?.id) {
+      throw new Error(data?.error || `Builder failed (${res.status})`);
+    }
+    return data as { project: { id: string; slug?: string }; liveUrl?: string };
+  };
+
 
   const sendMessage = async (text: string, images: string[] = []) => {
     const body = text.trim();
@@ -359,18 +379,14 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       });
       try {
         const name = inferVibeName(body, wizardKind);
-        const project = await createVibe({
-          data: {
-            name,
-            description: body.slice(0, 300),
-            kind: wizardKind === "website" ? "website" : "webapp",
-            stack: stackFromPrompt(body, wizardKind),
-          },
+        const { project, liveUrl } = await startVibeBuild({
+          name,
+          description: body,
+          kind: wizardKind === "website" ? "website" : "webapp",
+          stack: stackFromPrompt(body, wizardKind),
         });
-        const fullBrief = `${body}\n\nBuild it directly from this prompt. Use sensible defaults for anything missing. Generate complete runnable files, deploy automatically, and show the live URL.`;
-        sessionStorage.setItem(`iv:vibe-auto:${project.id}`, fullBrief);
-        const liveLine = project.slug ? `\n\nLive link after deployment: [/live/${project.slug}](/live/${project.slug})` : "";
-        const linkText = `**Building started ✅**\n\nOpening your live builder now. Your files, preview, and live link will appear there automatically.${liveLine}\n\n[Open builder](/studio/vibe/${project.id})`;
+        const liveLine = liveUrl || (project.slug ? `/live/${project.slug}` : "");
+        const linkText = `**Built and deployed ✅**\n\nYour files are ready and the live preview is opening side-by-side now.${liveLine ? `\n\n[Open live site](${liveLine})` : ""}\n\n[Open builder](/studio/vibe/${project.id})`;
         setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: linkText } : m)));
         void resolveConv().then((id) => {
           if (!id) return;
@@ -501,25 +517,20 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
           (pick("title") as string | undefined) ||
           `${result.kind.charAt(0).toUpperCase() + result.kind.slice(1)} ${new Date().toLocaleDateString()}`;
 
-        const project = await createVibe({
-          data: {
-            name,
-            description: result.brief.slice(0, 300),
-            kind: result.kind === "app" ? "webapp" : result.kind === "project" ? "webapp" : "website",
-            stack: {
-              frontend: pick("frontend") || "React",
-              backend: pick("backend") || "None",
-              database: pick("database") || "None",
-              auth: pick("auth") || "None",
-              styling: pick("styling") || "Tailwind CSS",
-            },
+        const { project, liveUrl } = await startVibeBuild({
+          name,
+          description: result.brief,
+          kind: result.kind === "app" ? "webapp" : result.kind === "project" ? "webapp" : "website",
+          stack: {
+            frontend: pick("frontend") || "React",
+            backend: pick("backend") || "None",
+            database: pick("database") || "None",
+            auth: pick("auth") || "None",
+            styling: pick("styling") || "Tailwind CSS",
           },
         });
 
-        // Tell the workspace to auto-run the first generation.
-        sessionStorage.setItem(`iv:vibe-auto:${project.id}`, result.brief);
-
-        const followup = `**Building your ${result.kind} now ✨**\n\n${result.summary}\n\nOpening the live builder — files will appear as they're generated.`;
+        const followup = `**Built and deployed ✅**\n\n${result.summary}${liveUrl ? `\n\n[Open live site](${liveUrl})` : ""}\n\nOpening the builder with preview beside the code.`;
         setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: followup, wizardDone: true } : m)));
         if (conversationId && user) {
           await supabase.from("messages").insert({
