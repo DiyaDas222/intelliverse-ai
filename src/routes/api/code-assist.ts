@@ -41,6 +41,8 @@ export const Route = createFileRoute("/api/code-assist")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const authed = await requireUser(request);
+        if (authed instanceof Response) return authed;
         const key = getGatewayApiKey();
         if (!key) return new Response("AI gateway is not configured", { status: 500 });
 
