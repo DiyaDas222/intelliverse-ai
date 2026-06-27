@@ -7,13 +7,17 @@ import Editor from "@monaco-editor/react";
 import JSZip from "jszip";
 import {
   ArrowLeft,
+  CheckCircle2,
   Code2,
   Download,
+  ExternalLink,
   Eye,
   FileCode2,
   Github,
   Loader2,
   Plus,
+  RefreshCcw,
+  Rocket,
   Send,
   Sparkles,
   Trash2,
@@ -22,8 +26,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { GithubPublishDialog } from "@/components/github-publish-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { VibePhases, usePhaseRunner } from "@/components/vibe-phases";
+import { buildPreviewDoc } from "@/lib/build-preview";
 import {
-  getVibeProject, updateVibeProject,
+  getVibeProject, updateVibeProject, deployVibeProject,
   type VibeFile, type VibeMessage, type VibeProject,
 } from "@/lib/vibe.functions";
 
