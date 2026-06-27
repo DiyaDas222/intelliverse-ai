@@ -43,6 +43,8 @@ export const Route = createFileRoute("/api/vibe-generate")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const authed = await requireUser(request);
+        if (authed instanceof Response) return authed;
         const key = getGatewayApiKey();
         if (!key) {
           return new Response(JSON.stringify({ error: "AI gateway is not configured" }), {
