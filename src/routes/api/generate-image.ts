@@ -6,6 +6,8 @@ export const Route = createFileRoute("/api/generate-image")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const authed = await requireUser(request);
+        if (authed instanceof Response) return authed;
         const { prompt, size } = (await request.json().catch(() => ({}))) as {
           prompt?: string;
           size?: string;
