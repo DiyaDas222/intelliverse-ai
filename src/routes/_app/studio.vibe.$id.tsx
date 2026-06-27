@@ -64,6 +64,7 @@ function VibeWorkspace() {
   const [generating, setGenerating] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [dirty, setDirty] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
