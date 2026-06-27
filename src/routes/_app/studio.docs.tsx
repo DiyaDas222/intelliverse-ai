@@ -14,8 +14,10 @@ import {
   Download,
   Save,
   ChevronLeft,
+  Github,
 } from "lucide-react";
 import { saveDocAsset } from "@/lib/assets.functions";
+import { GithubPublishDialog } from "@/components/github-publish-dialog";
 
 export const Route = createFileRoute("/_app/studio/docs")({
   head: () => ({ meta: [{ title: "Document Generator — IntelliVerse" }] }),
