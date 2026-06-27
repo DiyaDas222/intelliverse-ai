@@ -278,8 +278,39 @@ function VibeWorkspace() {
               Save
             </Button>
           )}
+          {project.deploy_status === "deployed" && project.slug && (
+            <a
+              href={`/live/${project.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-8 items-center gap-1 rounded-md bg-emerald-500/15 px-2.5 text-xs font-medium text-emerald-500 hover:bg-emerald-500/25"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Live
+            </a>
+          )}
           <Button size="sm" variant={previewOpen ? "default" : "outline"} onClick={() => setPreviewOpen((v) => !v)} disabled={!canPreview}>
             <Eye className="mr-1 h-3.5 w-3.5" /> Preview
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={async () => {
+              if (files.length === 0) return toast.error("Generate the project first");
+              setDeploying(true);
+              try {
+                await deployFn({ data: { id } });
+                qc.invalidateQueries({ queryKey: ["vibeProject", id] });
+                toast.success("Redeployed");
+              } catch (e: any) {
+                toast.error(e?.message ?? "Redeploy failed");
+              } finally {
+                setDeploying(false);
+              }
+            }}
+            disabled={deploying || files.length === 0}
+          >
+            {deploying ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <Rocket className="mr-1 h-3.5 w-3.5" />}
+            Redeploy
           </Button>
           <Button size="sm" variant="outline" onClick={downloadZip}>
             <Download className="mr-1 h-3.5 w-3.5" /> ZIP
