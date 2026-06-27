@@ -92,7 +92,7 @@ class Builder {
       return { data: targets, error: null };
     }
     if (this.op === "delete") {
-      const keep = rows.filter((r) => !matches(r, this.filters, this.ins, this.contains));
+      const keep = rows.filter((r) => !matches(r, this.filters, this.ins, this._contains));
       this.store[this.table] = keep;
       return { data: null, error: null };
     }
