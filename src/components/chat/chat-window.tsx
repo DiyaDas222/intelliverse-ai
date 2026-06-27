@@ -30,6 +30,8 @@ import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
 import { GenerationProgress } from "@/components/generation-progress";
 import { ThinkingIndicator, detectIntent } from "@/components/thinking-indicator";
 import { CreationWizard, detectWizardKind, type WizardKind, type WizardResult } from "@/components/chat/creation-wizard";
+import { useServerFn } from "@tanstack/react-start";
+import { createVibeProject } from "@/lib/vibe.functions";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 
 type Msg = {
@@ -65,6 +67,7 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const navigate = useNavigate();
+  const createVibe = useServerFn(createVibeProject);
   const qc = useQueryClient();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -375,6 +378,57 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
 
   const handleWizardComplete = async (msgId: string, result: WizardResult) => {
     sessionStorage.setItem(`iv:wizard-brief:${result.kind}`, result.brief);
+
+    // For buildable software → spin up a real Vibe Coding project and auto-generate.
+    const buildable = result.kind === "website" || result.kind === "app" || result.kind === "project";
+    if (buildable) {
+      try {
+        const stackAns = (result.answers as Record<string, string | string[]>) || {};
+        const pick = (k: string): string | undefined => {
+          const v = stackAns[k];
+          return Array.isArray(v) ? v[0] : v;
+        };
+        const name =
+          (pick("name") as string | undefined) ||
+          (pick("title") as string | undefined) ||
+          `${result.kind.charAt(0).toUpperCase() + result.kind.slice(1)} ${new Date().toLocaleDateString()}`;
+
+        const project = await createVibe({
+          data: {
+            name,
+            description: result.brief.slice(0, 300),
+            kind: result.kind === "app" ? "webapp" : result.kind === "project" ? "webapp" : "website",
+            stack: {
+              frontend: pick("frontend") || "React",
+              backend: pick("backend") || "None",
+              database: pick("database") || "None",
+              auth: pick("auth") || "None",
+              styling: pick("styling") || "Tailwind CSS",
+            },
+          },
+        });
+
+        // Tell the workspace to auto-run the first generation.
+        sessionStorage.setItem(`iv:vibe-auto:${project.id}`, result.brief);
+
+        const followup = `**Building your ${result.kind} now ✨**\n\n${result.summary}\n\nOpening the live builder — files will appear as they're generated.`;
+        setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: followup, wizardDone: true } : m)));
+        if (conversationId && user) {
+          await supabase.from("messages").insert({
+            conversation_id: conversationId,
+            user_id: user.id,
+            role: "assistant",
+            content: followup,
+          });
+        }
+        navigate({ to: "/studio/vibe/$id", params: { id: project.id } });
+        return;
+      } catch (e: any) {
+        toast.error(e?.message ?? "Couldn't start the builder");
+        // fall through to legacy path
+      }
+    }
+
     const followup = `**${result.kind.charAt(0).toUpperCase() + result.kind.slice(1)} brief ready ✓**\n\n${result.summary}\n\n[Open the builder with your brief pre-filled →](${result.studioPath})`;
     setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: followup, wizardDone: true } : m)));
     if (conversationId && user) {

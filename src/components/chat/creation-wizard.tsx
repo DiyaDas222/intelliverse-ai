@@ -468,7 +468,7 @@ export function detectWizardKind(text: string): WizardKind | null {
   const v = text.toLowerCase();
   const asks = /\b(generate|create|make|build|design|produce|compose)\b/.test(v);
   if (!asks) return null;
-  if (/\b(website|landing page|web ?site)\b/.test(v)) return "website";
+  if (/\b(website|landing page|web ?site|portfolio|blog|saas|dashboard)\b/.test(v)) return "website";
   if (/\b(mobile app|web app|application|\bapp\b)\b/.test(v)) return "app";
   if (/\b(presentation|slides|pptx|pitch deck|powerpoint)\b/.test(v)) return "presentation";
   if (/\b(assignment|essay|report|homework)\b/.test(v)) return "assignment";

@@ -74,6 +74,16 @@ function VibeWorkspace() {
       setMessages(project.messages ?? []);
       setActivePath((project.files ?? [])[0]?.path ?? null);
       setDirty(false);
+
+      // Auto-run the first generation when the chat wizard handed us a brief.
+      const key = `iv:vibe-auto:${project.id}`;
+      const pending = typeof window !== "undefined" ? sessionStorage.getItem(key) : null;
+      if (pending && (project.files ?? []).length === 0) {
+        sessionStorage.removeItem(key);
+        setPrompt(pending);
+        // defer so state settles before we call generate()
+        setTimeout(() => { void generate(pending); }, 50);
+      }
     }
   }, [project?.id]);
 
@@ -105,8 +115,8 @@ function VibeWorkspace() {
     onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
   });
 
-  async function generate() {
-    const text = prompt.trim();
+  async function generate(overrideText?: string) {
+    const text = (overrideText ?? prompt).trim();
     if (!text || generating || !project) return;
     setGenerating(true);
     const userMsg: VibeMessage = { role: "user", content: text, at: new Date().toISOString() };
@@ -390,7 +400,7 @@ function VibeWorkspace() {
                 placeholder="Describe what to build or change…"
                 className="min-h-[44px] resize-none text-sm"
               />
-              <Button size="icon" onClick={generate} disabled={generating || !prompt.trim()}>
+              <Button size="icon" onClick={() => generate()} disabled={generating || !prompt.trim()}>
                 {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
