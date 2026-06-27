@@ -372,8 +372,8 @@ function VibeWorkspace() {
         </aside>
 
         {/* Editor + Preview */}
-        <section className={`grid min-h-0 ${previewOpen && canPreview ? "grid-rows-[minmax(320px,1fr)_minmax(320px,1fr)] xl:grid-cols-2 xl:grid-rows-1" : "grid-cols-1"}`}>
-            <div className="min-h-0 border-b border-border/60 xl:border-b-0 xl:border-r">
+        <section className={`grid min-h-0 ${previewOpen && canPreview ? "grid-rows-[minmax(320px,1fr)_minmax(320px,1fr)] lg:grid-cols-2 lg:grid-rows-1" : "grid-cols-1"}`}>
+            <div className="min-h-0 border-b border-border/60 lg:border-b-0 lg:border-r">
               {active ? (
                 <Editor
                   height="100%"
