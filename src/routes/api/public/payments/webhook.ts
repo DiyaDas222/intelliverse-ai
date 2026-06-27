@@ -12,6 +12,59 @@ async function getSupabase() {
 type PlanRole = "pro" | "team";
 const WELCOME_BONUS_CREDITS = 50;
 
+const CREDIT_PACKS: Record<string, number> = {
+  credits_small_onetime: 100,
+  credits_medium_onetime: 500,
+  credits_large_onetime: 1500,
+};
+
+async function handleCheckoutCompleted(event: any, env: StripeEnv) {
+  const session = event.data.object;
+  if (session.mode !== "payment") return;
+  const userId = session.metadata?.userId;
+  if (!userId) return;
+  const supabase = await getSupabase();
+
+  // Idempotency: skip if we've already credited this session.
+  const { data: dup } = await supabase
+    .from("admin_notifications")
+    .select("id")
+    .eq("kind", "credit_pack_purchased")
+    .contains("payload", { session_id: session.id })
+    .maybeSingle();
+  if (dup) return;
+
+  // Resolve the price's lookup_key via the gateway to identify the pack.
+  const { createStripeClient } = await import("@/lib/stripe.server");
+  const stripe = createStripeClient(env);
+  const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
+  const lookupKey = lineItems.data[0]?.price?.lookup_key
+    ?? lineItems.data[0]?.price?.metadata?.lovable_external_id
+    ?? "";
+  const credits = CREDIT_PACKS[lookupKey];
+  if (!credits) return;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("bonus_credits, email, display_name")
+    .eq("id", userId)
+    .maybeSingle();
+  await supabase
+    .from("profiles")
+    .update({ bonus_credits: (profile?.bonus_credits ?? 0) + credits })
+    .eq("id", userId);
+
+  await notifyAdmin(supabase, "credit_pack_purchased", userId, {
+    session_id: session.id,
+    price_id: lookupKey,
+    credits_granted: credits,
+    amount_total: session.amount_total,
+    currency: session.currency,
+    email: profile?.email,
+    environment: env,
+  });
+}
+
 function planRoleFromPriceId(priceId?: string | null): PlanRole {
   if (priceId && priceId.startsWith("team_")) return "team";
   return "pro";
@@ -177,6 +230,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               break;
             case "customer.subscription.deleted":
               await handleSubscriptionDeleted(event, env);
+              break;
+            case "checkout.session.completed":
+              await handleCheckoutCompleted(event, env);
               break;
             default:
               console.log("Unhandled event:", event.type);
