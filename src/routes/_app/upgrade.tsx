@@ -72,6 +72,7 @@ function UpgradePage() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [currentPriceId, setCurrentPriceId] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
+  const [packPriceId, setPackPriceId] = useState<string | null>(null);
 
   const selected = TIERS[tier].prices[cycle];
   const isCurrentPlan = currentPriceId === selected.id;
