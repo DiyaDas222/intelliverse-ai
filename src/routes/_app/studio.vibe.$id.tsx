@@ -400,7 +400,7 @@ function VibeWorkspace() {
                 placeholder="Describe what to build or change…"
                 className="min-h-[44px] resize-none text-sm"
               />
-              <Button size="icon" onClick={generate} disabled={generating || !prompt.trim()}>
+              <Button size="icon" onClick={() => generate()} disabled={generating || !prompt.trim()}>
                 {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
