@@ -24,6 +24,29 @@ function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light" | "system">("dark");
   const [defaultModel, setDefaultModel] = useState<string>(DEFAULT_MODEL);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const credits = useQuery({
+    queryKey: ["credits-summary", user?.id],
+    enabled: !!user,
+    queryFn: () => getCreditsSummary(),
+    refetchOnWindowFocus: false,
+  });
+
+  async function openPortal() {
+    setPortalLoading(true);
+    try {
+      const res = await createPortalSession({
+        data: { environment: getStripeEnvironment(), returnUrl: window.location.href },
+      });
+      if ("error" in res) throw new Error(res.error);
+      window.location.href = res.url;
+    } catch (e: any) {
+      toast.error(e?.message ?? "No active subscription to manage");
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", user?.id],
