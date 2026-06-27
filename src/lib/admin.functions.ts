@@ -11,25 +11,29 @@ export type AdminUser = {
   roles: ("admin" | "user")[];
 };
 
-async function assertAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase.rpc("has_role", {
-    _user_id: userId,
-    _role: "admin",
-  });
+async function userHasAdminRole(supabase: any, userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
   if (error) throw new Error(error.message);
-  if (!data) throw new Error("Forbidden: admin only");
+  return !!data;
+}
+
+async function assertAdmin(supabase: any, userId: string) {
+  if (!(await userHasAdminRole(supabase, userId))) {
+    throw new Error("Forbidden: admin only");
+  }
 }
 
 export const checkIsAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (error) throw new Error(error.message);
-    return { isAdmin: !!data };
+    return { isAdmin: await userHasAdminRole(context.supabase, context.userId) };
   });
+
 
 export const bootstrapFirstAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
