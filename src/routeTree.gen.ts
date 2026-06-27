@@ -26,6 +26,7 @@ import { Route as ApiGenerateImageRouteImport } from './routes/api/generate-imag
 import { Route as ApiGenerateDocRouteImport } from './routes/api/generate-doc'
 import { Route as ApiGenerateAudioRouteImport } from './routes/api/generate-audio'
 import { Route as ApiDocActionRouteImport } from './routes/api/doc-action'
+import { Route as ApiCodeAssistRouteImport } from './routes/api/code-assist'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppToolsRouteImport } from './routes/_app/tools'
 import { Route as AppStudioRouteImport } from './routes/_app/studio'
@@ -43,6 +44,7 @@ import { Route as AppStudioVideoRouteImport } from './routes/_app/studio.video'
 import { Route as AppStudioMusicRouteImport } from './routes/_app/studio.music'
 import { Route as AppStudioImageRouteImport } from './routes/_app/studio.image'
 import { Route as AppStudioDocsRouteImport } from './routes/_app/studio.docs'
+import { Route as AppStudioCodeRouteImport } from './routes/_app/studio.code'
 import { Route as AppStudioAudioRouteImport } from './routes/_app/studio.audio'
 import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
 import { Route as AppChatVoiceRouteImport } from './routes/_app/chat.voice'
@@ -133,6 +135,11 @@ const ApiDocActionRoute = ApiDocActionRouteImport.update({
   path: '/api/doc-action',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCodeAssistRoute = ApiCodeAssistRouteImport.update({
+  id: '/api/code-assist',
+  path: '/api/code-assist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -218,6 +225,11 @@ const AppStudioDocsRoute = AppStudioDocsRouteImport.update({
   path: '/docs',
   getParentRoute: () => AppStudioRoute,
 } as any)
+const AppStudioCodeRoute = AppStudioCodeRouteImport.update({
+  id: '/code',
+  path: '/code',
+  getParentRoute: () => AppStudioRoute,
+} as any)
 const AppStudioAudioRoute = AppStudioAudioRouteImport.update({
   id: '/audio',
   path: '/audio',
@@ -260,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/studio': typeof AppStudioRouteWithChildren
   '/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
   '/api/generate-audio': typeof ApiGenerateAudioRoute
   '/api/generate-doc': typeof ApiGenerateDocRoute
@@ -275,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/chat/voice': typeof AppChatVoiceRoute
   '/documents/$id': typeof AppDocumentsIdRoute
   '/studio/audio': typeof AppStudioAudioRoute
+  '/studio/code': typeof AppStudioCodeRoute
   '/studio/docs': typeof AppStudioDocsRoute
   '/studio/image': typeof AppStudioImageRoute
   '/studio/music': typeof AppStudioMusicRoute
@@ -298,6 +312,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
   '/api/generate-audio': typeof ApiGenerateAudioRoute
   '/api/generate-doc': typeof ApiGenerateDocRoute
@@ -313,6 +328,7 @@ export interface FileRoutesByTo {
   '/chat/voice': typeof AppChatVoiceRoute
   '/documents/$id': typeof AppDocumentsIdRoute
   '/studio/audio': typeof AppStudioAudioRoute
+  '/studio/code': typeof AppStudioCodeRoute
   '/studio/docs': typeof AppStudioDocsRoute
   '/studio/image': typeof AppStudioImageRoute
   '/studio/music': typeof AppStudioMusicRoute
@@ -340,6 +356,7 @@ export interface FileRoutesById {
   '/_app/studio': typeof AppStudioRouteWithChildren
   '/_app/tools': typeof AppToolsRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
   '/api/generate-audio': typeof ApiGenerateAudioRoute
   '/api/generate-doc': typeof ApiGenerateDocRoute
@@ -355,6 +372,7 @@ export interface FileRoutesById {
   '/_app/chat/voice': typeof AppChatVoiceRoute
   '/_app/documents/$id': typeof AppDocumentsIdRoute
   '/_app/studio/audio': typeof AppStudioAudioRoute
+  '/_app/studio/code': typeof AppStudioCodeRoute
   '/_app/studio/docs': typeof AppStudioDocsRoute
   '/_app/studio/image': typeof AppStudioImageRoute
   '/_app/studio/music': typeof AppStudioMusicRoute
@@ -382,6 +400,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/tools'
     | '/api/chat'
+    | '/api/code-assist'
     | '/api/doc-action'
     | '/api/generate-audio'
     | '/api/generate-doc'
@@ -397,6 +416,7 @@ export interface FileRouteTypes {
     | '/chat/voice'
     | '/documents/$id'
     | '/studio/audio'
+    | '/studio/code'
     | '/studio/docs'
     | '/studio/image'
     | '/studio/music'
@@ -420,6 +440,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tools'
     | '/api/chat'
+    | '/api/code-assist'
     | '/api/doc-action'
     | '/api/generate-audio'
     | '/api/generate-doc'
@@ -435,6 +456,7 @@ export interface FileRouteTypes {
     | '/chat/voice'
     | '/documents/$id'
     | '/studio/audio'
+    | '/studio/code'
     | '/studio/docs'
     | '/studio/image'
     | '/studio/music'
@@ -461,6 +483,7 @@ export interface FileRouteTypes {
     | '/_app/studio'
     | '/_app/tools'
     | '/api/chat'
+    | '/api/code-assist'
     | '/api/doc-action'
     | '/api/generate-audio'
     | '/api/generate-doc'
@@ -476,6 +499,7 @@ export interface FileRouteTypes {
     | '/_app/chat/voice'
     | '/_app/documents/$id'
     | '/_app/studio/audio'
+    | '/_app/studio/code'
     | '/_app/studio/docs'
     | '/_app/studio/image'
     | '/_app/studio/music'
@@ -494,6 +518,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiCodeAssistRoute: typeof ApiCodeAssistRoute
   ApiDocActionRoute: typeof ApiDocActionRoute
   ApiGenerateAudioRoute: typeof ApiGenerateAudioRoute
   ApiGenerateDocRoute: typeof ApiGenerateDocRoute
@@ -629,6 +654,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDocActionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/code-assist': {
+      id: '/api/code-assist'
+      path: '/api/code-assist'
+      fullPath: '/api/code-assist'
+      preLoaderRoute: typeof ApiCodeAssistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -748,6 +780,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStudioDocsRouteImport
       parentRoute: typeof AppStudioRoute
     }
+    '/_app/studio/code': {
+      id: '/_app/studio/code'
+      path: '/code'
+      fullPath: '/studio/code'
+      preLoaderRoute: typeof AppStudioCodeRouteImport
+      parentRoute: typeof AppStudioRoute
+    }
     '/_app/studio/audio': {
       id: '/_app/studio/audio'
       path: '/audio'
@@ -815,6 +854,7 @@ const AppDocumentsRouteWithChildren = AppDocumentsRoute._addFileChildren(
 
 interface AppStudioRouteChildren {
   AppStudioAudioRoute: typeof AppStudioAudioRoute
+  AppStudioCodeRoute: typeof AppStudioCodeRoute
   AppStudioDocsRoute: typeof AppStudioDocsRoute
   AppStudioImageRoute: typeof AppStudioImageRoute
   AppStudioMusicRoute: typeof AppStudioMusicRoute
@@ -824,6 +864,7 @@ interface AppStudioRouteChildren {
 
 const AppStudioRouteChildren: AppStudioRouteChildren = {
   AppStudioAudioRoute: AppStudioAudioRoute,
+  AppStudioCodeRoute: AppStudioCodeRoute,
   AppStudioDocsRoute: AppStudioDocsRoute,
   AppStudioImageRoute: AppStudioImageRoute,
   AppStudioMusicRoute: AppStudioMusicRoute,
@@ -881,6 +922,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiCodeAssistRoute: ApiCodeAssistRoute,
   ApiDocActionRoute: ApiDocActionRoute,
   ApiGenerateAudioRoute: ApiGenerateAudioRoute,
   ApiGenerateDocRoute: ApiGenerateDocRoute,
