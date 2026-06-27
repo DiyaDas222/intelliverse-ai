@@ -72,10 +72,12 @@ function AppLayout() {
     queryKey: ["isAdminSidebar", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("has_role", {
-        _user_id: user!.id,
-        _role: "admin",
-      });
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", user!.id)
+        .eq("role", "admin")
+        .maybeSingle();
       if (error) return false;
       return !!data;
     },
