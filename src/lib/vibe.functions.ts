@@ -11,6 +11,9 @@ export type VibeStack = {
   styling?: string;
   extras?: string[];
 };
+export type DeployStatus = "idle" | "deploying" | "deployed" | "failed";
+export type DeployLogEntry = { at: string; level: "info" | "warn" | "error"; message: string };
+
 export type VibeProject = {
   id: string;
   user_id: string;
@@ -21,9 +24,28 @@ export type VibeProject = {
   files: VibeFile[];
   messages: VibeMessage[];
   entry_file: string | null;
+  slug: string | null;
+  deploy_status: DeployStatus;
+  deployed_at: string | null;
+  deploy_logs: DeployLogEntry[];
+  version: number;
   created_at: string;
   updated_at: string;
 };
+
+function slugify(input: string): string {
+  return (
+    input
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 48) || "site"
+  );
+}
+
+function randSuffix(): string {
+  return Math.random().toString(36).slice(2, 7);
+}
 
 export const listVibeProjects = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -60,6 +82,8 @@ export const createVibeProject = createServerFn({ method: "POST" })
     stack?: VibeStack;
   }) => d)
   .handler(async ({ data, context }): Promise<VibeProject> => {
+    const base = slugify(data.name);
+    const slug = `${base}-${randSuffix()}`;
     const { data: row, error } = await context.supabase
       .from("vibe_projects")
       .insert({
@@ -70,7 +94,8 @@ export const createVibeProject = createServerFn({ method: "POST" })
         stack: data.stack ?? {},
         files: [],
         messages: [],
-      })
+        slug,
+      } as never)
       .select("*")
       .single();
     if (error) throw new Error(error.message);
@@ -93,6 +118,45 @@ export const updateVibeProject = createServerFn({ method: "POST" })
     for (const k of ["name", "description", "stack", "files", "messages", "entry_file"] as const) {
       if (data[k] !== undefined) patch[k] = data[k];
     }
+    const { data: row, error } = await context.supabase
+      .from("vibe_projects")
+      .update(patch as never)
+      .eq("id", data.id)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return row as unknown as VibeProject;
+  });
+
+export const deployVibeProject = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; logs?: DeployLogEntry[] }) => d)
+  .handler(async ({ data, context }): Promise<VibeProject> => {
+    // Ensure the project belongs to caller & has files
+    const { data: cur, error: getErr } = await context.supabase
+      .from("vibe_projects")
+      .select("id,files,slug,version,name")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (getErr) throw new Error(getErr.message);
+    if (!cur) throw new Error("Project not found");
+    const files = (cur as { files: VibeFile[] }).files ?? [];
+    if (files.length === 0) throw new Error("Nothing to deploy — generate files first");
+
+    let slug = (cur as { slug: string | null }).slug;
+    if (!slug) {
+      slug = `${slugify((cur as { name: string }).name || "site")}-${randSuffix()}`;
+    }
+
+    const logs: DeployLogEntry[] = (data.logs ?? []).slice(-50);
+    const patch = {
+      slug,
+      deploy_status: "deployed" as const,
+      deployed_at: new Date().toISOString(),
+      version: ((cur as { version: number }).version ?? 0) + 1,
+      deploy_logs: logs,
+    };
+
     const { data: row, error } = await context.supabase
       .from("vibe_projects")
       .update(patch as never)
