@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { authedFetch } from "@/lib/authed-fetch";
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -39,7 +40,7 @@ function VoiceModePage() {
 
   const speakAndPlay = async (text: string) => {
     setPhase("speaking");
-    const res = await fetch("/api/tts", {
+    const res = await authedFetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text, voice: "alloy" }),
@@ -121,7 +122,7 @@ function VoiceModePage() {
       setPhase("thinking");
       const form = new FormData();
       form.append("file", blob, "recording.webm");
-      const t = await fetch("/api/transcribe", { method: "POST", body: form });
+      const t = await authedFetch("/api/transcribe", { method: "POST", body: form });
       const tj = (await t.json().catch(() => ({}))) as { text?: string };
       const userText = (tj.text ?? "").trim();
       if (!userText) {
@@ -137,7 +138,7 @@ function VoiceModePage() {
       const model = isValidModel(stored) ? stored : DEFAULT_MODEL;
       const { data: sess } = await supabase.auth.getSession();
       const token = sess.session?.access_token;
-      const res = await fetch("/api/chat", {
+      const res = await authedFetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

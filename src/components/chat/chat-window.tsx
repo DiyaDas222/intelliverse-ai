@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { authedFetch } from "@/lib/authed-fetch";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -170,7 +171,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       try {
         const { data: sess } = await supabase.auth.getSession();
         const token = sess.session?.access_token;
-        const res = await fetch("/api/chat", {
+        const res = await authedFetch("/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -479,7 +480,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       const form = new FormData();
       form.append("file", blob, "recording.webm");
       try {
-        const res = await fetch("/api/transcribe", { method: "POST", body: form });
+        const res = await authedFetch("/api/transcribe", { method: "POST", body: form });
         const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
         if (!res.ok) {
           toast.error(data.error || "Transcription failed");

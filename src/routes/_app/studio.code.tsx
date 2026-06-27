@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { authedFetch } from "@/lib/authed-fetch";
 import Editor from "@monaco-editor/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -130,7 +131,7 @@ function StudioCode() {
     setInstruction("");
 
     try {
-      const res = await fetch("/api/code-assist", {
+      const res = await authedFetch("/api/code-assist", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

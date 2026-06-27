@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { authedFetch } from "@/lib/authed-fetch";
 import { useState } from "react";
 import * as Icons from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -59,7 +60,7 @@ function ToolPage() {
     setLoading(true);
     setOutput("");
     try {
-      const res = await fetch("/api/tool", {
+      const res = await authedFetch("/api/tool", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
