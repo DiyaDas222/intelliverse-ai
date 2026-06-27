@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { streamText } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
+import { requireUser } from "@/lib/require-auth.server";
 
 type Action = "edit" | "debug" | "explain" | "complete" | "chat";
 
