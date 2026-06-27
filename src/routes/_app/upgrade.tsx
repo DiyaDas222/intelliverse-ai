@@ -60,11 +60,11 @@ const TIERS: Record<Tier, {
   },
 };
 
-const CREDIT_PACKS = [
+const CREDIT_PACKS: { id: string; credits: number; price: string; per: string; badge?: string }[] = [
   { id: "credits_small_onetime", credits: 100, price: "$5", per: "$0.05 / credit" },
   { id: "credits_medium_onetime", credits: 500, price: "$20", per: "$0.04 / credit", badge: "Best value" },
   { id: "credits_large_onetime", credits: 1500, price: "$50", per: "$0.033 / credit" },
-] as const;
+];
 
 function UpgradePage() {
   const [tier, setTier] = useState<Tier>("pro");
