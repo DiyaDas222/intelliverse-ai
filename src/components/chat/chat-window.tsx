@@ -251,17 +251,19 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     if (!convId) {
       const title = (body || "Image chat").slice(0, 60);
       // Kick off conversation creation in parallel; don't block AI request.
-      convPromise = supabase
-        .from("conversations")
-        .insert({ user_id: user.id, title })
-        .select("id")
-        .single()
-        .then(({ data, error }) => {
-          if (error || !data) return null;
-          qc.invalidateQueries({ queryKey: ["conversations"] });
-          navigate({ to: "/chat/$id", params: { id: data.id } });
-          return data.id as string;
-        });
+      convPromise = Promise.resolve(
+        supabase
+          .from("conversations")
+          .insert({ user_id: user.id, title })
+          .select("id")
+          .single(),
+      ).then(({ data, error }) => {
+        if (error || !data) return null;
+        qc.invalidateQueries({ queryKey: ["conversations"] });
+        navigate({ to: "/chat/$id", params: { id: data.id } });
+        return data.id as string;
+      });
+
     }
 
     const userMsg: Msg = {
