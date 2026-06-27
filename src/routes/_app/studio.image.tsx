@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { authedFetch } from "@/lib/authed-fetch";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -61,7 +62,7 @@ function ImagePage() {
     const suffix = PRESETS.find((p) => p.label === preset)?.suffix ?? "";
     const fullPrompt = prompt + suffix;
     try {
-      const res = await fetch("/api/generate-image", {
+      const res = await authedFetch("/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: fullPrompt, size }),

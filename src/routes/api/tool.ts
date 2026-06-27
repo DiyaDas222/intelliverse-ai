@@ -3,6 +3,7 @@ import { streamText } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
 import { isValidModel, DEFAULT_MODEL } from "@/lib/models";
+import { requireUser } from "@/lib/require-auth.server";
 
 type ToolBody = {
   system?: string;
@@ -14,6 +15,8 @@ export const Route = createFileRoute("/api/tool")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const authed = await requireUser(request);
+        if (authed instanceof Response) return authed;
         const apiKey = getGatewayApiKey();
         if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
 

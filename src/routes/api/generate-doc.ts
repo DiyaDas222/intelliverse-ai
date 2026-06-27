@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { generateText } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
+import { requireUser } from "@/lib/require-auth.server";
 
 type DocKind = "presentation" | "assignment" | "project" | "website" | "app";
 
@@ -43,6 +44,8 @@ export const Route = createFileRoute("/api/generate-doc")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const authed = await requireUser(request);
+        if (authed instanceof Response) return authed;
         const key = getGatewayApiKey();
         if (!key) return new Response("AI gateway is not configured", { status: 500 });
 

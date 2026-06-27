@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { authedFetch } from "@/lib/authed-fetch";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -114,7 +115,7 @@ function VibeWorkspace() {
     setPrompt("");
 
     try {
-      const res = await fetch("/api/vibe-generate", {
+      const res = await authedFetch("/api/vibe-generate", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

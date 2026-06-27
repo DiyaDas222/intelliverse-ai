@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
+import { requireUser } from "@/lib/require-auth.server";
 
 export const Route = createFileRoute("/api/transcribe")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const authed = await requireUser(request);
+        if (authed instanceof Response) return authed;
         const apiKey = getGatewayApiKey();
         if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
 

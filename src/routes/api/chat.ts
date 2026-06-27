@@ -3,6 +3,7 @@ import { streamText, convertToModelMessages, type UIMessage } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
 import { isValidModel, DEFAULT_MODEL } from "@/lib/models";
+import { requireUser } from "@/lib/require-auth.server";
 
 type ChatBody = {
   messages: { role: "user" | "assistant" | "system"; content: string; images?: string[] }[];
@@ -41,6 +42,10 @@ export const Route = createFileRoute("/api/chat")({
       POST: async ({ request }) => {
         const apiKey = getGatewayApiKey();
         if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
+
+        const authed = await requireUser(request);
+        if (authed instanceof Response) return authed;
+
 
         let body: ChatBody;
         try {
