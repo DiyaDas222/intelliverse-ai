@@ -29,6 +29,7 @@ import { Route as ApiGenerateAudioRouteImport } from './routes/api/generate-audi
 import { Route as ApiDocActionRouteImport } from './routes/api/doc-action'
 import { Route as ApiCodeAssistRouteImport } from './routes/api/code-assist'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AppUpgradeRouteImport } from './routes/_app/upgrade'
 import { Route as AppToolsRouteImport } from './routes/_app/tools'
 import { Route as AppStudioRouteImport } from './routes/_app/studio'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
@@ -40,6 +41,7 @@ import { Route as AppChatRouteImport } from './routes/_app/chat'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppStudioIndexRouteImport } from './routes/_app/studio.index'
 import { Route as AppChatIndexRouteImport } from './routes/_app/chat.index'
+import { Route as AppUpgradeReturnRouteImport } from './routes/_app/upgrade.return'
 import { Route as AppToolsSlugRouteImport } from './routes/_app/tools.$slug'
 import { Route as AppStudioVideoRouteImport } from './routes/_app/studio.video'
 import { Route as AppStudioVibeRouteImport } from './routes/_app/studio.vibe'
@@ -52,6 +54,7 @@ import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
 import { Route as AppChatVoiceRouteImport } from './routes/_app/chat.voice'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
 import { Route as ApiPublicShareTokenRouteImport } from './routes/api/public/share.$token'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as AppStudioVibeIdRouteImport } from './routes/_app/studio.vibe.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -153,6 +156,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppUpgradeRoute = AppUpgradeRouteImport.update({
+  id: '/upgrade',
+  path: '/upgrade',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppToolsRoute = AppToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -207,6 +215,11 @@ const AppChatIndexRoute = AppChatIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppChatRoute,
+} as any)
+const AppUpgradeReturnRoute = AppUpgradeReturnRouteImport.update({
+  id: '/return',
+  path: '/return',
+  getParentRoute: () => AppUpgradeRoute,
 } as any)
 const AppToolsSlugRoute = AppToolsSlugRouteImport.update({
   id: '/$slug',
@@ -268,6 +281,12 @@ const ApiPublicShareTokenRoute = ApiPublicShareTokenRouteImport.update({
   path: '/api/public/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppStudioVibeIdRoute = AppStudioVibeIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -289,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/studio': typeof AppStudioRouteWithChildren
   '/tools': typeof AppToolsRouteWithChildren
+  '/upgrade': typeof AppUpgradeRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -314,9 +334,11 @@ export interface FileRoutesByFullPath {
   '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/upgrade/return': typeof AppUpgradeReturnRoute
   '/chat/': typeof AppChatIndexRoute
   '/studio/': typeof AppStudioIndexRoute
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
 export interface FileRoutesByTo {
@@ -332,6 +354,7 @@ export interface FileRoutesByTo {
   '/providers': typeof AppProvidersRoute
   '/settings': typeof AppSettingsRoute
   '/tools': typeof AppToolsRouteWithChildren
+  '/upgrade': typeof AppUpgradeRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -357,9 +380,11 @@ export interface FileRoutesByTo {
   '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/upgrade/return': typeof AppUpgradeReturnRoute
   '/chat': typeof AppChatIndexRoute
   '/studio': typeof AppStudioIndexRoute
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
 export interface FileRoutesById {
@@ -379,6 +404,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/studio': typeof AppStudioRouteWithChildren
   '/_app/tools': typeof AppToolsRouteWithChildren
+  '/_app/upgrade': typeof AppUpgradeRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -404,9 +430,11 @@ export interface FileRoutesById {
   '/_app/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/_app/studio/video': typeof AppStudioVideoRoute
   '/_app/tools/$slug': typeof AppToolsSlugRoute
+  '/_app/upgrade/return': typeof AppUpgradeReturnRoute
   '/_app/chat/': typeof AppChatIndexRoute
   '/_app/studio/': typeof AppStudioIndexRoute
   '/_app/studio/vibe/$id': typeof AppStudioVibeIdRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
 }
 export interface FileRouteTypes {
@@ -426,6 +454,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/tools'
+    | '/upgrade'
     | '/api/chat'
     | '/api/code-assist'
     | '/api/doc-action'
@@ -451,9 +480,11 @@ export interface FileRouteTypes {
     | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
+    | '/upgrade/return'
     | '/chat/'
     | '/studio/'
     | '/studio/vibe/$id'
+    | '/api/public/payments/webhook'
     | '/api/public/share/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -469,6 +500,7 @@ export interface FileRouteTypes {
     | '/providers'
     | '/settings'
     | '/tools'
+    | '/upgrade'
     | '/api/chat'
     | '/api/code-assist'
     | '/api/doc-action'
@@ -494,9 +526,11 @@ export interface FileRouteTypes {
     | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
+    | '/upgrade/return'
     | '/chat'
     | '/studio'
     | '/studio/vibe/$id'
+    | '/api/public/payments/webhook'
     | '/api/public/share/$token'
   id:
     | '__root__'
@@ -515,6 +549,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/studio'
     | '/_app/tools'
+    | '/_app/upgrade'
     | '/api/chat'
     | '/api/code-assist'
     | '/api/doc-action'
@@ -540,9 +575,11 @@ export interface FileRouteTypes {
     | '/_app/studio/vibe'
     | '/_app/studio/video'
     | '/_app/tools/$slug'
+    | '/_app/upgrade/return'
     | '/_app/chat/'
     | '/_app/studio/'
     | '/_app/studio/vibe/$id'
+    | '/api/public/payments/webhook'
     | '/api/public/share/$token'
   fileRoutesById: FileRoutesById
 }
@@ -567,6 +604,7 @@ export interface RootRouteChildren {
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVibeGenerateRoute: typeof ApiVibeGenerateRoute
   STokenRoute: typeof STokenRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicShareTokenRoute: typeof ApiPublicShareTokenRoute
 }
 
@@ -712,6 +750,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/upgrade': {
+      id: '/_app/upgrade'
+      path: '/upgrade'
+      fullPath: '/upgrade'
+      preLoaderRoute: typeof AppUpgradeRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/tools': {
       id: '/_app/tools'
       path: '/tools'
@@ -788,6 +833,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/chat/'
       preLoaderRoute: typeof AppChatIndexRouteImport
       parentRoute: typeof AppChatRoute
+    }
+    '/_app/upgrade/return': {
+      id: '/_app/upgrade/return'
+      path: '/return'
+      fullPath: '/upgrade/return'
+      preLoaderRoute: typeof AppUpgradeReturnRouteImport
+      parentRoute: typeof AppUpgradeRoute
     }
     '/_app/tools/$slug': {
       id: '/_app/tools/$slug'
@@ -871,6 +923,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/share/$token'
       fullPath: '/api/public/share/$token'
       preLoaderRoute: typeof ApiPublicShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/studio/vibe/$id': {
@@ -960,6 +1019,18 @@ const AppToolsRouteWithChildren = AppToolsRoute._addFileChildren(
   AppToolsRouteChildren,
 )
 
+interface AppUpgradeRouteChildren {
+  AppUpgradeReturnRoute: typeof AppUpgradeReturnRoute
+}
+
+const AppUpgradeRouteChildren: AppUpgradeRouteChildren = {
+  AppUpgradeReturnRoute: AppUpgradeReturnRoute,
+}
+
+const AppUpgradeRouteWithChildren = AppUpgradeRoute._addFileChildren(
+  AppUpgradeRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppChatRoute: typeof AppChatRouteWithChildren
@@ -970,6 +1041,7 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppStudioRoute: typeof AppStudioRouteWithChildren
   AppToolsRoute: typeof AppToolsRouteWithChildren
+  AppUpgradeRoute: typeof AppUpgradeRouteWithChildren
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -982,6 +1054,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppStudioRoute: AppStudioRouteWithChildren,
   AppToolsRoute: AppToolsRouteWithChildren,
+  AppUpgradeRoute: AppUpgradeRouteWithChildren,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -1007,6 +1080,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTtsRoute: ApiTtsRoute,
   ApiVibeGenerateRoute: ApiVibeGenerateRoute,
   STokenRoute: STokenRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicShareTokenRoute: ApiPublicShareTokenRoute,
 }
 export const routeTree = rootRouteImport
