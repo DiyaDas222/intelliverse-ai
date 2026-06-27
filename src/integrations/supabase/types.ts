@@ -334,27 +334,33 @@ export type Database = {
           avatar_url: string | null
           bonus_credits: number
           created_at: string
+          credits_period_start: string
           display_name: string | null
           email: string | null
           id: string
+          monthly_credits_used: number
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           bonus_credits?: number
           created_at?: string
+          credits_period_start?: string
           display_name?: string | null
           email?: string | null
           id: string
+          monthly_credits_used?: number
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           bonus_credits?: number
           created_at?: string
+          credits_period_start?: string
           display_name?: string | null
           email?: string | null
           id?: string
+          monthly_credits_used?: number
           updated_at?: string
         }
         Relationships: []
