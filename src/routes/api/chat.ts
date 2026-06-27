@@ -43,6 +43,10 @@ export const Route = createFileRoute("/api/chat")({
         const apiKey = getGatewayApiKey();
         if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
 
+        const authed = await requireUser(request);
+        if (authed instanceof Response) return authed;
+
+
         let body: ChatBody;
         try {
           body = (await request.json()) as ChatBody;
