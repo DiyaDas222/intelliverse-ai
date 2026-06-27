@@ -115,8 +115,8 @@ function VibeWorkspace() {
     onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
   });
 
-  async function generate() {
-    const text = prompt.trim();
+  async function generate(overrideText?: string) {
+    const text = (overrideText ?? prompt).trim();
     if (!text || generating || !project) return;
     setGenerating(true);
     const userMsg: VibeMessage = { role: "user", content: text, at: new Date().toISOString() };
