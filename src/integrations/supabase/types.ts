@@ -38,6 +38,33 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          payload: Json
+          read_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          payload?: Json
+          read_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          read_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       asset_shares: {
         Row: {
           allow_download: boolean
@@ -305,6 +332,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bonus_credits: number
           created_at: string
           display_name: string | null
           email: string | null
@@ -313,6 +341,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          bonus_credits?: number
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -321,6 +350,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          bonus_credits?: number
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -545,7 +575,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user" | "pro"
+      app_role: "admin" | "user" | "pro" | "team"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -673,7 +703,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user", "pro"],
+      app_role: ["admin", "user", "pro", "team"],
     },
   },
 } as const
