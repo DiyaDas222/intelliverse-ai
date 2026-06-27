@@ -568,7 +568,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      consume_credits: {
+        Args: { _amount: number; _user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "pro" | "team"
