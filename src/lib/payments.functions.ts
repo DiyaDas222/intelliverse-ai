@@ -103,3 +103,70 @@ export const createPortalSession = createServerFn({ method: "POST" })
       return { error: getStripeErrorMessage(e) };
     }
   });
+
+type ChangePlanResult = { ok: true } | { error: string };
+
+export const changeSubscriptionPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { newPriceId: string; environment: StripeEnv }) => {
+    if (!/^[a-zA-Z0-9_-]+$/.test(d.newPriceId)) throw new Error("Invalid priceId");
+    return d;
+  })
+  .handler(async ({ data, context }): Promise<ChangePlanResult> => {
+    const { data: sub, error } = await context.supabase
+      .from("subscriptions")
+      .select("stripe_subscription_id, price_id")
+      .eq("user_id", context.userId)
+      .eq("environment", data.environment)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error || !sub?.stripe_subscription_id) return { error: "No active subscription found" };
+    if (sub.price_id === data.newPriceId) return { error: "You are already on this plan" };
+
+    try {
+      const stripe = createStripeClient(data.environment);
+      const prices = await stripe.prices.list({ lookup_keys: [data.newPriceId] });
+      if (!prices.data.length) return { error: "Target price not found" };
+      const newPrice = prices.data[0];
+
+      const current = await stripe.subscriptions.retrieve(sub.stripe_subscription_id as string);
+      const itemId = current.items.data[0]?.id;
+      if (!itemId) return { error: "Subscription item missing" };
+
+      await stripe.subscriptions.update(sub.stripe_subscription_id as string, {
+        items: [{ id: itemId, price: newPrice.id }],
+        proration_behavior: "always_invoice",
+        metadata: { userId: context.userId },
+      });
+      return { ok: true };
+    } catch (e) {
+      return { error: getStripeErrorMessage(e) };
+    }
+  });
+
+type CurrentPlanResult =
+  | { subscribed: false }
+  | { subscribed: true; priceId: string; status: string; cancelAtPeriodEnd: boolean; currentPeriodEnd: string | null };
+
+export const getCurrentPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { environment: StripeEnv }) => d)
+  .handler(async ({ data, context }): Promise<CurrentPlanResult> => {
+    const { data: sub } = await context.supabase
+      .from("subscriptions")
+      .select("price_id, status, cancel_at_period_end, current_period_end")
+      .eq("user_id", context.userId)
+      .eq("environment", data.environment)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!sub || !sub.price_id) return { subscribed: false };
+    return {
+      subscribed: true,
+      priceId: sub.price_id as string,
+      status: sub.status as string,
+      cancelAtPeriodEnd: Boolean(sub.cancel_at_period_end),
+      currentPeriodEnd: (sub.current_period_end as string | null) ?? null,
+    };
+  });
