@@ -30,6 +30,8 @@ import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
 import { GenerationProgress } from "@/components/generation-progress";
 import { ThinkingIndicator, detectIntent } from "@/components/thinking-indicator";
 import { CreationWizard, detectWizardKind, type WizardKind, type WizardResult } from "@/components/chat/creation-wizard";
+import { useServerFn } from "@tanstack/react-start";
+import { createVibeProject } from "@/lib/vibe.functions";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 
 type Msg = {
