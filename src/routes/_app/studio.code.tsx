@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import Editor from "@monaco-editor/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bug,
   Code2,
@@ -27,6 +26,10 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_app/studio/code")({
   component: StudioCode,
 });
+
+// Monaco references browser globals during module initialization in production.
+// Lazy-load it after mount so importing this route cannot crash SSR.
+const Editor = lazy(() => import("@monaco-editor/react"));
 
 const LANGS = [
   "javascript", "typescript", "tsx", "jsx", "html", "css", "json",
@@ -70,8 +73,11 @@ function StudioCode() {
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [streaming, setStreaming] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const previewable = language === "html" || /<html|<!doctype/i.test(code);
 
@@ -226,22 +232,36 @@ function StudioCode() {
           </div>
           <div className={`grid min-h-0 flex-1 ${showPreview ? "grid-rows-2" : "grid-rows-1"}`}>
             <div className="min-h-0">
-              <Editor
-                height="100%"
-                language={language}
-                value={code}
-                onChange={(v) => setCode(v ?? "")}
-                theme="vs-dark"
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 13,
-                  scrollBeyondLastLine: false,
-                  wordWrap: "on",
-                  smoothScrolling: true,
-                  automaticLayout: true,
-                  padding: { top: 8 },
-                }}
-              />
+              {mounted ? (
+                <Suspense
+                  fallback={
+                    <div className="grid h-full place-items-center text-xs text-muted-foreground">
+                      <Sparkles className="h-4 w-4 animate-pulse" />
+                    </div>
+                  }
+                >
+                  <Editor
+                    height="100%"
+                    language={language}
+                    value={code}
+                    onChange={(v) => setCode(v ?? "")}
+                    theme="vs-dark"
+                    options={{
+                      minimap: { enabled: false },
+                      fontSize: 13,
+                      scrollBeyondLastLine: false,
+                      wordWrap: "on",
+                      smoothScrolling: true,
+                      automaticLayout: true,
+                      padding: { top: 8 },
+                    }}
+                  />
+                </Suspense>
+              ) : (
+                <div className="grid h-full place-items-center text-xs text-muted-foreground">
+                  <Sparkles className="h-4 w-4 animate-pulse" />
+                </div>
+              )}
             </div>
             {showPreview && (
               <div className="min-h-0 border-t border-border/60 bg-white">
