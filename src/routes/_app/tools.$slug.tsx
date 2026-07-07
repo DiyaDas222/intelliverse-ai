@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 
+import { supabase } from "@/integrations/supabase/client";
 import { TOOLS_BY_SLUG, type ToolField } from "@/lib/tools";
 import { CHAT_MODELS, DEFAULT_MODEL } from "@/lib/models";
 
@@ -12,10 +13,10 @@ export const Route = createFileRoute("/_app/tools/$slug")({
   loader: ({ params }) => {
     const tool = TOOLS_BY_SLUG[params.slug];
     if (!tool) throw notFound();
-    return { tool };
+    return { slug: params.slug };
   },
   head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.tool.name ?? "Tool"} — IntelliVerse` }],
+    meta: [{ title: `${TOOLS_BY_SLUG[loaderData?.slug ?? ""]?.name ?? "Tool"} — IntelliVerse` }],
   }),
   notFoundComponent: () => (
     <div className="grid h-full place-items-center p-10 text-center">
@@ -36,7 +37,8 @@ export const Route = createFileRoute("/_app/tools/$slug")({
 });
 
 function ToolPage() {
-  const { tool } = Route.useLoaderData();
+  const { slug } = Route.useLoaderData();
+  const tool = TOOLS_BY_SLUG[slug];
   const Icon =
     (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[tool.icon] ??
     Icons.Sparkles;
@@ -59,19 +61,41 @@ function ToolPage() {
     setLoading(true);
     setOutput("");
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
       const res = await fetch("/api/tool", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           model,
           system: tool.system,
           prompt: tool.buildPrompt(values),
         }),
       });
-      if (!res.ok || !res.body) {
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const data = await res.json().catch(() => null) as { text?: string; error?: string; message?: string; fallback?: boolean } | null;
+        if (res.ok && data?.text) {
+          setOutput(data.text);
+          return;
+        }
+        const message = data?.message || data?.error || "AI request failed";
         if (res.status === 429) toast.error("Rate limit reached. Please retry.");
         else if (res.status === 402) toast.error("AI credits exhausted.");
-        else toast.error((await res.text().catch(() => "")) || "AI request failed");
+        else toast.error(message);
+        if (data?.fallback) {
+          setOutput(`### Tool temporarily unavailable\n\n${message}\n\nPlease try again in a moment.`);
+        }
+        return;
+      }
+      if (!res.ok || !res.body) {
+        const message = (await res.text().catch(() => "")) || "AI request failed";
+        if (res.status === 429) toast.error("Rate limit reached. Please retry.");
+        else if (res.status === 402) toast.error("AI credits exhausted.");
+        else toast.error(message);
         return;
       }
       const reader = res.body.getReader();
@@ -84,7 +108,9 @@ function ToolPage() {
         setOutput(acc);
       }
     } catch (e) {
-      toast.error((e as Error).message);
+      const message = e instanceof Error ? e.message : "Tool failed";
+      toast.error(message);
+      setOutput(`### Tool failed\n\n${message}\n\nPlease try again.`);
     } finally {
       setLoading(false);
     }
@@ -135,11 +161,12 @@ function ToolPage() {
             <div className="space-y-4">
               {tool.fields.map((f: ToolField) => (
                 <div key={f.name}>
-                  <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  <label htmlFor={`tool-${f.name}`} className="mb-1 block text-xs font-medium text-muted-foreground">
                     {f.label} {f.required === false && <span className="text-muted-foreground/60">(optional)</span>}
                   </label>
                   {f.multiline ? (
                     <textarea
+                      id={`tool-${f.name}`}
                       value={values[f.name] ?? ""}
                       onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
                       placeholder={f.placeholder}
@@ -148,6 +175,7 @@ function ToolPage() {
                     />
                   ) : (
                     <input
+                      id={`tool-${f.name}`}
                       value={values[f.name] ?? ""}
                       onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
                       placeholder={f.placeholder}
@@ -161,7 +189,10 @@ function ToolPage() {
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">Model</label>
                 <select
                   value={model}
-                  onChange={(e) => setModel(e.target.value)}
+                  onChange={(e) => {
+                    setModel(e.target.value);
+                    localStorage.setItem("iv:model", e.target.value);
+                  }}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                 >
                   {CHAT_MODELS.map((m) => (
