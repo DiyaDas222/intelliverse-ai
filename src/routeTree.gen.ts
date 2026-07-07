@@ -29,6 +29,7 @@ import { Route as ApiGenerateAudioRouteImport } from './routes/api/generate-audi
 import { Route as ApiDocActionRouteImport } from './routes/api/doc-action'
 import { Route as ApiCodeAssistRouteImport } from './routes/api/code-assist'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AppUpgradeRouteImport } from './routes/_app/upgrade'
 import { Route as AppToolsRouteImport } from './routes/_app/tools'
 import { Route as AppStudioRouteImport } from './routes/_app/studio'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
@@ -152,6 +153,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppUpgradeRoute = AppUpgradeRouteImport.update({
+  id: '/upgrade',
+  path: '/upgrade',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppToolsRoute = AppToolsRouteImport.update({
   id: '/tools',
@@ -289,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/studio': typeof AppStudioRouteWithChildren
   '/tools': typeof AppToolsRouteWithChildren
+  '/upgrade': typeof AppUpgradeRoute
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -332,6 +339,7 @@ export interface FileRoutesByTo {
   '/providers': typeof AppProvidersRoute
   '/settings': typeof AppSettingsRoute
   '/tools': typeof AppToolsRouteWithChildren
+  '/upgrade': typeof AppUpgradeRoute
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -379,6 +387,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/studio': typeof AppStudioRouteWithChildren
   '/_app/tools': typeof AppToolsRouteWithChildren
+  '/_app/upgrade': typeof AppUpgradeRoute
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -426,6 +435,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/tools'
+    | '/upgrade'
     | '/api/chat'
     | '/api/code-assist'
     | '/api/doc-action'
@@ -469,6 +479,7 @@ export interface FileRouteTypes {
     | '/providers'
     | '/settings'
     | '/tools'
+    | '/upgrade'
     | '/api/chat'
     | '/api/code-assist'
     | '/api/doc-action'
@@ -515,6 +526,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/studio'
     | '/_app/tools'
+    | '/_app/upgrade'
     | '/api/chat'
     | '/api/code-assist'
     | '/api/doc-action'
@@ -711,6 +723,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/upgrade': {
+      id: '/_app/upgrade'
+      path: '/upgrade'
+      fullPath: '/upgrade'
+      preLoaderRoute: typeof AppUpgradeRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/tools': {
       id: '/_app/tools'
@@ -970,6 +989,7 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppStudioRoute: typeof AppStudioRouteWithChildren
   AppToolsRoute: typeof AppToolsRouteWithChildren
+  AppUpgradeRoute: typeof AppUpgradeRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -982,6 +1002,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppStudioRoute: AppStudioRouteWithChildren,
   AppToolsRoute: AppToolsRouteWithChildren,
+  AppUpgradeRoute: AppUpgradeRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
