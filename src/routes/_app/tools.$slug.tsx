@@ -161,11 +161,12 @@ function ToolPage() {
             <div className="space-y-4">
               {tool.fields.map((f: ToolField) => (
                 <div key={f.name}>
-                  <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  <label htmlFor={`tool-${f.name}`} className="mb-1 block text-xs font-medium text-muted-foreground">
                     {f.label} {f.required === false && <span className="text-muted-foreground/60">(optional)</span>}
                   </label>
                   {f.multiline ? (
                     <textarea
+                      id={`tool-${f.name}`}
                       value={values[f.name] ?? ""}
                       onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
                       placeholder={f.placeholder}
@@ -174,6 +175,7 @@ function ToolPage() {
                     />
                   ) : (
                     <input
+                      id={`tool-${f.name}`}
                       value={values[f.name] ?? ""}
                       onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
                       placeholder={f.placeholder}
