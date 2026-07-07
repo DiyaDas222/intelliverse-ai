@@ -8,8 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { CHAT_MODELS, DEFAULT_MODEL, isValidModel } from "@/lib/models";
 import { getCreditsSummary } from "@/lib/credits.functions";
-import { createPortalSession } from "@/lib/payments.functions";
-import { getStripeEnvironment } from "@/lib/stripe";
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({ meta: [{ title: "Settings — IntelliVerse" }] }),
@@ -24,7 +22,6 @@ function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light" | "system">("dark");
   const [defaultModel, setDefaultModel] = useState<string>(DEFAULT_MODEL);
-  const [portalLoading, setPortalLoading] = useState(false);
 
   const credits = useQuery({
     queryKey: ["credits-summary", user?.id],
@@ -32,21 +29,6 @@ function SettingsPage() {
     queryFn: () => getCreditsSummary(),
     refetchOnWindowFocus: false,
   });
-
-  async function openPortal() {
-    setPortalLoading(true);
-    try {
-      const res = await createPortalSession({
-        data: { environment: getStripeEnvironment(), returnUrl: window.location.href },
-      });
-      if ("error" in res) throw new Error(res.error);
-      window.location.href = res.url;
-    } catch (e: any) {
-      toast.error(e?.message ?? "No active subscription to manage");
-    } finally {
-      setPortalLoading(false);
-    }
-  }
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", user?.id],
@@ -247,18 +229,8 @@ function SettingsPage() {
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link to="/upgrade" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-                  {credits.data.plan === "free" ? "Upgrade plan" : "Change plan / buy credits"}
+                  Buy credits
                 </Link>
-                {credits.data.plan !== "free" && (
-                  <button
-                    onClick={openPortal}
-                    disabled={portalLoading}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border px-4 py-2 text-sm hover:bg-card disabled:opacity-50"
-                  >
-                    {portalLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ExternalLink className="h-3 w-3" />}
-                    Manage subscription
-                  </button>
-                )}
               </div>
             </>
           )}
