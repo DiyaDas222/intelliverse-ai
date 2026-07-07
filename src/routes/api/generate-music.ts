@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { generateText } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
+import { guardResponse, guardUsage } from "@/lib/entitlements.server";
 
 type MusicPlan = {
   title?: string;
@@ -37,6 +38,9 @@ export const Route = createFileRoute("/api/generate-music")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const guard = await guardUsage(request, "generation");
+        if (!guard.ok) return guardResponse(guard);
+
         const apiKey = getGatewayApiKey();
         if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
 

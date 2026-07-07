@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { guardResponse, guardUsage } from "@/lib/entitlements.server";
 
 type ProviderResult = { url: string; provider: string; metadata: Record<string, unknown> };
 
@@ -7,6 +8,9 @@ export const Route = createFileRoute("/api/generate-video")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const guard = await guardUsage(request, "generation");
+        if (!guard.ok) return guardResponse(guard);
+
         const auth = request.headers.get("authorization") ?? "";
         const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
         if (!token) return new Response("Unauthorized", { status: 401 });
