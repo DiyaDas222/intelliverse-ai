@@ -32,6 +32,7 @@ import { ThinkingIndicator, detectIntent } from "@/components/thinking-indicator
 import { CreationWizard, detectWizardKind, type WizardKind, type WizardResult } from "@/components/chat/creation-wizard";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 import { createVibeProject } from "@/lib/vibe.functions";
+import { getEntitlements } from "@/lib/entitlements.functions";
 
 type Msg = {
   id: string;
@@ -166,6 +167,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const createVibe = useServerFn(createVibeProject);
+  const fetchEntitlements = useServerFn(getEntitlements);
   const { user } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -205,6 +207,17 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   };
 
   const currentModel = CHAT_MODELS.find((m) => m.id === model) ?? CHAT_MODELS[0];
+
+  const checkVibeAllowance = useCallback(async () => {
+    const ent = await fetchEntitlements();
+    const limit = ent.limits.vibe;
+    const used = ent.usage.vibe ?? 0;
+    if (limit !== null && used >= limit) {
+      toast.error(`You've hit the free vibe limit for this month (${used}/${limit}). Upgrade to Pro for unlimited live builds.`);
+      return false;
+    }
+    return true;
+  }, [fetchEntitlements]);
 
   // Auto-grow textarea
   useEffect(() => {
@@ -394,6 +407,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     const wizardKind = detectWizardKind(body);
     if ((wizardKind === "website" || wizardKind === "app") && user) {
       try {
+        if (!(await checkVibeAllowance())) return;
         const project = await createVibe({
           data: {
             name: titleFromPrompt(body, wizardKind),
@@ -527,6 +541,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const handleWizardComplete = async (msgId: string, result: WizardResult) => {
     if ((result.kind === "website" || result.kind === "app" || result.kind === "project") && user) {
       try {
+        if (!(await checkVibeAllowance())) return;
         const rawName = Array.isArray(result.answers.name) ? result.answers.name[0] : result.answers.name;
         const project = await createVibe({
           data: {
