@@ -198,7 +198,10 @@ function UpgradePage() {
         )}
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Secure payments by Razorpay. Test mode — card <code>4111 1111 1111 1111</code>, any future date, any CVV.
+          Secure payments by Razorpay. Test mode — use domestic test card{" "}
+          <code>5267 3181 8797 5449</code> (Mastercard) or <code>4386 2894 0766 0153</code> (Visa),
+          any future expiry, any CVV, OTP <code>1234</code>. International cards require enabling
+          international payments in your Razorpay dashboard.
         </p>
       </div>
     </div>
