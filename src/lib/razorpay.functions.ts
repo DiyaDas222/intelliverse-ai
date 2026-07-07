@@ -1,15 +1,18 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-// Products (one-time purchases). Single source of truth, mirrored by the webhook.
+// Products (one-time). Amounts are in the smallest unit of currency (paise for INR).
+// Using INR by default because Razorpay accounts must separately enable International
+// Payments before they can accept USD; INR works on every activated account.
 export const CREDIT_PACKS: Record<string, { credits: number; amount: number; currency: string; label: string }> = {
-  credits_small_onetime: { credits: 100, amount: 500, currency: "USD", label: "100 credits" },
-  credits_medium_onetime: { credits: 500, amount: 2000, currency: "USD", label: "500 credits" },
-  credits_large_onetime: { credits: 1500, amount: 5000, currency: "USD", label: "1500 credits" },
-  pro_month_pass: { credits: 2000, amount: 500, currency: "USD", label: "Pro — 1 month pass" },
-  pro_year_pass: { credits: 25000, amount: 5000, currency: "USD", label: "Pro — 1 year pass" },
-  team_month_pass: { credits: 8000, amount: 1500, currency: "USD", label: "Team — 1 month pass" },
+  credits_small_onetime: { credits: 100, amount: 40000, currency: "INR", label: "100 credits" },
+  credits_medium_onetime: { credits: 500, amount: 160000, currency: "INR", label: "500 credits" },
+  credits_large_onetime: { credits: 1500, amount: 400000, currency: "INR", label: "1500 credits" },
+  pro_month_pass: { credits: 2000, amount: 40000, currency: "INR", label: "Pro — 1 month pass" },
+  pro_year_pass: { credits: 25000, amount: 400000, currency: "INR", label: "Pro — 1 year pass" },
+  team_month_pass: { credits: 8000, amount: 120000, currency: "INR", label: "Team — 1 month pass" },
 };
+
 
 
 type CreateOrderResult =

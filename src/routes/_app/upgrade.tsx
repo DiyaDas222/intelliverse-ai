@@ -13,7 +13,7 @@ const PLANS = [
   {
     id: "pro_month_pass",
     name: "Pro — 1 month",
-    price: "$5",
+    price: "₹400",
     per: "one-time",
     credits: 2000,
     icon: ShieldCheck,
@@ -24,18 +24,18 @@ const PLANS = [
   {
     id: "pro_year_pass",
     name: "Pro — 1 year",
-    price: "$50",
+    price: "₹4,000",
     per: "one-time",
     credits: 25000,
     icon: ShieldCheck,
     gradient: "from-indigo-500 to-fuchsia-500",
-    features: ["25,000 credits included", "Everything in Pro monthly", "Save $10 vs monthly"],
+    features: ["25,000 credits included", "Everything in Pro monthly", "Save ~17% vs monthly"],
     badge: "Best value",
   },
   {
     id: "team_month_pass",
     name: "Team — 1 month",
-    price: "$15",
+    price: "₹1,200",
     per: "one-time",
     credits: 8000,
     icon: Users,
@@ -45,10 +45,11 @@ const PLANS = [
 ];
 
 const CREDIT_PACKS = [
-  { id: "credits_small_onetime", credits: 100, price: "$5", per: "$0.05 / credit" },
-  { id: "credits_medium_onetime", credits: 500, price: "$20", per: "$0.04 / credit", badge: "Best value" },
-  { id: "credits_large_onetime", credits: 1500, price: "$50", per: "$0.033 / credit" },
+  { id: "credits_small_onetime", credits: 100, price: "₹400", per: "₹4 / credit" },
+  { id: "credits_medium_onetime", credits: 500, price: "₹1,600", per: "₹3.2 / credit", badge: "Best value" },
+  { id: "credits_large_onetime", credits: 1500, price: "₹4,000", per: "₹2.67 / credit" },
 ];
+
 
 function UpgradePage() {
   const qc = useQueryClient();
