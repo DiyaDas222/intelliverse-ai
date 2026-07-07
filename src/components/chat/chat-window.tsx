@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowUp,
   Copy,
@@ -30,6 +31,7 @@ import { GenerationProgress } from "@/components/generation-progress";
 import { ThinkingIndicator, detectIntent } from "@/components/thinking-indicator";
 import { CreationWizard, detectWizardKind, type WizardKind, type WizardResult } from "@/components/chat/creation-wizard";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
+import { createVibeProject } from "@/lib/vibe.functions";
 
 type Msg = {
   id: string;
@@ -163,6 +165,7 @@ function ClickableOptions({
 export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const createVibe = useServerFn(createVibeProject);
   const { user } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -387,8 +390,45 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       .eq("id", convId);
 
 
-    // Creation wizard intercept
+    // Direct live website/app builder intercept — no copy/paste, no extra Generate click.
     const wizardKind = detectWizardKind(body);
+    if ((wizardKind === "website" || wizardKind === "app") && user) {
+      try {
+        const project = await createVibe({
+          data: {
+            name: titleFromPrompt(body, wizardKind),
+            description: body,
+            kind: wizardKind === "website" ? "website" : "webapp",
+            stack: {
+              frontend: wizardKind === "website" ? "Plain HTML/CSS/JS" : "React",
+              backend: "None",
+              database: "None",
+              auth: "None",
+              styling: wizardKind === "website" ? "Plain CSS" : "CSS",
+            },
+          },
+        });
+        sessionStorage.setItem(`iv:vibe-run:${project.id}`, body);
+        qc.invalidateQueries({ queryKey: ["vibeProjects"] });
+
+        const assistantId = crypto.randomUUID();
+        const reply = `Starting your ${wizardKind} build now — opening the live builder with code and preview side by side.`;
+        setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: reply }]);
+        await supabase.from("messages").insert({
+          conversation_id: convId,
+          user_id: user.id,
+          role: "assistant",
+          content: reply,
+        });
+        navigate({ to: "/studio/vibe/$id", params: { id: project.id } });
+        return;
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Couldn't start the live builder");
+        return;
+      }
+    }
+
+    // Creation wizard intercept
     if (wizardKind) {
       const assistantId = crypto.randomUUID();
       const intro = `Let's build your ${wizardKind} together. I've prepared a quick wizard — pick options below.`;
@@ -485,6 +525,42 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   };
 
   const handleWizardComplete = async (msgId: string, result: WizardResult) => {
+    if ((result.kind === "website" || result.kind === "app" || result.kind === "project") && user) {
+      try {
+        const rawName = Array.isArray(result.answers.name) ? result.answers.name[0] : result.answers.name;
+        const project = await createVibe({
+          data: {
+            name: (rawName || `${result.kind} project`).slice(0, 80),
+            description: result.brief,
+            kind: result.kind === "website" ? "website" : "webapp",
+            stack: {
+              frontend: result.kind === "website" ? "Plain HTML/CSS/JS" : "React",
+              backend: "None",
+              database: "None",
+              auth: "None",
+              styling: "Plain CSS",
+            },
+          },
+        });
+        sessionStorage.setItem(`iv:vibe-run:${project.id}`, result.brief);
+        qc.invalidateQueries({ queryKey: ["vibeProjects"] });
+        const followup = `**${result.kind.charAt(0).toUpperCase() + result.kind.slice(1)} build started ✓**\n\n${result.summary}\n\nOpening the live builder now — files and preview will generate side by side.`;
+        setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: followup, wizardDone: true } : m)));
+        if (conversationId) {
+          await supabase.from("messages").insert({
+            conversation_id: conversationId,
+            user_id: user.id,
+            role: "assistant",
+            content: followup,
+          });
+        }
+        navigate({ to: "/studio/vibe/$id", params: { id: project.id } });
+        return;
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Couldn't start the builder");
+      }
+    }
+
     sessionStorage.setItem(`iv:wizard-brief:${result.kind}`, result.brief);
     const followup = `**${result.kind.charAt(0).toUpperCase() + result.kind.slice(1)} brief ready ✓**\n\n${result.summary}\n\n[Open the builder with your brief pre-filled →](${result.studioPath})`;
     setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: followup, wizardDone: true } : m)));
@@ -1119,4 +1195,14 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       />
     </div>
   );
+}
+
+function titleFromPrompt(prompt: string, kind: WizardKind) {
+  const quoted = prompt.match(/(?:named|called)\s+["“]([^"”]+)["”]/i)?.[1];
+  if (quoted) return quoted.slice(0, 80);
+  return prompt
+    .replace(/^\s*(generate|create|make|build|design)\s+(an?\s+)?/i, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80) || `New ${kind}`;
 }
