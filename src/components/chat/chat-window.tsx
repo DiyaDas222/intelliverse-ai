@@ -83,6 +83,11 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  // When sendMessage creates a new conversation and then navigates, we set
+  // this ref so the "load messages" effect skips its DB fetch for that id
+  // once — otherwise it would overwrite the assistant message currently
+  // streaming into local state.
+  const skipLoadForRef = useRef<string | null>(null);
   const recorder = useVoiceRecorder();
 
   // Persisted model preference
