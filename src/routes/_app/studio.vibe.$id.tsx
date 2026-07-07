@@ -238,7 +238,7 @@ function VibeWorkspace() {
               Save
             </Button>
           )}
-          <Button size="sm" variant={previewOpen ? "default" : "outline"} onClick={() => setPreviewOpen((v) => !v)} disabled={!canPreview}>
+          <Button size="sm" variant={previewOpen ? "default" : "outline"} onClick={() => setPreviewOpen((v) => !v)}>
             <Eye className="mr-1 h-3.5 w-3.5" /> Preview
           </Button>
           <Button size="sm" variant="outline" onClick={downloadZip}>
