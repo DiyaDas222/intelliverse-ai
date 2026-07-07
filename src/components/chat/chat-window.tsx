@@ -62,6 +62,104 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
+// Extract lettered-option questions like "1. Question? a) foo b) bar c) baz"
+// or plain "a) foo b) bar" from an assistant message.
+type ParsedQuestion = { question: string; options: { key: string; text: string }[] };
+function extractQuestionOptions(content: string): ParsedQuestion[] {
+  if (!content) return [];
+  const stripped = content.replace(/\*\*/g, "").replace(/`/g, "");
+  const questions: ParsedQuestion[] = [];
+  // Split into blocks starting with "N." (numbered questions). If none, treat whole text as one block.
+  const rawBlocks = stripped.split(/(?=^\s*\d+\.\s)/m);
+  const blocks = rawBlocks.length > 1 ? rawBlocks : [stripped];
+  for (const block of blocks) {
+    const optRegex = /(?:^|\s)([a-zA-Z])\)\s+([^]+?)(?=\s+[a-zA-Z]\)\s|$)/g;
+    const options: { key: string; text: string }[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = optRegex.exec(block)) !== null) {
+      const text = m[2].trim().replace(/\s+/g, " ").replace(/[.!?,;:\s]+$/, "");
+      if (text.length > 0 && text.length < 200) {
+        options.push({ key: m[1], text });
+      }
+    }
+    if (options.length >= 2) {
+      // Take the first sentence/line before the first option as the question.
+      const firstOptIdx = block.search(/(?:^|\s)[a-zA-Z]\)\s/);
+      let q = firstOptIdx > 0 ? block.slice(0, firstOptIdx) : "";
+      q = q.replace(/^\s*\d+\.\s*/, "").trim().replace(/\s+/g, " ");
+      if (q.length > 240) q = q.slice(0, 240) + "…";
+      questions.push({ question: q, options });
+    }
+  }
+  return questions;
+}
+
+function ClickableOptions({
+  questions,
+  onSend,
+  disabled,
+}: {
+  questions: ParsedQuestion[];
+  onSend: (text: string) => void;
+  disabled: boolean;
+}) {
+  const [selected, setSelected] = useState<Record<number, string>>({});
+  if (questions.length === 0) return null;
+  const allAnswered = questions.every((_, i) => selected[i]);
+  const submit = () => {
+    const parts = questions.map((q, i) => {
+      const chosen = selected[i];
+      if (!chosen) return null;
+      return questions.length > 1 ? `${i + 1}. ${chosen}` : chosen;
+    }).filter(Boolean);
+    if (parts.length === 0) return;
+    onSend(parts.join("\n"));
+    setSelected({});
+  };
+  return (
+    <div className="mt-3 space-y-3">
+      {questions.map((q, qi) => (
+        <div key={qi} className="rounded-lg border border-border/50 bg-muted/20 p-3">
+          {q.question && (
+            <div className="mb-2 text-xs font-medium text-muted-foreground">
+              {questions.length > 1 ? `${qi + 1}. ` : ""}{q.question}
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {q.options.map((o) => {
+              const active = selected[qi] === o.text;
+              return (
+                <button
+                  key={o.key}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => setSelected((s) => ({ ...s, [qi]: o.text }))}
+                  className={
+                    "rounded-full border px-3 py-1 text-xs transition-colors " +
+                    (active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background hover:bg-accent/10 hover:border-primary/50")
+                  }
+                >
+                  {o.text}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      <button
+        type="button"
+        disabled={disabled || !allAnswered}
+        onClick={submit}
+        className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {allAnswered ? "Send answers" : `Pick ${questions.length - Object.keys(selected).length} more`}
+      </button>
+    </div>
+  );
+}
+
 export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -718,6 +816,13 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
                     </div>
                   ) : (
                     <ThinkingIndicator intent={detectIntent(lastUserContent)} />
+                  )}
+                  {m.content && !streaming && (
+                    <ClickableOptions
+                      questions={extractQuestionOptions(m.content)}
+                      onSend={(text) => sendMessage(text)}
+                      disabled={streaming}
+                    />
                   )}
                   {m.wizardKind && !m.wizardDone && (
                     <div className="mt-3">
