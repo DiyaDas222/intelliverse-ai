@@ -329,6 +329,104 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount_paise: number
+          captured_at: string | null
+          created_at: string
+          currency: string
+          environment: string
+          id: string
+          metadata: Json
+          plan_id: string
+          razorpay_order_id: string
+          razorpay_payment_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_paise: number
+          captured_at?: string | null
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          metadata?: Json
+          plan_id: string
+          razorpay_order_id: string
+          razorpay_payment_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_paise?: number
+          captured_at?: string | null
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          metadata?: Json
+          plan_id?: string
+          razorpay_order_id?: string
+          razorpay_payment_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          duration_days: number
+          features: Json
+          id: string
+          is_active: boolean
+          name: string
+          price_paise: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_days: number
+          features?: Json
+          id: string
+          is_active?: boolean
+          name: string
+          price_paise: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_days?: number
+          features?: Json
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_paise?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -460,6 +558,8 @@ export type Database = {
           current_period_start: string | null
           environment: string
           id: string
+          payment_id: string | null
+          plan_id: string | null
           price_id: string
           product_id: string
           status: string
@@ -475,6 +575,8 @@ export type Database = {
           current_period_start?: string | null
           environment?: string
           id?: string
+          payment_id?: string | null
+          plan_id?: string | null
           price_id: string
           product_id: string
           status?: string
@@ -490,12 +592,53 @@ export type Database = {
           current_period_start?: string | null
           environment?: string
           id?: string
+          payment_id?: string | null
+          plan_id?: string | null
           price_id?: string
           product_id?: string
           status?: string
           stripe_customer_id?: string
           stripe_subscription_id?: string
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_counters: {
+        Row: {
+          count: number
+          kind: string
+          period_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          kind: string
+          period_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          kind?: string
+          period_key?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -587,12 +730,17 @@ export type Database = {
         Args: { _amount: number; _user_id: string }
         Returns: Json
       }
+      has_active_pro: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_usage: {
+        Args: { _free_limit: number; _kind: string; _user_id: string }
+        Returns: Json
       }
     }
     Enums: {
