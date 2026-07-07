@@ -57,6 +57,7 @@ import { Route as AppChatVoiceRouteImport } from './routes/_app/chat.voice'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
 import { Route as AppStudioVibeIndexRouteImport } from './routes/_app/studio.vibe.index'
 import { Route as ApiPublicShareTokenRouteImport } from './routes/api/public/share.$token'
+import { Route as ApiPublicRazorpayWebhookRouteImport } from './routes/api/public/razorpay/webhook'
 import { Route as AppStudioVibeIdRouteImport } from './routes/_app/studio.vibe.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -298,6 +299,12 @@ const ApiPublicShareTokenRoute = ApiPublicShareTokenRouteImport.update({
   path: '/api/public/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicRazorpayWebhookRoute =
+  ApiPublicRazorpayWebhookRouteImport.update({
+    id: '/api/public/razorpay/webhook',
+    path: '/api/public/razorpay/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppStudioVibeIdRoute = AppStudioVibeIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -351,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/chat/': typeof AppChatIndexRoute
   '/studio/': typeof AppStudioIndexRoute
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
+  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
   '/studio/vibe/': typeof AppStudioVibeIndexRoute
 }
@@ -398,6 +406,7 @@ export interface FileRoutesByTo {
   '/chat': typeof AppChatIndexRoute
   '/studio': typeof AppStudioIndexRoute
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
+  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
   '/studio/vibe': typeof AppStudioVibeIndexRoute
 }
@@ -450,6 +459,7 @@ export interface FileRoutesById {
   '/_app/chat/': typeof AppChatIndexRoute
   '/_app/studio/': typeof AppStudioIndexRoute
   '/_app/studio/vibe/$id': typeof AppStudioVibeIdRoute
+  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
   '/_app/studio/vibe/': typeof AppStudioVibeIndexRoute
 }
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/chat/'
     | '/studio/'
     | '/studio/vibe/$id'
+    | '/api/public/razorpay/webhook'
     | '/api/public/share/$token'
     | '/studio/vibe/'
   fileRoutesByTo: FileRoutesByTo
@@ -549,6 +560,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/studio'
     | '/studio/vibe/$id'
+    | '/api/public/razorpay/webhook'
     | '/api/public/share/$token'
     | '/studio/vibe'
   id:
@@ -600,6 +612,7 @@ export interface FileRouteTypes {
     | '/_app/chat/'
     | '/_app/studio/'
     | '/_app/studio/vibe/$id'
+    | '/api/public/razorpay/webhook'
     | '/api/public/share/$token'
     | '/_app/studio/vibe/'
   fileRoutesById: FileRoutesById
@@ -627,6 +640,7 @@ export interface RootRouteChildren {
   ApiVibeStartRoute: typeof ApiVibeStartRoute
   LiveSlugRoute: typeof LiveSlugRoute
   STokenRoute: typeof STokenRoute
+  ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
   ApiPublicShareTokenRoute: typeof ApiPublicShareTokenRoute
 }
 
@@ -968,6 +982,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/razorpay/webhook': {
+      id: '/api/public/razorpay/webhook'
+      path: '/api/public/razorpay/webhook'
+      fullPath: '/api/public/razorpay/webhook'
+      preLoaderRoute: typeof ApiPublicRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/studio/vibe/$id': {
       id: '/_app/studio/vibe/$id'
       path: '/$id'
@@ -1120,18 +1141,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVibeStartRoute: ApiVibeStartRoute,
   LiveSlugRoute: LiveSlugRoute,
   STokenRoute: STokenRoute,
+  ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
   ApiPublicShareTokenRoute: ApiPublicShareTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
