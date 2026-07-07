@@ -31,7 +31,7 @@ const SCHEMAS: Record<WizardKind, Schema> = {
     kind: "website",
     title: "Website Builder",
     ctaLabel: "Generate Website",
-    studioPath: "/studio/docs?kind=website",
+    studioPath: "/studio/vibe",
     fields: [
       {
         id: "type",
@@ -111,7 +111,7 @@ Additional: ${a.extra || "n/a"}.`,
     kind: "app",
     title: "App Builder",
     ctaLabel: "Generate App",
-    studioPath: "/studio/docs?kind=app",
+    studioPath: "/studio/vibe",
     fields: [
       {
         id: "platform",
