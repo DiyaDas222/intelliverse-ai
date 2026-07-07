@@ -322,12 +322,26 @@ function VibeWorkspace() {
             </div>
             {previewOpen && (
               <div className="min-h-0 bg-white">
-                <LivePreview
-                  files={files}
-                  entry={project?.entry_file ?? null}
-                  stack={project?.stack as Record<string, unknown> | null | undefined}
-                  kind={project?.kind}
-                />
+                {mounted ? (
+                  <Suspense
+                    fallback={
+                      <div className="grid h-full place-items-center text-xs text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </div>
+                    }
+                  >
+                    <LivePreview
+                      files={files}
+                      entry={project?.entry_file ?? null}
+                      stack={project?.stack as Record<string, unknown> | null | undefined}
+                      kind={project?.kind}
+                    />
+                  </Suspense>
+                ) : (
+                  <div className="grid h-full place-items-center text-xs text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                )}
               </div>
             )}
           </div>
