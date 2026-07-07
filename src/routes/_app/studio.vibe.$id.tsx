@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { LivePreview } from "@/components/vibe/LivePreview";
 import {
   getVibeProject, updateVibeProject,
   type VibeFile, type VibeMessage, type VibeProject,
