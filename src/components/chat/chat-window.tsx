@@ -390,8 +390,45 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       .eq("id", convId);
 
 
-    // Creation wizard intercept
+    // Direct live website/app builder intercept — no copy/paste, no extra Generate click.
     const wizardKind = detectWizardKind(body);
+    if ((wizardKind === "website" || wizardKind === "app") && user) {
+      try {
+        const project = await createVibe({
+          data: {
+            name: titleFromPrompt(body, wizardKind),
+            description: body,
+            kind: wizardKind === "website" ? "website" : "webapp",
+            stack: {
+              frontend: wizardKind === "website" ? "Plain HTML/CSS/JS" : "React",
+              backend: "None",
+              database: "None",
+              auth: "None",
+              styling: wizardKind === "website" ? "Plain CSS" : "CSS",
+            },
+          },
+        });
+        sessionStorage.setItem(`iv:vibe-run:${project.id}`, body);
+        qc.invalidateQueries({ queryKey: ["vibeProjects"] });
+
+        const assistantId = crypto.randomUUID();
+        const reply = `Starting your ${wizardKind} build now — opening the live builder with code and preview side by side.`;
+        setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: reply }]);
+        await supabase.from("messages").insert({
+          conversation_id: convId,
+          user_id: user.id,
+          role: "assistant",
+          content: reply,
+        });
+        navigate({ to: "/studio/vibe/$id", params: { id: project.id } });
+        return;
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Couldn't start the live builder");
+        return;
+      }
+    }
+
+    // Creation wizard intercept
     if (wizardKind) {
       const assistantId = crypto.randomUUID();
       const intro = `Let's build your ${wizardKind} together. I've prepared a quick wizard — pick options below.`;
@@ -1158,4 +1195,14 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       />
     </div>
   );
+}
+
+function titleFromPrompt(prompt: string, kind: WizardKind) {
+  const quoted = prompt.match(/(?:named|called)\s+["“]([^"”]+)["”]/i)?.[1];
+  if (quoted) return quoted.slice(0, 80);
+  return prompt
+    .replace(/^\s*(generate|create|make|build|design)\s+(an?\s+)?/i, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80) || `New ${kind}`;
 }
