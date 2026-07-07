@@ -94,12 +94,16 @@ function VibeWorkspace() {
   useEffect(() => {
     if (!project || generating || autoRunRef.current === project.id) return;
     const key = `iv:vibe-run:${project.id}`;
-    const queuedPrompt = sessionStorage.getItem(key) || (!(project.files?.length) ? project.description : null);
-    if (!queuedPrompt?.trim()) return;
+    const queuedPrompt = sessionStorage.getItem(key);
+    const fallbackKey = `iv:vibe-autotried:${project.id}`;
+    const fallbackPrompt = !(project.files?.length) && !sessionStorage.getItem(fallbackKey) ? project.description : null;
+    const promptToRun = queuedPrompt || fallbackPrompt;
+    if (!promptToRun?.trim()) return;
     sessionStorage.removeItem(key);
+    if (!queuedPrompt) sessionStorage.setItem(fallbackKey, "1");
     autoRunRef.current = project.id;
-    setPrompt(queuedPrompt);
-    void generate(queuedPrompt);
+    setPrompt(promptToRun);
+    void generate(promptToRun);
   }, [project?.id, project?.description, project?.files?.length, generating]);
 
   const saveMut = useMutation({

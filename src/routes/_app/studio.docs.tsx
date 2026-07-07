@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { saveDocAsset } from "@/lib/assets.functions";
 import { createVibeProject } from "@/lib/vibe.functions";
+import { getEntitlements } from "@/lib/entitlements.functions";
 
 export const Route = createFileRoute("/_app/studio/docs")({
   head: () => ({ meta: [{ title: "Document Generator — IntelliVerse" }] }),
@@ -96,6 +97,7 @@ function DocsPage() {
   const navigate = useNavigate();
   const saveFn = useServerFn(saveDocAsset);
   const createVibe = useServerFn(createVibeProject);
+  const fetchEntitlements = useServerFn(getEntitlements);
   const autoStartedRef = useRef(false);
 
   // Prefill from chat wizard & honor ?kind=... query param
@@ -125,6 +127,13 @@ function DocsPage() {
     setGenBusy(true);
     setContent(null);
     try {
+      const ent = await fetchEntitlements();
+      const limit = ent.limits.vibe;
+      const used = ent.usage.vibe ?? 0;
+      if (limit !== null && used >= limit) {
+        toast.error(`You've hit the free vibe limit for this month (${used}/${limit}). Upgrade to Pro for unlimited live builds.`);
+        return;
+      }
       const project = await createVibe({
         data: {
           name: titleFromBrief(brief, targetKind),
