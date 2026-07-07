@@ -50,6 +50,7 @@ import { Route as AppStudioImageRouteImport } from './routes/_app/studio.image'
 import { Route as AppStudioDocsRouteImport } from './routes/_app/studio.docs'
 import { Route as AppStudioCodeRouteImport } from './routes/_app/studio.code'
 import { Route as AppStudioAudioRouteImport } from './routes/_app/studio.audio'
+import { Route as AppSettingsBillingRouteImport } from './routes/_app/settings.billing'
 import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
 import { Route as AppChatVoiceRouteImport } from './routes/_app/chat.voice'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
@@ -261,6 +262,11 @@ const AppStudioAudioRoute = AppStudioAudioRouteImport.update({
   path: '/audio',
   getParentRoute: () => AppStudioRoute,
 } as any)
+const AppSettingsBillingRoute = AppSettingsBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
 const AppDocumentsIdRoute = AppDocumentsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -299,7 +305,7 @@ export interface FileRoutesByFullPath {
   '/documents': typeof AppDocumentsRouteWithChildren
   '/library': typeof AppLibraryRoute
   '/providers': typeof AppProvidersRoute
-  '/settings': typeof AppSettingsRoute
+  '/settings': typeof AppSettingsRouteWithChildren
   '/studio': typeof AppStudioRouteWithChildren
   '/tools': typeof AppToolsRouteWithChildren
   '/upgrade': typeof AppUpgradeRoute
@@ -320,6 +326,7 @@ export interface FileRoutesByFullPath {
   '/chat/$id': typeof AppChatIdRoute
   '/chat/voice': typeof AppChatVoiceRoute
   '/documents/$id': typeof AppDocumentsIdRoute
+  '/settings/billing': typeof AppSettingsBillingRoute
   '/studio/audio': typeof AppStudioAudioRoute
   '/studio/code': typeof AppStudioCodeRoute
   '/studio/docs': typeof AppStudioDocsRoute
@@ -345,7 +352,7 @@ export interface FileRoutesByTo {
   '/documents': typeof AppDocumentsRouteWithChildren
   '/library': typeof AppLibraryRoute
   '/providers': typeof AppProvidersRoute
-  '/settings': typeof AppSettingsRoute
+  '/settings': typeof AppSettingsRouteWithChildren
   '/tools': typeof AppToolsRouteWithChildren
   '/upgrade': typeof AppUpgradeRoute
   '/api/chat': typeof ApiChatRoute
@@ -365,6 +372,7 @@ export interface FileRoutesByTo {
   '/chat/$id': typeof AppChatIdRoute
   '/chat/voice': typeof AppChatVoiceRoute
   '/documents/$id': typeof AppDocumentsIdRoute
+  '/settings/billing': typeof AppSettingsBillingRoute
   '/studio/audio': typeof AppStudioAudioRoute
   '/studio/code': typeof AppStudioCodeRoute
   '/studio/docs': typeof AppStudioDocsRoute
@@ -393,7 +401,7 @@ export interface FileRoutesById {
   '/_app/documents': typeof AppDocumentsRouteWithChildren
   '/_app/library': typeof AppLibraryRoute
   '/_app/providers': typeof AppProvidersRoute
-  '/_app/settings': typeof AppSettingsRoute
+  '/_app/settings': typeof AppSettingsRouteWithChildren
   '/_app/studio': typeof AppStudioRouteWithChildren
   '/_app/tools': typeof AppToolsRouteWithChildren
   '/_app/upgrade': typeof AppUpgradeRoute
@@ -414,6 +422,7 @@ export interface FileRoutesById {
   '/_app/chat/$id': typeof AppChatIdRoute
   '/_app/chat/voice': typeof AppChatVoiceRoute
   '/_app/documents/$id': typeof AppDocumentsIdRoute
+  '/_app/settings/billing': typeof AppSettingsBillingRoute
   '/_app/studio/audio': typeof AppStudioAudioRoute
   '/_app/studio/code': typeof AppStudioCodeRoute
   '/_app/studio/docs': typeof AppStudioDocsRoute
@@ -463,6 +472,7 @@ export interface FileRouteTypes {
     | '/chat/$id'
     | '/chat/voice'
     | '/documents/$id'
+    | '/settings/billing'
     | '/studio/audio'
     | '/studio/code'
     | '/studio/docs'
@@ -508,6 +518,7 @@ export interface FileRouteTypes {
     | '/chat/$id'
     | '/chat/voice'
     | '/documents/$id'
+    | '/settings/billing'
     | '/studio/audio'
     | '/studio/code'
     | '/studio/docs'
@@ -556,6 +567,7 @@ export interface FileRouteTypes {
     | '/_app/chat/$id'
     | '/_app/chat/voice'
     | '/_app/documents/$id'
+    | '/_app/settings/billing'
     | '/_app/studio/audio'
     | '/_app/studio/code'
     | '/_app/studio/docs'
@@ -885,6 +897,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStudioAudioRouteImport
       parentRoute: typeof AppStudioRoute
     }
+    '/_app/settings/billing': {
+      id: '/_app/settings/billing'
+      path: '/billing'
+      fullPath: '/settings/billing'
+      preLoaderRoute: typeof AppSettingsBillingRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
     '/_app/documents/$id': {
       id: '/_app/documents/$id'
       path: '/$id'
@@ -950,6 +969,18 @@ const AppDocumentsRouteWithChildren = AppDocumentsRoute._addFileChildren(
   AppDocumentsRouteChildren,
 )
 
+interface AppSettingsRouteChildren {
+  AppSettingsBillingRoute: typeof AppSettingsBillingRoute
+}
+
+const AppSettingsRouteChildren: AppSettingsRouteChildren = {
+  AppSettingsBillingRoute: AppSettingsBillingRoute,
+}
+
+const AppSettingsRouteWithChildren = AppSettingsRoute._addFileChildren(
+  AppSettingsRouteChildren,
+)
+
 interface AppStudioVibeRouteChildren {
   AppStudioVibeIdRoute: typeof AppStudioVibeIdRoute
 }
@@ -1007,7 +1038,7 @@ interface AppRouteChildren {
   AppDocumentsRoute: typeof AppDocumentsRouteWithChildren
   AppLibraryRoute: typeof AppLibraryRoute
   AppProvidersRoute: typeof AppProvidersRoute
-  AppSettingsRoute: typeof AppSettingsRoute
+  AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppStudioRoute: typeof AppStudioRouteWithChildren
   AppToolsRoute: typeof AppToolsRouteWithChildren
   AppUpgradeRoute: typeof AppUpgradeRoute
@@ -1020,7 +1051,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDocumentsRoute: AppDocumentsRouteWithChildren,
   AppLibraryRoute: AppLibraryRoute,
   AppProvidersRoute: AppProvidersRoute,
-  AppSettingsRoute: AppSettingsRoute,
+  AppSettingsRoute: AppSettingsRouteWithChildren,
   AppStudioRoute: AppStudioRouteWithChildren,
   AppToolsRoute: AppToolsRouteWithChildren,
   AppUpgradeRoute: AppUpgradeRoute,
