@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import Editor from "@monaco-editor/react";
@@ -19,11 +19,16 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { LivePreview } from "@/components/vibe/LivePreview";
 import {
   getVibeProject, updateVibeProject,
   type VibeFile, type VibeMessage, type VibeProject,
 } from "@/lib/vibe.functions";
+
+// Sandpack is a heavy, browser-only package that touches window/document at
+// module scope. Lazy-load it on the client only so SSR / hydration don't break.
+const LivePreview = lazy(() =>
+  import("@/components/vibe/LivePreview").then((m) => ({ default: m.LivePreview })),
+);
 
 export const Route = createFileRoute("/_app/studio/vibe/$id")({
   component: VibeWorkspace,
@@ -63,6 +68,8 @@ function VibeWorkspace() {
   const [generating, setGenerating] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [dirty, setDirty] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -315,12 +322,26 @@ function VibeWorkspace() {
             </div>
             {previewOpen && (
               <div className="min-h-0 bg-white">
-                <LivePreview
-                  files={files}
-                  entry={project?.entry_file ?? null}
-                  stack={project?.stack as Record<string, unknown> | null | undefined}
-                  kind={project?.kind}
-                />
+                {mounted ? (
+                  <Suspense
+                    fallback={
+                      <div className="grid h-full place-items-center text-xs text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </div>
+                    }
+                  >
+                    <LivePreview
+                      files={files}
+                      entry={project?.entry_file ?? null}
+                      stack={project?.stack as Record<string, unknown> | null | undefined}
+                      kind={project?.kind}
+                    />
+                  </Suspense>
+                ) : (
+                  <div className="grid h-full place-items-center text-xs text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                )}
               </div>
             )}
           </div>
