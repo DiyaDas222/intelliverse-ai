@@ -43,7 +43,7 @@ export async function guardUsage(request: Request, kind: UsageKind): Promise<Gua
   const limit = FREE_LIMITS[kind];
   const { data, error } = await supa.rpc("increment_usage", {
     _kind: kind,
-    _free_limit: limit,
+    _free_limit: (limit ?? null) as unknown as number,
   });
   if (error) {
     console.error("[guardUsage] rpc error", error);

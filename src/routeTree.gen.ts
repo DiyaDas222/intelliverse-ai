@@ -41,6 +41,7 @@ import { Route as AppChatRouteImport } from './routes/_app/chat'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppStudioIndexRouteImport } from './routes/_app/studio.index'
 import { Route as AppChatIndexRouteImport } from './routes/_app/chat.index'
+import { Route as ApiPublicRazorpayWebhookRouteImport } from './routes/api/public/razorpay-webhook'
 import { Route as AppToolsSlugRouteImport } from './routes/_app/tools.$slug'
 import { Route as AppStudioVideoRouteImport } from './routes/_app/studio.video'
 import { Route as AppStudioVibeRouteImport } from './routes/_app/studio.vibe'
@@ -214,6 +215,12 @@ const AppChatIndexRoute = AppChatIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppChatRoute,
 } as any)
+const ApiPublicRazorpayWebhookRoute =
+  ApiPublicRazorpayWebhookRouteImport.update({
+    id: '/api/public/razorpay-webhook',
+    path: '/api/public/razorpay-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppToolsSlugRoute = AppToolsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -321,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
   '/chat/': typeof AppChatIndexRoute
   '/studio/': typeof AppStudioIndexRoute
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
@@ -365,6 +373,7 @@ export interface FileRoutesByTo {
   '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
   '/chat': typeof AppChatIndexRoute
   '/studio': typeof AppStudioIndexRoute
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
@@ -413,6 +422,7 @@ export interface FileRoutesById {
   '/_app/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/_app/studio/video': typeof AppStudioVideoRoute
   '/_app/tools/$slug': typeof AppToolsSlugRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
   '/_app/chat/': typeof AppChatIndexRoute
   '/_app/studio/': typeof AppStudioIndexRoute
   '/_app/studio/vibe/$id': typeof AppStudioVibeIdRoute
@@ -461,6 +471,7 @@ export interface FileRouteTypes {
     | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
+    | '/api/public/razorpay-webhook'
     | '/chat/'
     | '/studio/'
     | '/studio/vibe/$id'
@@ -505,6 +516,7 @@ export interface FileRouteTypes {
     | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
+    | '/api/public/razorpay-webhook'
     | '/chat'
     | '/studio'
     | '/studio/vibe/$id'
@@ -552,6 +564,7 @@ export interface FileRouteTypes {
     | '/_app/studio/vibe'
     | '/_app/studio/video'
     | '/_app/tools/$slug'
+    | '/api/public/razorpay-webhook'
     | '/_app/chat/'
     | '/_app/studio/'
     | '/_app/studio/vibe/$id'
@@ -579,6 +592,7 @@ export interface RootRouteChildren {
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVibeGenerateRoute: typeof ApiVibeGenerateRoute
   STokenRoute: typeof STokenRoute
+  ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
   ApiPublicShareTokenRoute: typeof ApiPublicShareTokenRoute
 }
 
@@ -808,6 +822,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIndexRouteImport
       parentRoute: typeof AppChatRoute
     }
+    '/api/public/razorpay-webhook': {
+      id: '/api/public/razorpay-webhook'
+      path: '/api/public/razorpay-webhook'
+      fullPath: '/api/public/razorpay-webhook'
+      preLoaderRoute: typeof ApiPublicRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/tools/$slug': {
       id: '/_app/tools/$slug'
       path: '/$slug'
@@ -1028,6 +1049,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTtsRoute: ApiTtsRoute,
   ApiVibeGenerateRoute: ApiVibeGenerateRoute,
   STokenRoute: STokenRoute,
+  ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
   ApiPublicShareTokenRoute: ApiPublicShareTokenRoute,
 }
 export const routeTree = rootRouteImport
