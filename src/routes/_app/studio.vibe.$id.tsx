@@ -94,13 +94,13 @@ function VibeWorkspace() {
   useEffect(() => {
     if (!project || generating || autoRunRef.current === project.id) return;
     const key = `iv:vibe-run:${project.id}`;
-    const queuedPrompt = sessionStorage.getItem(key);
+    const queuedPrompt = sessionStorage.getItem(key) || (!(project.files?.length) ? project.description : null);
     if (!queuedPrompt?.trim()) return;
     sessionStorage.removeItem(key);
     autoRunRef.current = project.id;
     setPrompt(queuedPrompt);
     void generate(queuedPrompt);
-  }, [project?.id, generating]);
+  }, [project?.id, project?.description, project?.files?.length, generating]);
 
   const saveMut = useMutation({
     mutationFn: async (patch: Partial<VibeProject>) => {
@@ -165,7 +165,7 @@ function VibeWorkspace() {
       setMessages(finalMessages);
       setFiles(merged);
       const newEntry = data.entry_file || project.entry_file || guessEntry(merged);
-      if (!activePath && merged[0]) setActivePath(merged[0].path);
+      if (!activePath && merged[0]) setActivePath(newEntry || merged[0].path);
 
       await update({
         data: { id, files: merged, messages: finalMessages, entry_file: newEntry },
