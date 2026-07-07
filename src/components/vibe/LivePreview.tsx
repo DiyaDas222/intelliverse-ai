@@ -1,10 +1,4 @@
 import { useMemo } from "react";
-import {
-  SandpackProvider,
-  SandpackLayout,
-  SandpackPreview,
-  SandpackConsole,
-} from "@codesandbox/sandpack-react";
 import { Eye } from "lucide-react";
 
 type VibeFile = { path: string; content: string };
@@ -65,34 +59,6 @@ function resolvePath(dir: string, href: string): string {
   return out.join("/");
 }
 
-function normalizeForSandpack(files: VibeFile[]): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const f of files) {
-    const p = f.path.startsWith("/") ? f.path : `/${f.path}`;
-    out[p] = f.content;
-  }
-  return out;
-}
-
-const DEFAULT_REACT_FILES = {
-  "/App.js": `export default function App() {
-  return (
-    <div style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
-      <h1>Nothing to preview yet</h1>
-      <p>Ask the AI to build something in the chat panel.</p>
-    </div>
-  );
-}
-`,
-  "/index.js": `import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./styles.css";
-const root = createRoot(document.getElementById("root"));
-root.render(<App />);
-`,
-  "/styles.css": `body{margin:0;background:#fff;color:#111}`,
-};
-
 export function LivePreview({ files, entry, stack, kind }: Props) {
   const mode = useMemo(() => detectMode(files, stack, kind), [files, stack, kind]);
 
@@ -130,34 +96,12 @@ export function LivePreview({ files, entry, stack, kind }: Props) {
     );
   }
 
-  // React or Vue → Sandpack in-browser bundler
-  const template = mode === "vue" ? "vue" : "react";
-  const normalized = normalizeForSandpack(files);
-  const spFiles = { ...(mode === "react" ? DEFAULT_REACT_FILES : {}), ...normalized };
-
   return (
-    <div className="h-full w-full">
-      <SandpackProvider
-        template={template}
-        files={spFiles}
-        theme="dark"
-        options={{
-          recompileMode: "delayed",
-          recompileDelay: 400,
-        }}
-      >
-        <SandpackLayout style={{ height: "100%", border: 0, borderRadius: 0 }}>
-          <SandpackPreview
-            showOpenInCodeSandbox={false}
-            showRefreshButton
-            style={{ height: "100%", minHeight: 0, flex: 1 }}
-          />
-        </SandpackLayout>
-        <div style={{ display: "none" }}>
-          {/* keeps console runtime warm without occupying space */}
-          <SandpackConsole />
-        </div>
-      </SandpackProvider>
+    <div className="grid h-full place-items-center bg-white p-6 text-center text-xs text-muted-foreground">
+      <div>
+        <Eye className="mx-auto mb-2 h-5 w-5" />
+        Live preview is available for HTML projects. Download the ZIP to run this {mode} project locally.
+      </div>
     </div>
   );
 }
