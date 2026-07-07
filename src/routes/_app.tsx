@@ -24,6 +24,8 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getEntitlements } from "@/lib/entitlements.functions";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -79,6 +81,14 @@ function AppLayout() {
       if (error) return false;
       return !!data;
     },
+  });
+
+  const entFn = useServerFn(getEntitlements);
+  const { data: entitlements } = useQuery({
+    queryKey: ["entitlements"],
+    enabled: !!user,
+    queryFn: () => entFn(),
+    staleTime: 60_000,
   });
 
   const togglePin = useMutation({
@@ -321,7 +331,15 @@ function AppLayout() {
             </div>
             <div className="min-w-0 flex-1 truncate text-xs">
               <div className="truncate text-foreground">{user.email}</div>
-              <div className="text-muted-foreground">Free plan</div>
+              {entitlements?.is_pro ? (
+                <Link to="/settings/billing" className="inline-flex items-center gap-1 text-emerald-500 hover:underline">
+                  <Sparkles className="h-3 w-3" /> {entitlements.plan}
+                </Link>
+              ) : (
+                <Link to="/upgrade" className="text-muted-foreground hover:text-foreground hover:underline">
+                  Free · Upgrade
+                </Link>
+              )}
             </div>
             <button
               onClick={async () => {

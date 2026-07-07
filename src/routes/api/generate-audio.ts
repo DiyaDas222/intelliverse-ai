@@ -1,11 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { GATEWAY_BASE_URL, getGatewayApiKey, gatewayHeaders } from "@/lib/gateway-config.server";
+import { guardResponse, guardUsage } from "@/lib/entitlements.server";
 
 export const Route = createFileRoute("/api/generate-audio")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const guard = await guardUsage(request, "generation");
+        if (!guard.ok) return guardResponse(guard);
+
         const key = getGatewayApiKey();
         if (!key) return new Response("AI gateway is not configured", { status: 500 });
 

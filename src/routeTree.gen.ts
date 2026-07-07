@@ -41,6 +41,7 @@ import { Route as AppChatRouteImport } from './routes/_app/chat'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppStudioIndexRouteImport } from './routes/_app/studio.index'
 import { Route as AppChatIndexRouteImport } from './routes/_app/chat.index'
+import { Route as ApiPublicRazorpayWebhookRouteImport } from './routes/api/public/razorpay-webhook'
 import { Route as AppToolsSlugRouteImport } from './routes/_app/tools.$slug'
 import { Route as AppStudioVideoRouteImport } from './routes/_app/studio.video'
 import { Route as AppStudioVibeRouteImport } from './routes/_app/studio.vibe'
@@ -49,6 +50,7 @@ import { Route as AppStudioImageRouteImport } from './routes/_app/studio.image'
 import { Route as AppStudioDocsRouteImport } from './routes/_app/studio.docs'
 import { Route as AppStudioCodeRouteImport } from './routes/_app/studio.code'
 import { Route as AppStudioAudioRouteImport } from './routes/_app/studio.audio'
+import { Route as AppSettingsBillingRouteImport } from './routes/_app/settings.billing'
 import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
 import { Route as AppChatVoiceRouteImport } from './routes/_app/chat.voice'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
@@ -214,6 +216,12 @@ const AppChatIndexRoute = AppChatIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppChatRoute,
 } as any)
+const ApiPublicRazorpayWebhookRoute =
+  ApiPublicRazorpayWebhookRouteImport.update({
+    id: '/api/public/razorpay-webhook',
+    path: '/api/public/razorpay-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppToolsSlugRoute = AppToolsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -254,6 +262,11 @@ const AppStudioAudioRoute = AppStudioAudioRouteImport.update({
   path: '/audio',
   getParentRoute: () => AppStudioRoute,
 } as any)
+const AppSettingsBillingRoute = AppSettingsBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
 const AppDocumentsIdRoute = AppDocumentsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -292,7 +305,7 @@ export interface FileRoutesByFullPath {
   '/documents': typeof AppDocumentsRouteWithChildren
   '/library': typeof AppLibraryRoute
   '/providers': typeof AppProvidersRoute
-  '/settings': typeof AppSettingsRoute
+  '/settings': typeof AppSettingsRouteWithChildren
   '/studio': typeof AppStudioRouteWithChildren
   '/tools': typeof AppToolsRouteWithChildren
   '/upgrade': typeof AppUpgradeRoute
@@ -313,6 +326,7 @@ export interface FileRoutesByFullPath {
   '/chat/$id': typeof AppChatIdRoute
   '/chat/voice': typeof AppChatVoiceRoute
   '/documents/$id': typeof AppDocumentsIdRoute
+  '/settings/billing': typeof AppSettingsBillingRoute
   '/studio/audio': typeof AppStudioAudioRoute
   '/studio/code': typeof AppStudioCodeRoute
   '/studio/docs': typeof AppStudioDocsRoute
@@ -321,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
   '/chat/': typeof AppChatIndexRoute
   '/studio/': typeof AppStudioIndexRoute
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
@@ -337,7 +352,7 @@ export interface FileRoutesByTo {
   '/documents': typeof AppDocumentsRouteWithChildren
   '/library': typeof AppLibraryRoute
   '/providers': typeof AppProvidersRoute
-  '/settings': typeof AppSettingsRoute
+  '/settings': typeof AppSettingsRouteWithChildren
   '/tools': typeof AppToolsRouteWithChildren
   '/upgrade': typeof AppUpgradeRoute
   '/api/chat': typeof ApiChatRoute
@@ -357,6 +372,7 @@ export interface FileRoutesByTo {
   '/chat/$id': typeof AppChatIdRoute
   '/chat/voice': typeof AppChatVoiceRoute
   '/documents/$id': typeof AppDocumentsIdRoute
+  '/settings/billing': typeof AppSettingsBillingRoute
   '/studio/audio': typeof AppStudioAudioRoute
   '/studio/code': typeof AppStudioCodeRoute
   '/studio/docs': typeof AppStudioDocsRoute
@@ -365,6 +381,7 @@ export interface FileRoutesByTo {
   '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
   '/chat': typeof AppChatIndexRoute
   '/studio': typeof AppStudioIndexRoute
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
@@ -384,7 +401,7 @@ export interface FileRoutesById {
   '/_app/documents': typeof AppDocumentsRouteWithChildren
   '/_app/library': typeof AppLibraryRoute
   '/_app/providers': typeof AppProvidersRoute
-  '/_app/settings': typeof AppSettingsRoute
+  '/_app/settings': typeof AppSettingsRouteWithChildren
   '/_app/studio': typeof AppStudioRouteWithChildren
   '/_app/tools': typeof AppToolsRouteWithChildren
   '/_app/upgrade': typeof AppUpgradeRoute
@@ -405,6 +422,7 @@ export interface FileRoutesById {
   '/_app/chat/$id': typeof AppChatIdRoute
   '/_app/chat/voice': typeof AppChatVoiceRoute
   '/_app/documents/$id': typeof AppDocumentsIdRoute
+  '/_app/settings/billing': typeof AppSettingsBillingRoute
   '/_app/studio/audio': typeof AppStudioAudioRoute
   '/_app/studio/code': typeof AppStudioCodeRoute
   '/_app/studio/docs': typeof AppStudioDocsRoute
@@ -413,6 +431,7 @@ export interface FileRoutesById {
   '/_app/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/_app/studio/video': typeof AppStudioVideoRoute
   '/_app/tools/$slug': typeof AppToolsSlugRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
   '/_app/chat/': typeof AppChatIndexRoute
   '/_app/studio/': typeof AppStudioIndexRoute
   '/_app/studio/vibe/$id': typeof AppStudioVibeIdRoute
@@ -453,6 +472,7 @@ export interface FileRouteTypes {
     | '/chat/$id'
     | '/chat/voice'
     | '/documents/$id'
+    | '/settings/billing'
     | '/studio/audio'
     | '/studio/code'
     | '/studio/docs'
@@ -461,6 +481,7 @@ export interface FileRouteTypes {
     | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
+    | '/api/public/razorpay-webhook'
     | '/chat/'
     | '/studio/'
     | '/studio/vibe/$id'
@@ -497,6 +518,7 @@ export interface FileRouteTypes {
     | '/chat/$id'
     | '/chat/voice'
     | '/documents/$id'
+    | '/settings/billing'
     | '/studio/audio'
     | '/studio/code'
     | '/studio/docs'
@@ -505,6 +527,7 @@ export interface FileRouteTypes {
     | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
+    | '/api/public/razorpay-webhook'
     | '/chat'
     | '/studio'
     | '/studio/vibe/$id'
@@ -544,6 +567,7 @@ export interface FileRouteTypes {
     | '/_app/chat/$id'
     | '/_app/chat/voice'
     | '/_app/documents/$id'
+    | '/_app/settings/billing'
     | '/_app/studio/audio'
     | '/_app/studio/code'
     | '/_app/studio/docs'
@@ -552,6 +576,7 @@ export interface FileRouteTypes {
     | '/_app/studio/vibe'
     | '/_app/studio/video'
     | '/_app/tools/$slug'
+    | '/api/public/razorpay-webhook'
     | '/_app/chat/'
     | '/_app/studio/'
     | '/_app/studio/vibe/$id'
@@ -579,6 +604,7 @@ export interface RootRouteChildren {
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVibeGenerateRoute: typeof ApiVibeGenerateRoute
   STokenRoute: typeof STokenRoute
+  ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
   ApiPublicShareTokenRoute: typeof ApiPublicShareTokenRoute
 }
 
@@ -808,6 +834,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIndexRouteImport
       parentRoute: typeof AppChatRoute
     }
+    '/api/public/razorpay-webhook': {
+      id: '/api/public/razorpay-webhook'
+      path: '/api/public/razorpay-webhook'
+      fullPath: '/api/public/razorpay-webhook'
+      preLoaderRoute: typeof ApiPublicRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/tools/$slug': {
       id: '/_app/tools/$slug'
       path: '/$slug'
@@ -863,6 +896,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/studio/audio'
       preLoaderRoute: typeof AppStudioAudioRouteImport
       parentRoute: typeof AppStudioRoute
+    }
+    '/_app/settings/billing': {
+      id: '/_app/settings/billing'
+      path: '/billing'
+      fullPath: '/settings/billing'
+      preLoaderRoute: typeof AppSettingsBillingRouteImport
+      parentRoute: typeof AppSettingsRoute
     }
     '/_app/documents/$id': {
       id: '/_app/documents/$id'
@@ -929,6 +969,18 @@ const AppDocumentsRouteWithChildren = AppDocumentsRoute._addFileChildren(
   AppDocumentsRouteChildren,
 )
 
+interface AppSettingsRouteChildren {
+  AppSettingsBillingRoute: typeof AppSettingsBillingRoute
+}
+
+const AppSettingsRouteChildren: AppSettingsRouteChildren = {
+  AppSettingsBillingRoute: AppSettingsBillingRoute,
+}
+
+const AppSettingsRouteWithChildren = AppSettingsRoute._addFileChildren(
+  AppSettingsRouteChildren,
+)
+
 interface AppStudioVibeRouteChildren {
   AppStudioVibeIdRoute: typeof AppStudioVibeIdRoute
 }
@@ -986,7 +1038,7 @@ interface AppRouteChildren {
   AppDocumentsRoute: typeof AppDocumentsRouteWithChildren
   AppLibraryRoute: typeof AppLibraryRoute
   AppProvidersRoute: typeof AppProvidersRoute
-  AppSettingsRoute: typeof AppSettingsRoute
+  AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppStudioRoute: typeof AppStudioRouteWithChildren
   AppToolsRoute: typeof AppToolsRouteWithChildren
   AppUpgradeRoute: typeof AppUpgradeRoute
@@ -999,7 +1051,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDocumentsRoute: AppDocumentsRouteWithChildren,
   AppLibraryRoute: AppLibraryRoute,
   AppProvidersRoute: AppProvidersRoute,
-  AppSettingsRoute: AppSettingsRoute,
+  AppSettingsRoute: AppSettingsRouteWithChildren,
   AppStudioRoute: AppStudioRouteWithChildren,
   AppToolsRoute: AppToolsRouteWithChildren,
   AppUpgradeRoute: AppUpgradeRoute,
@@ -1028,6 +1080,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTtsRoute: ApiTtsRoute,
   ApiVibeGenerateRoute: ApiVibeGenerateRoute,
   STokenRoute: STokenRoute,
+  ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
   ApiPublicShareTokenRoute: ApiPublicShareTokenRoute,
 }
 export const routeTree = rootRouteImport

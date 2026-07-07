@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { generateText } from "ai";
 import { createGatewayProvider } from "@/lib/ai-gateway.server";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
+import { guardResponse, guardUsage } from "@/lib/entitlements.server";
 
 type VibeFile = { path: string; content: string };
 type Stack = Record<string, unknown>;
@@ -42,6 +43,10 @@ export const Route = createFileRoute("/api/vibe-generate")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Vibe edits count against the 'vibe' bucket (project-scoped work).
+        const guard = await guardUsage(request, "vibe");
+        if (!guard.ok) return guardResponse(guard);
+
         const key = getGatewayApiKey();
         if (!key) {
           return new Response(JSON.stringify({ error: "AI gateway is not configured" }), {

@@ -1,10 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { GATEWAY_BASE_URL, getGatewayApiKey, gatewayHeaders } from "@/lib/gateway-config.server";
+import { guardResponse, guardUsage } from "@/lib/entitlements.server";
 
 export const Route = createFileRoute("/api/generate-image")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const guard = await guardUsage(request, "generation");
+        if (!guard.ok) return guardResponse(guard);
+
         const { prompt, size } = (await request.json().catch(() => ({}))) as {
           prompt?: string;
           size?: string;
