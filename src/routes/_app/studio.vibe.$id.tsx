@@ -30,10 +30,6 @@ const LivePreview = lazy(() =>
   import("@/components/vibe/LivePreview").then((m) => ({ default: m.LivePreview })),
 );
 
-// Monaco touches browser globals during module initialization in production.
-// Keep it out of the server route graph and load it only after client mount.
-const Editor = lazy(() => import("@monaco-editor/react"));
-
 export const Route = createFileRoute("/_app/studio/vibe/$id")({
   component: VibeWorkspace,
 });
@@ -322,34 +318,13 @@ function VibeWorkspace() {
           <div className={`grid min-h-0 flex-1 ${previewOpen ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
             <div className="min-h-0 border-b border-border/60 md:border-b-0 md:border-r">
               {active ? (
-                mounted ? (
-                  <Suspense
-                    fallback={
-                      <div className="grid h-full place-items-center text-xs text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      </div>
-                    }
-                  >
-                    <Editor
-                      height="100%"
-                      language={langFor(active.path)}
-                      value={active.content}
-                      onChange={(v) => updateActiveContent(v ?? "")}
-                      theme="vs-dark"
-                      options={{
-                        minimap: { enabled: false },
-                        fontSize: 13,
-                        wordWrap: "on",
-                        scrollBeyondLastLine: false,
-                        automaticLayout: true,
-                      }}
-                    />
-                  </Suspense>
-                ) : (
-                  <div className="grid h-full place-items-center text-xs text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </div>
-                )
+                <textarea
+                  aria-label={`Edit ${active.path}`}
+                  className="h-full w-full resize-none border-0 bg-background p-4 font-mono text-[13px] leading-5 text-foreground outline-none"
+                  spellCheck={false}
+                  value={active.content}
+                  onChange={(event) => updateActiveContent(event.target.value)}
+                />
               ) : (
                 <div className="grid h-full place-items-center p-6 text-center text-sm text-muted-foreground">
                   <div>
