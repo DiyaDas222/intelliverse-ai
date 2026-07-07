@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 import {
   getVibeProject, updateVibeProject,
   type VibeFile, type VibeMessage, type VibeProject,
@@ -71,6 +72,7 @@ function VibeWorkspace() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
   const chatRef = useRef<HTMLDivElement>(null);
+  const autoRunRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (project) {
@@ -88,6 +90,17 @@ function VibeWorkspace() {
   const active = files.find((f) => f.path === activePath) ?? null;
 
   // Live preview is always available; the LivePreview component decides how (HTML iframe vs Sandpack vs "unsupported").
+
+  useEffect(() => {
+    if (!project || generating || autoRunRef.current === project.id) return;
+    const key = `iv:vibe-run:${project.id}`;
+    const queuedPrompt = sessionStorage.getItem(key);
+    if (!queuedPrompt?.trim()) return;
+    sessionStorage.removeItem(key);
+    autoRunRef.current = project.id;
+    setPrompt(queuedPrompt);
+    void generate(queuedPrompt);
+  }, [project?.id, generating]);
 
   const saveMut = useMutation({
     mutationFn: async (patch: Partial<VibeProject>) => {
@@ -108,8 +121,8 @@ function VibeWorkspace() {
     onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
   });
 
-  async function generate() {
-    const text = prompt.trim();
+  async function generate(promptOverride?: string) {
+    const text = (promptOverride ?? prompt).trim();
     if (!text || generating || !project) return;
     setGenerating(true);
     const userMsg: VibeMessage = { role: "user", content: text, at: new Date().toISOString() };
@@ -118,9 +131,14 @@ function VibeWorkspace() {
     setPrompt("");
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
       const res = await fetch("/api/vibe-generate", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           prompt: text,
           kind: project.kind,
