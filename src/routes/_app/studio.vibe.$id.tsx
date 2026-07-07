@@ -315,23 +315,12 @@ function VibeWorkspace() {
             </div>
             {previewOpen && (
               <div className="min-h-0 bg-white">
-                {canPreview ? (
-                  <iframe
-                    title="preview"
-                    className="h-full w-full"
-                    sandbox="allow-scripts allow-forms allow-modals"
-                    srcDoc={previewDoc!}
-                  />
-                ) : (
-                  <div className="grid h-full place-items-center p-6 text-center text-xs text-muted-foreground">
-                    <div>
-                      <Eye className="mx-auto mb-2 h-5 w-5" />
-                      Live preview appears here once an <code>index.html</code> file exists.
-                      <br />Tip: pick <em>Plain HTML/CSS/JS</em> when creating the project for instant preview,
-                      or ask the AI to add an <code>index.html</code>.
-                    </div>
-                  </div>
-                )}
+                <LivePreview
+                  files={files}
+                  entry={project?.entry_file ?? null}
+                  stack={project?.stack as Record<string, unknown> | null | undefined}
+                  kind={project?.kind}
+                />
               </div>
             )}
           </div>
