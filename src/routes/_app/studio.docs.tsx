@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { saveDocAsset } from "@/lib/assets.functions";
+import { createVibeProject } from "@/lib/vibe.functions";
 
 export const Route = createFileRoute("/_app/studio/docs")({
   head: () => ({ meta: [{ title: "Document Generator — IntelliVerse" }] }),
@@ -91,6 +92,11 @@ function DocsPage() {
   const [prompt, setPrompt] = useState("");
   const [content, setContent] = useState<AnyContent | null>(null);
   const [genBusy, setGenBusy] = useState(false);
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  const saveFn = useServerFn(saveDocAsset);
+  const createVibe = useServerFn(createVibeProject);
+  const autoStartedRef = useRef(false);
 
   // Prefill from chat wizard & honor ?kind=... query param
   useEffect(() => {
@@ -102,15 +108,53 @@ function DocsPage() {
       if (brief) {
         setPrompt(brief);
         sessionStorage.removeItem(`iv:wizard-brief:${qKind}`);
-        toast.success("Brief loaded from chat — review and click Generate");
+        if ((qKind === "website" || qKind === "app") && !autoStartedRef.current) {
+          autoStartedRef.current = true;
+          toast.success("Starting the live builder…");
+          void startVibeBuild(qKind, brief);
+        } else {
+          toast.success("Brief loaded from chat — review and click Generate");
+        }
       }
     }
   }, []);
-  const qc = useQueryClient();
-  const saveFn = useServerFn(saveDocAsset);
+
+  async function startVibeBuild(targetKind: "website" | "app", text: string) {
+    const brief = text.trim();
+    if (!brief || genBusy) return;
+    setGenBusy(true);
+    setContent(null);
+    try {
+      const project = await createVibe({
+        data: {
+          name: titleFromBrief(brief, targetKind),
+          description: brief,
+          kind: targetKind === "website" ? "website" : "webapp",
+          stack: {
+            frontend: targetKind === "website" ? "Plain HTML/CSS/JS" : "React",
+            backend: "None",
+            database: "None",
+            auth: "None",
+            styling: targetKind === "website" ? "Plain CSS" : "CSS",
+          },
+        },
+      });
+      sessionStorage.setItem(`iv:vibe-run:${project.id}`, brief);
+      qc.invalidateQueries({ queryKey: ["vibeProjects"] });
+      navigate({ to: "/studio/vibe/$id", params: { id: project.id } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't start the live builder");
+    } finally {
+      setGenBusy(false);
+    }
+  }
 
   async function generate() {
     if (!prompt.trim() || genBusy) return;
+    if (kind === "website" || kind === "app") {
+      await startVibeBuild(kind, prompt);
+      return;
+    }
     setGenBusy(true);
     setContent(null);
     try {
@@ -211,7 +255,7 @@ function DocsPage() {
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-primary to-accent px-4 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50 sm:w-auto"
           >
             {genBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            {genBusy ? "Generating…" : `Generate ${kind}`}
+            {genBusy ? "Generating…" : kind === "website" || kind === "app" ? `Generate live ${kind}` : `Generate ${kind}`}
           </button>
         </div>
 
@@ -438,4 +482,14 @@ async function exportProjectZip(c: ProjectContent) {
 
 function safe(s: string) {
   return s.replace(/[^a-z0-9-_ ]/gi, "").trim().slice(0, 60) || "intelliverse-doc";
+}
+
+function titleFromBrief(brief: string, kind: "website" | "app") {
+  const quoted = brief.match(/named\s+["“]([^"”]+)["”]/i)?.[1] || brief.match(/called\s+["“]([^"”]+)["”]/i)?.[1];
+  if (quoted) return quoted.slice(0, 80);
+  return brief
+    .replace(/^generate\s+(an?\s+)?/i, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80) || `New ${kind}`;
 }
