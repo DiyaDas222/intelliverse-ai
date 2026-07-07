@@ -817,6 +817,13 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
                   ) : (
                     <ThinkingIndicator intent={detectIntent(lastUserContent)} />
                   )}
+                  {m.content && !streaming && (
+                    <ClickableOptions
+                      questions={extractQuestionOptions(m.content)}
+                      onSend={(text) => sendMessage(text)}
+                      disabled={streaming}
+                    />
+                  )}
                   {m.wizardKind && !m.wizardDone && (
                     <div className="mt-3">
                       <CreationWizard
