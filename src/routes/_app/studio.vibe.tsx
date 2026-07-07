@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useMatches, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -29,8 +29,19 @@ import {
 } from "@/lib/vibe.functions";
 
 export const Route = createFileRoute("/_app/studio/vibe")({
-  component: VibeHub,
+  component: VibeLayout,
 });
+
+function VibeLayout() {
+  const matches = useMatches();
+  const idMatch = matches.find((m) => (m.params as { id?: string })?.id);
+
+  // /studio/vibe/$id is the real builder route. Without this Outlet the parent
+  // hub stays mounted and the generated project never opens or auto-runs.
+  if ((idMatch?.params as { id?: string } | undefined)?.id) return <Outlet />;
+
+  return <VibeHub />;
+}
 
 const KINDS = [
   { id: "website", label: "Website", icon: Globe },
