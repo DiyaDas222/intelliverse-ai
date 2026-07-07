@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useMatches } from "@tanstack/react-router";
 import { useState } from "react";
 import * as Icons from "lucide-react";
 import { TOOLS, TOOL_CATEGORIES } from "@/lib/tools";
@@ -7,8 +7,15 @@ export const Route = createFileRoute("/_app/tools")({
   head: () => ({
     meta: [{ title: "AI Tools Marketplace — IntelliVerse" }],
   }),
-  component: ToolsMarketplace,
+  component: ToolsLayout,
 });
+
+function ToolsLayout() {
+  const matches = useMatches();
+  const slugMatch = matches.find((m) => (m.params as { slug?: string })?.slug);
+  if ((slugMatch?.params as { slug?: string } | undefined)?.slug) return <Outlet />;
+  return <ToolsMarketplace />;
+}
 
 function ToolsMarketplace() {
   const [cat, setCat] = useState<string>("All");
