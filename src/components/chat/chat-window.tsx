@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { authedFetch } from "@/lib/authed-fetch";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -53,8 +52,6 @@ const SUGGESTIONS = [
 ];
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-
-type ConversationTarget = string | Promise<string | null> | null;
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -151,8 +148,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
 
   const { data: documents = [] } = useQuery({
     queryKey: ["documents", user?.id],
-    enabled: !!user && (showDocPicker || attachedDocIds.length > 0),
-    staleTime: 60_000,
+    enabled: !!user,
     queryFn: async (): Promise<DocumentRow[]> => {
       const { data, error } = await supabase
         .from("documents")
@@ -165,16 +161,21 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
 
   // Core send. `historyOverride` lets edit-and-regenerate replay from a truncated history.
   const runChat = useCallback(
-    async (convTarget: ConversationTarget, history: Msg[]) => {
+    async (convId: string, history: Msg[]) => {
       const assistantId = crypto.randomUUID();
       setMessages([...history, { id: assistantId, role: "assistant", content: "" }]);
       setStreaming(true);
       const controller = new AbortController();
       abortRef.current = controller;
       try {
-        const res = await authedFetch("/api/chat", {
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess.session?.access_token;
+        const res = await fetch("/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           signal: controller.signal,
           body: JSON.stringify({
             messages: history.map((m) => ({
@@ -197,36 +198,20 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let acc = "";
-        let pending = false;
-        const flush = () => {
-          pending = false;
-          setMessages((prev) =>
-            prev.map((m) => (m.id === assistantId ? { ...m, content: acc } : m)),
-          );
-        };
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           acc += decoder.decode(value, { stream: true });
-          // Throttle re-renders to animation frames so long markdown trees
-          // don't re-layout per byte on low-end devices.
-          if (!pending) {
-            pending = true;
-            requestAnimationFrame(flush);
-          }
+          setMessages((prev) =>
+            prev.map((m) => (m.id === assistantId ? { ...m, content: acc } : m)),
+          );
         }
-        // Final flush to guarantee last bytes render.
-        flush();
         if (user) {
-          // Don't block UI on persistence.
-          void Promise.resolve(convTarget).then((id) => {
-            if (!id) return;
-            void supabase.from("messages").insert({
-              conversation_id: id,
-              user_id: user.id,
-              role: "assistant",
-              content: acc,
-            });
+          await supabase.from("messages").insert({
+            conversation_id: convId,
+            user_id: user.id,
+            role: "assistant",
+            content: acc,
           });
         }
       } catch (err) {
@@ -242,88 +227,27 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     [attachedDocIds, model, user],
   );
 
-  const inferVibeName = (text: string, kind: WizardKind) => {
-    const quoted = text.match(/["“']([^"”']{3,60})["”']/)?.[1];
-    if (quoted) return quoted.trim();
-    const cleaned = text
-      .replace(/\b(please|can you|could you|build|create|make|generate|develop|code|design|for me|a|an|the|website|web ?site|app|application|project)\b/gi, " ")
-      .replace(/[^a-z0-9 ]+/gi, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    const title = cleaned
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 5)
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-      .join(" ");
-    return title || `${kind.charAt(0).toUpperCase() + kind.slice(1)} Builder`;
-  };
-
-  const stackFromPrompt = (text: string, kind: WizardKind) => {
-    const lower = text.toLowerCase();
-    const wantsBackend = /\b(api|backend|database|login|auth|dashboard|admin|payment|saas|crud|account)\b/.test(lower);
-    return {
-      frontend: /\b(html|css|javascript|vanilla)\b/.test(lower) ? "Plain HTML/CSS/JS" : "React",
-      backend: wantsBackend ? "Node.js (Express)" : "None",
-      database: /\b(database|crud|users|accounts|dashboard|admin|saas)\b/.test(lower) ? "PostgreSQL" : "None",
-      auth: /\b(login|signup|sign up|auth|account|user)\b/.test(lower) ? "Email/Password" : "None",
-      styling: /\b(bootstrap)\b/.test(lower) ? "Bootstrap" : "Tailwind CSS",
-      extras: kind === "app" ? ["direct-from-chat"] : ["direct-from-chat", "auto-deploy"],
-    };
-  };
-
-  const startVibeBuild = async ({
-    name,
-    description,
-    kind,
-    stack,
-  }: {
-    name: string;
-    description: string;
-    kind: string;
-    stack: Record<string, unknown>;
-  }) => {
-    const res = await authedFetch("/api/vibe-start", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, description, kind, stack }),
-    });
-    const data = await res.json().catch(() => null);
-    if (!res.ok || !data?.project?.id) {
-      throw new Error(data?.error || `Builder failed (${res.status})`);
-    }
-    return data as { project: { id: string; slug?: string }; liveUrl?: string };
-  };
-
-
   const sendMessage = async (text: string, images: string[] = []) => {
     const body = text.trim();
     if ((!body && images.length === 0) || streaming || !user) return;
     setInput("");
     setPendingImages([]);
 
-    const wizardKind = detectWizardKind(body);
-    const directBuild = wizardKind === "website" || wizardKind === "app" || wizardKind === "project";
-
     let convId = conversationId;
-    let convPromise: Promise<string | null> | null = null;
-    let shouldNavigateToConversation = !directBuild;
     if (!convId) {
       const title = (body || "Image chat").slice(0, 60);
-      // Kick off conversation creation in parallel; don't block AI request.
-      convPromise = Promise.resolve(
-        supabase
-          .from("conversations")
-          .insert({ user_id: user.id, title })
-          .select("id")
-          .single(),
-      ).then(({ data, error }) => {
-        if (error || !data) return null;
-        qc.invalidateQueries({ queryKey: ["conversations"] });
-        if (shouldNavigateToConversation) navigate({ to: "/chat/$id", params: { id: data.id } });
-        return data.id as string;
-      });
-
+      const { data, error } = await supabase
+        .from("conversations")
+        .insert({ user_id: user.id, title })
+        .select("id")
+        .single();
+      if (error || !data) {
+        toast.error("Couldn't start a chat");
+        return;
+      }
+      convId = data.id;
+      qc.invalidateQueries({ queryKey: ["conversations"] });
+      navigate({ to: "/chat/$id", params: { id: convId } });
     }
 
     const userMsg: Msg = {
@@ -335,98 +259,46 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     const nextHistory = [...messages, userMsg];
     setMessages(nextHistory);
 
-
-    // Resolve convId (await pending creation if first message). Persist DB
-    // writes in background — none of these block the AI fetch below.
-    const resolveConv = async (): Promise<string | null> => {
-      if (convId) return convId;
-      const id = await convPromise;
-      return id ?? null;
-    };
-    void resolveConv().then((id) => {
-      if (!id) return;
-      void supabase.from("messages").insert({
-        conversation_id: id,
+    // Fire-and-forget persistence so we don't block the AI request on DB round-trips.
+    void supabase
+      .from("messages")
+      .insert({
+        conversation_id: convId,
         user_id: user.id,
         role: "user",
         content: body,
         ...(images.length ? { images } : {}),
       } as never);
-      void supabase
-        .from("conversations")
-        .update({ updated_at: new Date().toISOString() })
-        .eq("id", id);
-      if (messages.length === 0 && body) {
-        const newTitle = body.slice(0, 60);
-        void supabase.from("conversations").update({ title: newTitle }).eq("id", id);
-        qc.invalidateQueries({ queryKey: ["conversations"] });
-      }
-    });
+    void supabase
+      .from("conversations")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", convId);
 
-    if (directBuild) {
-      shouldNavigateToConversation = false;
-      const assistantId = crypto.randomUUID();
-      const intro = `Got it — I’m building your ${wizardKind} now ✨\n\nI’m creating the project, generating the files, and preparing a live preview link.`;
-      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: intro }]);
-      void resolveConv().then((id) => {
-        if (!id) return;
-        void supabase.from("messages").insert({
-          conversation_id: id,
-          user_id: user.id,
-          role: "assistant",
-          content: intro,
-        });
-      });
-      try {
-        const name = inferVibeName(body, wizardKind);
-        const { project, liveUrl } = await startVibeBuild({
-          name,
-          description: body,
-          kind: wizardKind === "website" ? "website" : "webapp",
-          stack: stackFromPrompt(body, wizardKind),
-        });
-        const liveLine = liveUrl || (project.slug ? `/live/${project.slug}` : "");
-        const linkText = `**Built and deployed ✅**\n\nYour files are ready and the live preview is opening side-by-side now.${liveLine ? `\n\n[Open live site](${liveLine})` : ""}\n\n[Open builder](/studio/vibe/${project.id})`;
-        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: linkText } : m)));
-        void resolveConv().then((id) => {
-          if (!id) return;
-          void supabase.from("messages").insert({
-            conversation_id: id,
-            user_id: user.id,
-            role: "assistant",
-            content: linkText,
-          });
-        });
-        navigate({ to: "/studio/vibe/$id", params: { id: project.id } });
-      } catch (e: any) {
-        const msg = e?.message ?? "Couldn't start the builder";
-        toast.error(msg);
-        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: `⚠️ ${msg}` } : m)));
-      }
-      return;
-    }
 
-    // Creation wizard intercept for media/docs where a few structured options help.
+    // Creation wizard intercept
+    const wizardKind = detectWizardKind(body);
     if (wizardKind) {
       const assistantId = crypto.randomUUID();
       const intro = `Let's build your ${wizardKind} together. I've prepared a quick wizard — pick options below.`;
       setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: intro, wizardKind }]);
-      void resolveConv().then((id) => {
-        if (!id) return;
-        void supabase.from("messages").insert({
-          conversation_id: id,
-          user_id: user.id,
-          role: "assistant",
-          content: intro,
-        });
+      await supabase.from("messages").insert({
+        conversation_id: convId,
+        user_id: user.id,
+        role: "assistant",
+        content: intro,
       });
       return;
     }
 
-    // Start AI immediately; runChat resolves the conversation in the background for persistence.
-    await runChat(convId ?? convPromise, nextHistory);
-  };
+    if (messages.length === 0 && body) {
+      const newTitle = body.slice(0, 60);
+      void supabase.from("conversations").update({ title: newTitle }).eq("id", convId);
+      qc.invalidateQueries({ queryKey: ["conversations"] });
+    }
 
+
+    await runChat(convId, nextHistory);
+  };
 
   const stop = () => abortRef.current?.abort();
 
@@ -502,52 +374,6 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
 
   const handleWizardComplete = async (msgId: string, result: WizardResult) => {
     sessionStorage.setItem(`iv:wizard-brief:${result.kind}`, result.brief);
-
-    // For buildable software → spin up a real Vibe Coding project and auto-generate.
-    const buildable = result.kind === "website" || result.kind === "app" || result.kind === "project";
-    if (buildable) {
-      try {
-        const stackAns = (result.answers as Record<string, string | string[]>) || {};
-        const pick = (k: string): string | undefined => {
-          const v = stackAns[k];
-          return Array.isArray(v) ? v[0] : v;
-        };
-        const name =
-          (pick("name") as string | undefined) ||
-          (pick("title") as string | undefined) ||
-          `${result.kind.charAt(0).toUpperCase() + result.kind.slice(1)} ${new Date().toLocaleDateString()}`;
-
-        const { project, liveUrl } = await startVibeBuild({
-          name,
-          description: result.brief,
-          kind: result.kind === "app" ? "webapp" : result.kind === "project" ? "webapp" : "website",
-          stack: {
-            frontend: pick("frontend") || "React",
-            backend: pick("backend") || "None",
-            database: pick("database") || "None",
-            auth: pick("auth") || "None",
-            styling: pick("styling") || "Tailwind CSS",
-          },
-        });
-
-        const followup = `**Built and deployed ✅**\n\n${result.summary}${liveUrl ? `\n\n[Open live site](${liveUrl})` : ""}\n\nOpening the builder with preview beside the code.`;
-        setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: followup, wizardDone: true } : m)));
-        if (conversationId && user) {
-          await supabase.from("messages").insert({
-            conversation_id: conversationId,
-            user_id: user.id,
-            role: "assistant",
-            content: followup,
-          });
-        }
-        navigate({ to: "/studio/vibe/$id", params: { id: project.id } });
-        return;
-      } catch (e: any) {
-        toast.error(e?.message ?? "Couldn't start the builder");
-        // fall through to legacy path
-      }
-    }
-
     const followup = `**${result.kind.charAt(0).toUpperCase() + result.kind.slice(1)} brief ready ✓**\n\n${result.summary}\n\n[Open the builder with your brief pre-filled →](${result.studioPath})`;
     setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: followup, wizardDone: true } : m)));
     if (conversationId && user) {
@@ -653,7 +479,7 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       const form = new FormData();
       form.append("file", blob, "recording.webm");
       try {
-        const res = await authedFetch("/api/transcribe", { method: "POST", body: form });
+        const res = await fetch("/api/transcribe", { method: "POST", body: form });
         const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
         if (!res.ok) {
           toast.error(data.error || "Transcription failed");

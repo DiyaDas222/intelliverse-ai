@@ -1,17 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { GATEWAY_BASE_URL, getGatewayApiKey, gatewayHeaders } from "@/lib/gateway-config.server";
-import { requireUser } from "@/lib/require-auth.server";
-import { consumeCreditsOrReject, COST } from "@/lib/credits.server";
 
 export const Route = createFileRoute("/api/generate-image")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const authed = await requireUser(request);
-        if (authed instanceof Response) return authed;
-
-        const blocked = await consumeCreditsOrReject(authed.userId, COST.image);
-        if (blocked) return blocked;
         const { prompt, size } = (await request.json().catch(() => ({}))) as {
           prompt?: string;
           size?: string;

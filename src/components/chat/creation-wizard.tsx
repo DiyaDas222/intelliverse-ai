@@ -466,21 +466,17 @@ Extras: ${(a.extras as string[] | undefined)?.join(", ") || "none"}.`,
 
 export function detectWizardKind(text: string): WizardKind | null {
   const v = text.toLowerCase();
-  // Match a wide range of intent verbs/phrases, including casual ones.
-  const asks =
-    /\b(generate|create|make|build|design|produce|compose|develop|code|scaffold|set ?up|launch|start|spin ?up|whip ?up|need|want|wanna|would like|i'?d like|help me (?:with|build|make|create)|give me)\b/.test(
-      v,
-    ) || /\b(can|could|please)\b.*\b(build|make|create|design|develop)\b/.test(v);
-  // Detect target noun even without an explicit verb (e.g. "a portfolio for me").
-  if (/\b(website|web ?site|landing page|portfolio|blog|saas|dashboard)\b/.test(v)) return "website";
+  const asks = /\b(generate|create|make|build|design|produce|compose)\b/.test(v);
+  if (!asks) return null;
+  if (/\b(website|landing page|web ?site)\b/.test(v)) return "website";
   if (/\b(mobile app|web app|application|\bapp\b)\b/.test(v)) return "app";
-  if (/\b(presentation|slides|pptx|pitch deck|powerpoint|slideshow)\b/.test(v)) return "presentation";
-  if (/\b(assignment|essay|report|homework|paper)\b/.test(v)) return "assignment";
-  if (/\b(image|photo|picture|poster|logo|illustration|artwork|wallpaper)\b/.test(v)) return "image";
-  if (/\b(video|mp4|clip|reel|animation|short film)\b/.test(v)) return "video";
-  if (/\b(music|song|track|beat|instrumental|soundtrack|jingle)\b/.test(v)) return "music";
-  if (/\b(voice ?over|narration|tts|voice clip|audio clip|speech)\b/.test(v)) return "audio";
-  if (asks && /\b(project|codebase|starter|tool|api|backend)\b/.test(v)) return "project";
+  if (/\b(presentation|slides|pptx|pitch deck|powerpoint)\b/.test(v)) return "presentation";
+  if (/\b(assignment|essay|report|homework)\b/.test(v)) return "assignment";
+  if (/\b(project|scaffold|codebase|starter)\b/.test(v)) return "project";
+  if (/\b(image|photo|picture|poster|logo|illustration|artwork)\b/.test(v)) return "image";
+  if (/\b(video|mp4|clip|reel|animation)\b/.test(v)) return "video";
+  if (/\b(music|song|track|beat|instrumental|soundtrack)\b/.test(v)) return "music";
+  if (/\b(voice|speech|narration|voiceover|tts|audio)\b/.test(v)) return "audio";
   return null;
 }
 

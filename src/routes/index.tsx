@@ -285,8 +285,8 @@ function Pricing() {
                 ))}
               </ul>
               <Link
-                to={t.name === "Free" ? "/auth" : t.name === "Team" ? "/contact" : "/upgrade"}
-                {...(t.name === "Free" ? { search: { mode: "signup" } } : {})}
+                to="/auth"
+                search={{ mode: "signup" }}
                 className={`mt-6 inline-flex w-full items-center justify-center rounded-lg px-4 py-2 text-sm font-medium ${
                   t.featured
                     ? "bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90"

@@ -16,8 +16,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as STokenRouteImport } from './routes/s.$token'
-import { Route as LiveSlugRouteImport } from './routes/live.$slug'
-import { Route as ApiVibeStartRouteImport } from './routes/api/vibe-start'
 import { Route as ApiVibeGenerateRouteImport } from './routes/api/vibe-generate'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
@@ -31,7 +29,6 @@ import { Route as ApiGenerateAudioRouteImport } from './routes/api/generate-audi
 import { Route as ApiDocActionRouteImport } from './routes/api/doc-action'
 import { Route as ApiCodeAssistRouteImport } from './routes/api/code-assist'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as AppUpgradeRouteImport } from './routes/_app/upgrade'
 import { Route as AppToolsRouteImport } from './routes/_app/tools'
 import { Route as AppStudioRouteImport } from './routes/_app/studio'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
@@ -43,7 +40,6 @@ import { Route as AppChatRouteImport } from './routes/_app/chat'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppStudioIndexRouteImport } from './routes/_app/studio.index'
 import { Route as AppChatIndexRouteImport } from './routes/_app/chat.index'
-import { Route as AppUpgradeReturnRouteImport } from './routes/_app/upgrade.return'
 import { Route as AppToolsSlugRouteImport } from './routes/_app/tools.$slug'
 import { Route as AppStudioVideoRouteImport } from './routes/_app/studio.video'
 import { Route as AppStudioVibeRouteImport } from './routes/_app/studio.vibe'
@@ -55,9 +51,7 @@ import { Route as AppStudioAudioRouteImport } from './routes/_app/studio.audio'
 import { Route as AppDocumentsIdRouteImport } from './routes/_app/documents.$id'
 import { Route as AppChatVoiceRouteImport } from './routes/_app/chat.voice'
 import { Route as AppChatIdRouteImport } from './routes/_app/chat.$id'
-import { Route as AppStudioVibeIndexRouteImport } from './routes/_app/studio.vibe.index'
 import { Route as ApiPublicShareTokenRouteImport } from './routes/api/public/share.$token'
-import { Route as ApiPublicRazorpayWebhookRouteImport } from './routes/api/public/razorpay/webhook'
 import { Route as AppStudioVibeIdRouteImport } from './routes/_app/studio.vibe.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -92,16 +86,6 @@ const IndexRoute = IndexRouteImport.update({
 const STokenRoute = STokenRouteImport.update({
   id: '/s/$token',
   path: '/s/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LiveSlugRoute = LiveSlugRouteImport.update({
-  id: '/live/$slug',
-  path: '/live/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiVibeStartRoute = ApiVibeStartRouteImport.update({
-  id: '/api/vibe-start',
-  path: '/api/vibe-start',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVibeGenerateRoute = ApiVibeGenerateRouteImport.update({
@@ -169,11 +153,6 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppUpgradeRoute = AppUpgradeRouteImport.update({
-  id: '/upgrade',
-  path: '/upgrade',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppToolsRoute = AppToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -228,11 +207,6 @@ const AppChatIndexRoute = AppChatIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppChatRoute,
-} as any)
-const AppUpgradeReturnRoute = AppUpgradeReturnRouteImport.update({
-  id: '/return',
-  path: '/return',
-  getParentRoute: () => AppUpgradeRoute,
 } as any)
 const AppToolsSlugRoute = AppToolsSlugRouteImport.update({
   id: '/$slug',
@@ -289,22 +263,11 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppChatRoute,
 } as any)
-const AppStudioVibeIndexRoute = AppStudioVibeIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppStudioVibeRoute,
-} as any)
 const ApiPublicShareTokenRoute = ApiPublicShareTokenRouteImport.update({
   id: '/api/public/share/$token',
   path: '/api/public/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicRazorpayWebhookRoute =
-  ApiPublicRazorpayWebhookRouteImport.update({
-    id: '/api/public/razorpay/webhook',
-    path: '/api/public/razorpay/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AppStudioVibeIdRoute = AppStudioVibeIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -326,7 +289,6 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/studio': typeof AppStudioRouteWithChildren
   '/tools': typeof AppToolsRouteWithChildren
-  '/upgrade': typeof AppUpgradeRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -340,8 +302,6 @@ export interface FileRoutesByFullPath {
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/vibe-generate': typeof ApiVibeGenerateRoute
-  '/api/vibe-start': typeof ApiVibeStartRoute
-  '/live/$slug': typeof LiveSlugRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
   '/chat/voice': typeof AppChatVoiceRoute
@@ -354,13 +314,10 @@ export interface FileRoutesByFullPath {
   '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
-  '/upgrade/return': typeof AppUpgradeReturnRoute
   '/chat/': typeof AppChatIndexRoute
   '/studio/': typeof AppStudioIndexRoute
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
-  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
-  '/studio/vibe/': typeof AppStudioVibeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -375,7 +332,6 @@ export interface FileRoutesByTo {
   '/providers': typeof AppProvidersRoute
   '/settings': typeof AppSettingsRoute
   '/tools': typeof AppToolsRouteWithChildren
-  '/upgrade': typeof AppUpgradeRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -389,8 +345,6 @@ export interface FileRoutesByTo {
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/vibe-generate': typeof ApiVibeGenerateRoute
-  '/api/vibe-start': typeof ApiVibeStartRoute
-  '/live/$slug': typeof LiveSlugRoute
   '/s/$token': typeof STokenRoute
   '/chat/$id': typeof AppChatIdRoute
   '/chat/voice': typeof AppChatVoiceRoute
@@ -400,15 +354,13 @@ export interface FileRoutesByTo {
   '/studio/docs': typeof AppStudioDocsRoute
   '/studio/image': typeof AppStudioImageRoute
   '/studio/music': typeof AppStudioMusicRoute
+  '/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/studio/video': typeof AppStudioVideoRoute
   '/tools/$slug': typeof AppToolsSlugRoute
-  '/upgrade/return': typeof AppUpgradeReturnRoute
   '/chat': typeof AppChatIndexRoute
   '/studio': typeof AppStudioIndexRoute
   '/studio/vibe/$id': typeof AppStudioVibeIdRoute
-  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
-  '/studio/vibe': typeof AppStudioVibeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -427,7 +379,6 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/studio': typeof AppStudioRouteWithChildren
   '/_app/tools': typeof AppToolsRouteWithChildren
-  '/_app/upgrade': typeof AppUpgradeRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
   '/api/doc-action': typeof ApiDocActionRoute
@@ -441,8 +392,6 @@ export interface FileRoutesById {
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/vibe-generate': typeof ApiVibeGenerateRoute
-  '/api/vibe-start': typeof ApiVibeStartRoute
-  '/live/$slug': typeof LiveSlugRoute
   '/s/$token': typeof STokenRoute
   '/_app/chat/$id': typeof AppChatIdRoute
   '/_app/chat/voice': typeof AppChatVoiceRoute
@@ -455,13 +404,10 @@ export interface FileRoutesById {
   '/_app/studio/vibe': typeof AppStudioVibeRouteWithChildren
   '/_app/studio/video': typeof AppStudioVideoRoute
   '/_app/tools/$slug': typeof AppToolsSlugRoute
-  '/_app/upgrade/return': typeof AppUpgradeReturnRoute
   '/_app/chat/': typeof AppChatIndexRoute
   '/_app/studio/': typeof AppStudioIndexRoute
   '/_app/studio/vibe/$id': typeof AppStudioVibeIdRoute
-  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/share/$token': typeof ApiPublicShareTokenRoute
-  '/_app/studio/vibe/': typeof AppStudioVibeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -480,7 +426,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/studio'
     | '/tools'
-    | '/upgrade'
     | '/api/chat'
     | '/api/code-assist'
     | '/api/doc-action'
@@ -494,8 +439,6 @@ export interface FileRouteTypes {
     | '/api/transcribe'
     | '/api/tts'
     | '/api/vibe-generate'
-    | '/api/vibe-start'
-    | '/live/$slug'
     | '/s/$token'
     | '/chat/$id'
     | '/chat/voice'
@@ -508,13 +451,10 @@ export interface FileRouteTypes {
     | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
-    | '/upgrade/return'
     | '/chat/'
     | '/studio/'
     | '/studio/vibe/$id'
-    | '/api/public/razorpay/webhook'
     | '/api/public/share/$token'
-    | '/studio/vibe/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -529,7 +469,6 @@ export interface FileRouteTypes {
     | '/providers'
     | '/settings'
     | '/tools'
-    | '/upgrade'
     | '/api/chat'
     | '/api/code-assist'
     | '/api/doc-action'
@@ -543,8 +482,6 @@ export interface FileRouteTypes {
     | '/api/transcribe'
     | '/api/tts'
     | '/api/vibe-generate'
-    | '/api/vibe-start'
-    | '/live/$slug'
     | '/s/$token'
     | '/chat/$id'
     | '/chat/voice'
@@ -554,15 +491,13 @@ export interface FileRouteTypes {
     | '/studio/docs'
     | '/studio/image'
     | '/studio/music'
+    | '/studio/vibe'
     | '/studio/video'
     | '/tools/$slug'
-    | '/upgrade/return'
     | '/chat'
     | '/studio'
     | '/studio/vibe/$id'
-    | '/api/public/razorpay/webhook'
     | '/api/public/share/$token'
-    | '/studio/vibe'
   id:
     | '__root__'
     | '/'
@@ -580,7 +515,6 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/studio'
     | '/_app/tools'
-    | '/_app/upgrade'
     | '/api/chat'
     | '/api/code-assist'
     | '/api/doc-action'
@@ -594,8 +528,6 @@ export interface FileRouteTypes {
     | '/api/transcribe'
     | '/api/tts'
     | '/api/vibe-generate'
-    | '/api/vibe-start'
-    | '/live/$slug'
     | '/s/$token'
     | '/_app/chat/$id'
     | '/_app/chat/voice'
@@ -608,13 +540,10 @@ export interface FileRouteTypes {
     | '/_app/studio/vibe'
     | '/_app/studio/video'
     | '/_app/tools/$slug'
-    | '/_app/upgrade/return'
     | '/_app/chat/'
     | '/_app/studio/'
     | '/_app/studio/vibe/$id'
-    | '/api/public/razorpay/webhook'
     | '/api/public/share/$token'
-    | '/_app/studio/vibe/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -637,10 +566,7 @@ export interface RootRouteChildren {
   ApiTranscribeRoute: typeof ApiTranscribeRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiVibeGenerateRoute: typeof ApiVibeGenerateRoute
-  ApiVibeStartRoute: typeof ApiVibeStartRoute
-  LiveSlugRoute: typeof LiveSlugRoute
   STokenRoute: typeof STokenRoute
-  ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
   ApiPublicShareTokenRoute: typeof ApiPublicShareTokenRoute
 }
 
@@ -693,20 +619,6 @@ declare module '@tanstack/react-router' {
       path: '/s/$token'
       fullPath: '/s/$token'
       preLoaderRoute: typeof STokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/live/$slug': {
-      id: '/live/$slug'
-      path: '/live/$slug'
-      fullPath: '/live/$slug'
-      preLoaderRoute: typeof LiveSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/vibe-start': {
-      id: '/api/vibe-start'
-      path: '/api/vibe-start'
-      fullPath: '/api/vibe-start'
-      preLoaderRoute: typeof ApiVibeStartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/vibe-generate': {
@@ -800,13 +712,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/upgrade': {
-      id: '/_app/upgrade'
-      path: '/upgrade'
-      fullPath: '/upgrade'
-      preLoaderRoute: typeof AppUpgradeRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/tools': {
       id: '/_app/tools'
       path: '/tools'
@@ -883,13 +788,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/chat/'
       preLoaderRoute: typeof AppChatIndexRouteImport
       parentRoute: typeof AppChatRoute
-    }
-    '/_app/upgrade/return': {
-      id: '/_app/upgrade/return'
-      path: '/return'
-      fullPath: '/upgrade/return'
-      preLoaderRoute: typeof AppUpgradeReturnRouteImport
-      parentRoute: typeof AppUpgradeRoute
     }
     '/_app/tools/$slug': {
       id: '/_app/tools/$slug'
@@ -968,25 +866,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppChatRoute
     }
-    '/_app/studio/vibe/': {
-      id: '/_app/studio/vibe/'
-      path: '/'
-      fullPath: '/studio/vibe/'
-      preLoaderRoute: typeof AppStudioVibeIndexRouteImport
-      parentRoute: typeof AppStudioVibeRoute
-    }
     '/api/public/share/$token': {
       id: '/api/public/share/$token'
       path: '/api/public/share/$token'
       fullPath: '/api/public/share/$token'
       preLoaderRoute: typeof ApiPublicShareTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/razorpay/webhook': {
-      id: '/api/public/razorpay/webhook'
-      path: '/api/public/razorpay/webhook'
-      fullPath: '/api/public/razorpay/webhook'
-      preLoaderRoute: typeof ApiPublicRazorpayWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/studio/vibe/$id': {
@@ -1028,12 +912,10 @@ const AppDocumentsRouteWithChildren = AppDocumentsRoute._addFileChildren(
 
 interface AppStudioVibeRouteChildren {
   AppStudioVibeIdRoute: typeof AppStudioVibeIdRoute
-  AppStudioVibeIndexRoute: typeof AppStudioVibeIndexRoute
 }
 
 const AppStudioVibeRouteChildren: AppStudioVibeRouteChildren = {
   AppStudioVibeIdRoute: AppStudioVibeIdRoute,
-  AppStudioVibeIndexRoute: AppStudioVibeIndexRoute,
 }
 
 const AppStudioVibeRouteWithChildren = AppStudioVibeRoute._addFileChildren(
@@ -1078,18 +960,6 @@ const AppToolsRouteWithChildren = AppToolsRoute._addFileChildren(
   AppToolsRouteChildren,
 )
 
-interface AppUpgradeRouteChildren {
-  AppUpgradeReturnRoute: typeof AppUpgradeReturnRoute
-}
-
-const AppUpgradeRouteChildren: AppUpgradeRouteChildren = {
-  AppUpgradeReturnRoute: AppUpgradeReturnRoute,
-}
-
-const AppUpgradeRouteWithChildren = AppUpgradeRoute._addFileChildren(
-  AppUpgradeRouteChildren,
-)
-
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppChatRoute: typeof AppChatRouteWithChildren
@@ -1100,7 +970,6 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppStudioRoute: typeof AppStudioRouteWithChildren
   AppToolsRoute: typeof AppToolsRouteWithChildren
-  AppUpgradeRoute: typeof AppUpgradeRouteWithChildren
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -1113,7 +982,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppStudioRoute: AppStudioRouteWithChildren,
   AppToolsRoute: AppToolsRouteWithChildren,
-  AppUpgradeRoute: AppUpgradeRouteWithChildren,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -1138,10 +1006,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTranscribeRoute: ApiTranscribeRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiVibeGenerateRoute: ApiVibeGenerateRoute,
-  ApiVibeStartRoute: ApiVibeStartRoute,
-  LiveSlugRoute: LiveSlugRoute,
   STokenRoute: STokenRoute,
-  ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
   ApiPublicShareTokenRoute: ApiPublicShareTokenRoute,
 }
 export const routeTree = rootRouteImport

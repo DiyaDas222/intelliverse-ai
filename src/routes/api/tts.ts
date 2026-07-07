@@ -1,7 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getGatewayApiKey } from "@/lib/gateway-config.server";
-import { requireUser } from "@/lib/require-auth.server";
-import { consumeCreditsOrReject, COST } from "@/lib/credits.server";
 
 type Body = { text?: string; voice?: string };
 
@@ -9,11 +7,6 @@ export const Route = createFileRoute("/api/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const authed = await requireUser(request);
-        if (authed instanceof Response) return authed;
-
-        const blocked = await consumeCreditsOrReject(authed.userId, COST.tts);
-        if (blocked) return blocked;
         const apiKey = getGatewayApiKey();
         if (!apiKey) return new Response("AI gateway is not configured", { status: 500 });
 

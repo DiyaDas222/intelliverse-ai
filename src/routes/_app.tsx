@@ -56,15 +56,13 @@ function AppLayout() {
   const { data: conversations = [] } = useQuery({
     queryKey: ["conversations", user?.id],
     enabled: !!user,
-    staleTime: 30_000,
-    refetchOnWindowFocus: false,
     queryFn: async (): Promise<Conversation[]> => {
       const { data, error } = await supabase
         .from("conversations")
         .select("id,title,pinned,updated_at")
         .order("pinned", { ascending: false })
         .order("updated_at", { ascending: false })
-        .limit(50);
+        .limit(100);
       if (error) throw error;
       return data ?? [];
     },
@@ -73,16 +71,11 @@ function AppLayout() {
   const { data: isAdmin } = useQuery({
     queryKey: ["isAdminSidebar", user?.id],
     enabled: !!user,
-    staleTime: 5 * 60_000,
-    refetchOnWindowFocus: false,
-    retry: false,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("id")
-        .eq("user_id", user!.id)
-        .eq("role", "admin")
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: user!.id,
+        _role: "admin",
+      });
       if (error) return false;
       return !!data;
     },

@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { authedFetch } from "@/lib/authed-fetch";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -15,10 +14,8 @@ import {
   Download,
   Save,
   ChevronLeft,
-  Github,
 } from "lucide-react";
 import { saveDocAsset } from "@/lib/assets.functions";
-import { GithubPublishDialog } from "@/components/github-publish-dialog";
 
 export const Route = createFileRoute("/_app/studio/docs")({
   head: () => ({ meta: [{ title: "Document Generator — IntelliVerse" }] }),
@@ -94,7 +91,6 @@ function DocsPage() {
   const [prompt, setPrompt] = useState("");
   const [content, setContent] = useState<AnyContent | null>(null);
   const [genBusy, setGenBusy] = useState(false);
-  const [publishOpen, setPublishOpen] = useState(false);
 
   // Prefill from chat wizard & honor ?kind=... query param
   useEffect(() => {
@@ -118,7 +114,7 @@ function DocsPage() {
     setGenBusy(true);
     setContent(null);
     try {
-      const r = await authedFetch("/api/generate-doc", {
+      const r = await fetch("/api/generate-doc", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind, prompt }),
@@ -243,14 +239,6 @@ function DocsPage() {
                 >
                   <Download className="h-3 w-3" /> Download
                 </button>
-                {(kind === "website" || kind === "app") && (content as any)?.files?.length > 0 && (
-                  <button
-                    onClick={() => setPublishOpen(true)}
-                    className="flex items-center gap-1.5 rounded-md border border-border bg-gradient-to-r from-indigo-500/20 to-fuchsia-500/20 px-3 py-1.5 text-xs font-medium hover:opacity-90"
-                  >
-                    <Github className="h-3 w-3" /> Publish to GitHub
-                  </button>
-                )}
               </div>
             </div>
 
@@ -258,17 +246,6 @@ function DocsPage() {
           </div>
         )}
       </div>
-
-      {(kind === "website" || kind === "app") && content && (content as any).files && (
-        <GithubPublishDialog
-          open={publishOpen}
-          onOpenChange={setPublishOpen}
-          files={(content as any).files.map((f: any) => ({ path: f.path, content: f.content }))}
-          defaultRepoName={(content as any).title?.replace(/[^A-Za-z0-9._-]+/g, "-").toLowerCase().slice(0, 80) || `intelliverse-${kind}`}
-          defaultDescription={(content as any).description || `${kind} generated with IntelliVerse AI`}
-          sourceKind={`docs-${kind}`}
-        />
-      )}
     </div>
   );
 }

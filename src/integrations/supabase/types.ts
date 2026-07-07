@@ -38,33 +38,6 @@ export type Database = {
         }
         Relationships: []
       }
-      admin_notifications: {
-        Row: {
-          created_at: string
-          id: string
-          kind: string
-          payload: Json
-          read_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          kind: string
-          payload?: Json
-          read_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          kind?: string
-          payload?: Json
-          read_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       asset_shares: {
         Row: {
           allow_download: boolean
@@ -255,39 +228,6 @@ export type Database = {
         }
         Relationships: []
       }
-      github_connections: {
-        Row: {
-          access_token: string
-          created_at: string
-          github_user_id: number | null
-          github_username: string
-          scopes: string[] | null
-          token_type: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          access_token: string
-          created_at?: string
-          github_user_id?: number | null
-          github_username: string
-          scopes?: string[] | null
-          token_type?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          access_token?: string
-          created_at?: string
-          github_user_id?: number | null
-          github_username?: string
-          scopes?: string[] | null
-          token_type?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       messages: {
         Row: {
           content: string
@@ -332,35 +272,26 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          bonus_credits: number
           created_at: string
-          credits_period_start: string
           display_name: string | null
           email: string | null
           id: string
-          monthly_credits_used: number
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
-          bonus_credits?: number
           created_at?: string
-          credits_period_start?: string
           display_name?: string | null
           email?: string | null
           id: string
-          monthly_credits_used?: number
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
-          bonus_credits?: number
           created_at?: string
-          credits_period_start?: string
           display_name?: string | null
           email?: string | null
           id?: string
-          monthly_credits_used?: number
           updated_at?: string
         }
         Relationships: []
@@ -398,108 +329,6 @@ export type Database = {
         }
         Relationships: []
       }
-      publish_history: {
-        Row: {
-          branch: string
-          commit_sha: string | null
-          created_at: string
-          error: string | null
-          file_count: number
-          id: string
-          is_private: boolean
-          pro_at_publish: boolean
-          repo_name: string
-          repo_owner: string
-          repo_url: string
-          source_id: string | null
-          source_kind: string
-          status: string
-          user_id: string
-        }
-        Insert: {
-          branch?: string
-          commit_sha?: string | null
-          created_at?: string
-          error?: string | null
-          file_count?: number
-          id?: string
-          is_private?: boolean
-          pro_at_publish?: boolean
-          repo_name: string
-          repo_owner: string
-          repo_url: string
-          source_id?: string | null
-          source_kind: string
-          status?: string
-          user_id: string
-        }
-        Update: {
-          branch?: string
-          commit_sha?: string | null
-          created_at?: string
-          error?: string | null
-          file_count?: number
-          id?: string
-          is_private?: boolean
-          pro_at_publish?: boolean
-          repo_name?: string
-          repo_owner?: string
-          repo_url?: string
-          source_id?: string | null
-          source_kind?: string
-          status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      subscriptions: {
-        Row: {
-          cancel_at_period_end: boolean | null
-          created_at: string | null
-          current_period_end: string | null
-          current_period_start: string | null
-          environment: string
-          id: string
-          price_id: string
-          product_id: string
-          status: string
-          stripe_customer_id: string
-          stripe_subscription_id: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          cancel_at_period_end?: boolean | null
-          created_at?: string | null
-          current_period_end?: string | null
-          current_period_start?: string | null
-          environment?: string
-          id?: string
-          price_id: string
-          product_id: string
-          status?: string
-          stripe_customer_id: string
-          stripe_subscription_id: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          cancel_at_period_end?: boolean | null
-          created_at?: string | null
-          current_period_end?: string | null
-          current_period_start?: string | null
-          environment?: string
-          id?: string
-          price_id?: string
-          product_id?: string
-          status?: string
-          stripe_customer_id?: string
-          stripe_subscription_id?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string
@@ -524,9 +353,6 @@ export type Database = {
       vibe_projects: {
         Row: {
           created_at: string
-          deploy_logs: Json
-          deploy_status: string
-          deployed_at: string | null
           description: string | null
           entry_file: string | null
           files: Json
@@ -534,17 +360,12 @@ export type Database = {
           kind: string
           messages: Json
           name: string
-          slug: string | null
           stack: Json
           updated_at: string
           user_id: string
-          version: number
         }
         Insert: {
           created_at?: string
-          deploy_logs?: Json
-          deploy_status?: string
-          deployed_at?: string | null
           description?: string | null
           entry_file?: string | null
           files?: Json
@@ -552,17 +373,12 @@ export type Database = {
           kind?: string
           messages?: Json
           name: string
-          slug?: string | null
           stack?: Json
           updated_at?: string
           user_id: string
-          version?: number
         }
         Update: {
           created_at?: string
-          deploy_logs?: Json
-          deploy_status?: string
-          deployed_at?: string | null
           description?: string | null
           entry_file?: string | null
           files?: Json
@@ -570,11 +386,9 @@ export type Database = {
           kind?: string
           messages?: Json
           name?: string
-          slug?: string | null
           stack?: Json
           updated_at?: string
           user_id?: string
-          version?: number
         }
         Relationships: []
       }
@@ -583,13 +397,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      consume_credits: {
-        Args: { _amount: number; _user_id: string }
-        Returns: Json
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
-      app_role: "admin" | "user" | "pro" | "team"
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -717,7 +534,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user", "pro", "team"],
+      app_role: ["admin", "user"],
     },
   },
 } as const
