@@ -80,8 +80,7 @@ function VibeWorkspace() {
 
   const active = files.find((f) => f.path === activePath) ?? null;
 
-  const previewDoc = useMemo(() => buildPreviewDoc(files, project?.entry_file ?? null), [files, project?.entry_file]);
-  const canPreview = !!previewDoc;
+  // Live preview is always available; the LivePreview component decides how (HTML iframe vs Sandpack vs "unsupported").
 
   const saveMut = useMutation({
     mutationFn: async (patch: Partial<VibeProject>) => {
