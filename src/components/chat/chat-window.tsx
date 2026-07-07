@@ -83,6 +83,11 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  // When sendMessage creates a new conversation and then navigates, we set
+  // this ref so the "load messages" effect skips its DB fetch for that id
+  // once — otherwise it would overwrite the assistant message currently
+  // streaming into local state.
+  const skipLoadForRef = useRef<string | null>(null);
   const recorder = useVoiceRecorder();
 
   // Persisted model preference
@@ -113,6 +118,12 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
     if (!conversationId) {
       setMessages([]);
       setAttachedDocIds([]);
+      return;
+    }
+    // Skip once if this conversation was just created by sendMessage — its
+    // messages already live in local state (including the streaming assistant).
+    if (skipLoadForRef.current === conversationId) {
+      skipLoadForRef.current = null;
       return;
     }
     try {
@@ -247,7 +258,10 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       }
       convId = data.id;
       qc.invalidateQueries({ queryKey: ["conversations"] });
-      navigate({ to: "/chat/$id", params: { id: convId } });
+      // Skip the next auto-load for this id so we don't wipe the assistant
+      // message that's about to stream into local state.
+      skipLoadForRef.current = convId;
+      navigate({ to: "/chat/$id", params: { id: convId }, replace: true });
     }
 
     const userMsg: Msg = {
