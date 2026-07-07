@@ -739,7 +739,7 @@ export type Database = {
         Returns: boolean
       }
       increment_usage: {
-        Args: { _free_limit: number; _kind: string; _user_id: string }
+        Args: { _free_limit: number; _kind: string }
         Returns: Json
       }
     }
