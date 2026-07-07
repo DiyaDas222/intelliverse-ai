@@ -258,7 +258,10 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       }
       convId = data.id;
       qc.invalidateQueries({ queryKey: ["conversations"] });
-      navigate({ to: "/chat/$id", params: { id: convId } });
+      // Skip the next auto-load for this id so we don't wipe the assistant
+      // message that's about to stream into local state.
+      skipLoadForRef.current = convId;
+      navigate({ to: "/chat/$id", params: { id: convId }, replace: true });
     }
 
     const userMsg: Msg = {
