@@ -120,6 +120,12 @@ export function ChatWindow({ conversationId }: { conversationId?: string }) {
       setAttachedDocIds([]);
       return;
     }
+    // Skip once if this conversation was just created by sendMessage — its
+    // messages already live in local state (including the streaming assistant).
+    if (skipLoadForRef.current === conversationId) {
+      skipLoadForRef.current = null;
+      return;
+    }
     try {
       const key = `iv:attach:${conversationId}`;
       const raw = sessionStorage.getItem(key);
