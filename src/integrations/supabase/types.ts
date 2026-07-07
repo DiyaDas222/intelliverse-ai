@@ -726,10 +726,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      consume_credits: {
-        Args: { _amount: number; _user_id: string }
-        Returns: Json
-      }
       has_active_pro: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
