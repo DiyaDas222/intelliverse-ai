@@ -9,12 +9,23 @@ function getEnv(key: string): string {
 }
 
 export function getRazorpayKeyId(): string {
-  return getEnv("RAZORPAY_KEY_ID");
+  const id = getEnv("RAZORPAY_KEY_ID").trim();
+  if (!/^rzp_(live|test)_[A-Za-z0-9]+$/.test(id)) {
+    throw new Error(
+      `RAZORPAY_KEY_ID looks invalid (should start with rzp_live_ or rzp_test_). Got: ${id.slice(0, 8)}…`,
+    );
+  }
+  return id;
 }
 
 function authHeader(): string {
-  const id = getEnv("RAZORPAY_KEY_ID");
-  const secret = getEnv("RAZORPAY_KEY_SECRET");
+  const id = getRazorpayKeyId();
+  const secret = getEnv("RAZORPAY_KEY_SECRET").trim();
+  if (secret.startsWith("rzp_")) {
+    throw new Error(
+      "RAZORPAY_KEY_SECRET looks like a Key ID (starts with rzp_). Paste the Key Secret shown next to the Key ID in Razorpay → Settings → API Keys.",
+    );
+  }
   return "Basic " + Buffer.from(`${id}:${secret}`).toString("base64");
 }
 
@@ -38,10 +49,25 @@ export async function razorpayCreateOrder(input: {
       payment_capture: 1,
     }),
   });
-  const body = await res.json();
-  if (!res.ok) throw new Error(body?.error?.description ?? "Razorpay order creation failed");
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const desc = body?.error?.description ?? body?.error?.reason ?? `HTTP ${res.status}`;
+    const keyId = process.env.RAZORPAY_KEY_ID?.trim() ?? "";
+    console.error("[razorpay] order creation failed", {
+      status: res.status,
+      error: body?.error,
+      key_prefix: keyId.slice(0, 12),
+    });
+    if (res.status === 401) {
+      throw new Error(
+        `Razorpay authentication failed. Your RAZORPAY_KEY_ID (${keyId.slice(0, 12)}…) and RAZORPAY_KEY_SECRET don't match, or the account isn't activated for live payments yet. Double-check both values in Razorpay → Settings → API Keys.`,
+      );
+    }
+    throw new Error(`Razorpay: ${desc}`);
+  }
   return body;
 }
+
 
 export function verifyPaymentSignature(input: {
   orderId: string;
