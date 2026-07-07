@@ -238,7 +238,7 @@ function VibeWorkspace() {
               Save
             </Button>
           )}
-          <Button size="sm" variant={previewOpen ? "default" : "outline"} onClick={() => setPreviewOpen((v) => !v)} disabled={!canPreview}>
+          <Button size="sm" variant={previewOpen ? "default" : "outline"} onClick={() => setPreviewOpen((v) => !v)}>
             <Eye className="mr-1 h-3.5 w-3.5" /> Preview
           </Button>
           <Button size="sm" variant="outline" onClick={downloadZip}>
@@ -285,10 +285,10 @@ function VibeWorkspace() {
           </div>
         </aside>
 
-        {/* Editor + Preview */}
+        {/* Editor + Preview (side by side) */}
         <section className="flex min-h-0 flex-col">
-          <div className={`grid min-h-0 flex-1 ${previewOpen && canPreview ? "grid-rows-2" : "grid-rows-1"}`}>
-            <div className="min-h-0 border-b border-border/60">
+          <div className={`grid min-h-0 flex-1 ${previewOpen ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
+            <div className="min-h-0 border-b border-border/60 md:border-b-0 md:border-r">
               {active ? (
                 <Editor
                   height="100%"
@@ -313,14 +313,25 @@ function VibeWorkspace() {
                 </div>
               )}
             </div>
-            {previewOpen && canPreview && (
+            {previewOpen && (
               <div className="min-h-0 bg-white">
-                <iframe
-                  title="preview"
-                  className="h-full w-full"
-                  sandbox="allow-scripts allow-forms allow-modals"
-                  srcDoc={previewDoc}
-                />
+                {canPreview ? (
+                  <iframe
+                    title="preview"
+                    className="h-full w-full"
+                    sandbox="allow-scripts allow-forms allow-modals"
+                    srcDoc={previewDoc!}
+                  />
+                ) : (
+                  <div className="grid h-full place-items-center p-6 text-center text-xs text-muted-foreground">
+                    <div>
+                      <Eye className="mx-auto mb-2 h-5 w-5" />
+                      Live preview appears here once an <code>index.html</code> file exists.
+                      <br />Tip: pick <em>Plain HTML/CSS/JS</em> when creating the project for instant preview,
+                      or ask the AI to add an <code>index.html</code>.
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

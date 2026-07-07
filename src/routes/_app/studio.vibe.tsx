@@ -63,7 +63,7 @@ function VibeHub() {
     name: "",
     description: "",
     kind: "website",
-    frontend: "React",
+    frontend: "Plain HTML/CSS/JS",
     backend: "None",
     database: "None",
     auth: "None",
